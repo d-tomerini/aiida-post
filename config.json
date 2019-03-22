@@ -1,0 +1,6 @@
+{
+    "calculation": [
+        "relax",
+        "band_gap" 
+		]
+}
