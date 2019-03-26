@@ -1,0 +1,9 @@
+{
+    "input": {
+    "calculation": "band_gap", 
+    "structure": {
+      "structure_type": "from_database"
+    }, 
+    "year": "2009"
+  } 
+}

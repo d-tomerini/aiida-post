@@ -1,0 +1,12 @@
+{
+    "calculation": "band_gap", 
+    "structure": {
+      "structure_type": "from_database",
+      "database":"COD",
+      "query": {
+          "schemical_name":"wurtzite",
+          "formula":"O2 Si"
+      }
+    }, 
+    "year": "2009"
+}

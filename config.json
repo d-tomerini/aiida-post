@@ -2,5 +2,8 @@
     "calculation": [
         "relax",
         "band_gap" 
-		]
+        ],
+    "supported_database":[
+        "COD"
+    ]
 }
