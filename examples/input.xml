@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+   <calculation>band_gap</calculation>
+   <structure>
+      <database>COD</database>
+      <query>
+         <formula>Hf O2</formula>
+         <schemical_name>wurtzite</schemical_name>
+      </query>
+      <structure_type>from_database</structure_type>
+   </structure>
+   <year>2009</year>
+</root>
+

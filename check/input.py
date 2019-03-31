@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-# module to handle the input to the app
+"""
+general module to handle the input to the app
+specific reponse app that contains:
+    input - request
+    allowed request type from settings
+    structure - 3D data for now
+"""
 from flask import jsonify
 class BackToGinestra():
     """
@@ -15,7 +21,7 @@ class BackToGinestra():
         self.instructure = {} # incoming structural request
         self.structure = None # dictionary structural output information
         self.back_to_server = {'data': {},
-                               'calculation_status': None
+                               'workcalculation_status': None
                               } 
     def Set_Warning(self,message,code):
         """
@@ -33,11 +39,7 @@ class BackToGinestra():
         Data, in POST format, is a JSON
         :req incoming flask request
         """
-        # format checks
-        if (req.method != 'POST'):
-            self.Set_Warning('Expecting a POST HTML method',405) # method not allowed
-        # accepting only JSON
-        if ( req.is_json):
+        if (req.is_json):
             self.input = req.get_json()
         else:
             self.Set_Warning('Expecting json',400) # bad request
@@ -90,9 +92,9 @@ class BackToGinestra():
             }
         )
         return self.back_to_server
-    def NoError(self):
+    def No_HTML_Error(self):
         """
         True if the HTML code is not an error status code
         """
-        no_error_codes = (200,201,202,203,204)
+        no_error_codes = (200, 201, 202, 203, 204)
         return self.status_code in no_error_codes

@@ -30,7 +30,6 @@ def cod_search(cod_values):
     """
     
     importer = CodDbImporter()
-    print cod_values
     found = importer.query(**cod_values)
     return found # returned database object
 
