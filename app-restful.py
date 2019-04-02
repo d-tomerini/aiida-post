@@ -17,13 +17,18 @@ Basic checks to help ensure consistency
 
 
 import json
-from flask import Flask,request
-from flask_restful import Resource, Api
+from flask import Flask, request
+from flask_restful import Resource, Api, reqparse
 
 from aiida import load_dbenv, is_dbenv_loaded
+from aiida.orm import Node, StructureData, Dict, UpfData, ArrayData, CalculationNode, Group
+from aiida.orm.querybuilder import QueryBuilder
+
 # local imports
 from search.structural import find_structure
 from check.input import BackToGinestra
+from aiida_related.group_initialize import Create_group
+
 
 APP = Flask(__name__)
 api = Api(APP)
@@ -43,7 +48,7 @@ class Ginestra_submit(Resource):
         response = BackToGinestra()
         ### process options
         response.Check_Method(request)
-        response.Add_Allowed(CALCULATION_OPTIONS)
+        response.Add_Allowed(CALCULATION_OPTIONS)  
         response.input['calculation'] = prop
 
         # some basic checks
@@ -67,12 +72,47 @@ class Ginestra_check_existing(Resource):
         related to the calculation required for a material
         returns any items that need to be checked
         : prop endpoint to the calculation prop
+        : get queries define a projection for the property in the database
         """
+        parser = reqparse.RequestParser()
+        parser.add_argument('id',type=int)
+        args = parser.parse_args()
+        Ginestra_Group = Create_group(groupname='ginestra')
+
         if not prop in CALCULATION_OPTIONS['calculation']:
-            return {'message': 'property {} not supported. Recognised properties: {}'.format(
+            return {'message': 'Retrieval of property {} not supported. Recognised properties: {}'.format(
                 prop, 
-                " ,".join(CALCULATION_OPTIONS['calculation']))
+                " ,".join(CALCULATION_OPTIONS['calculation']),
+                **args)
             }
+        else:
+                prop_group = Create_group(groupname=prop)
+                qb = QueryBuilder()
+                qb.append(
+                    StructureData,
+                    tag='mytag',
+                    project=['*']
+                )
+                qb.append(
+                    Group,
+                    with_node='mytag',
+                    filters={'label':{'==':'ginestra'}}
+                )
+                back = {}
+                for i in qb.all():
+                    for i2 in i:
+                        back.update(
+                            {str(i2.id):{
+                                'class':i2.class_node_type,
+                                'id':i2.id,
+                                'uuid':i2.uuid,
+                                'formula':i2.get_formula()
+                                }
+                            }
+                        )
+                print  back
+                return back
+
 
 class Ginestra_input(Resource):
     def get(self, prop):
@@ -80,7 +120,28 @@ class Ginestra_input(Resource):
         search of an input by ID that is known by the program
         returns property and/or status of the calculation
         """
-        return {'message': 'GET method not supported on '}
+        if not prop in CALCULATION_OPTIONS['calculation']:
+            return {'message': 'property {} not supported. Recognised properties: {}'.format(
+                prop, 
+                ", ".join(CALCULATION_OPTIONS['calculation']))
+            }
+        return {'message':'work in progress here!'}
+
+
+class Ginestra_nodes(Resource):
+    def get(self, prop):
+        """
+        return a subset of nodes from the group ginestra
+        additionally, it filters the request 
+        according to the data in the get method
+        """
+        if not prop in CALCULATION_OPTIONS['calculation']:
+            return {'message': 'property {} not supported. Recognised properties: {}'.format(
+                prop, 
+                ", ".join(CALCULATION_OPTIONS['calculation']))
+            }
+        return {'message':'work in progress here!'}
+
 
 api.add_resource(
     Ginestra_submit,
@@ -89,7 +150,7 @@ api.add_resource(
 
 api.add_resource(
     Ginestra_check_existing,
-    '/ginestra/<string:prop>/existing/',
+    '/ginestra/<string:prop>/existing',
 )
 
 api.add_resource(
@@ -101,7 +162,7 @@ api.add_resource(
 
 if __name__ == '__main__':
     if not is_dbenv_loaded():
-        load_dbenv()
+        load_dbenv()  
     with open('config.json') as f:
         CALCULATION_OPTIONS = json.load(f)
     APP.run(host='127.0.0.1', port='2345', debug=True)

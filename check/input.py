@@ -16,12 +16,12 @@ class BackToGinestra():
     def __init__(self):
         self.status_code = 200 # success code   
         self.message = None # message back to Ginestra
-        self.input = None # input json
-        self.allowed = None # allowed dictionary data, from settings.json
-        self.instructure = {} # incoming structural request
+        self.input = None # input, dictionary 
+        self.allowed = None # allowed dictionary data, imported from settings.json
+        self.ins = {} # incoming structural request
         self.structure = None # dictionary structural output information
         self.back_to_server = {'data': {},
-                               'workcalculation_status': None
+                               'workflow_status': None
                               } 
     def Set_Warning(self,message,code):
         """
@@ -39,10 +39,7 @@ class BackToGinestra():
         Data, in POST format, is a JSON
         :req incoming flask request
         """
-        if (req.is_json):
-            self.input = req.get_json()
-        else:
-            self.Set_Warning('Expecting json',400) # bad request
+        self.input = req.get_json()
     def Check_Calculation(self):
         """
         Calculation checks.
@@ -63,7 +60,7 @@ class BackToGinestra():
             if self.input.get('structure') == None:
                 self.Set_Warning('No "structure" tag in json',400) # bad request
             else:
-                self.instructure = self.input['structure']
+                self.ins = self.input['structure']
     def Data_Add(self,**kwargs):
         """
         Updates the data definition in the response
