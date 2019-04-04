@@ -90,14 +90,29 @@ class Ginestra_check_existing(Resource):
                 qb = QueryBuilder()
                 qb.append(
                     StructureData,
-                    tag='mytag',
+                    tag='tag1',
                     project=['*']
                 )
+                # search ginestra nodes in the query
                 qb.append(
                     Group,
-                    with_node='mytag',
+                    tag='tag2',
+                    with_node='tag1',
                     filters={'label':{'==':'ginestra'}}
                 )
+                # finally, search in the GET query, if any
+                print args
+                if not args['id'] ==None:
+                    qb.append(
+                        StructureData,
+                        with_node='tag2',
+                        filters={'id':{'==':args['id']}}
+                        
+                    )
+                    try:
+                        print "cao", qb.all(), 'id' in args.keys()
+                    except:
+                        return {'message':'database error'}
                 back = {}
                 for i in qb.all():
                     for i2 in i:
@@ -110,7 +125,6 @@ class Ginestra_check_existing(Resource):
                                 }
                             }
                         )
-                print  back
                 return back
 
 
@@ -145,7 +159,7 @@ class Ginestra_nodes(Resource):
 
 api.add_resource(
     Ginestra_submit,
-    '/ginestra/<string:prop>/submit/',
+    '/ginestra/<string:prop>/submit/'
 )
 
 api.add_resource(

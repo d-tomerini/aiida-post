@@ -1,5 +1,0 @@
-First implementation of a REST API to ask aiida what to do with information that is 
-deployed by ginestra. We will setup a server that waits for a communication and respond
-with a json that tells to wait/quit/retry and then gives back data when it is needed
-
-
