@@ -46,7 +46,7 @@ class Ginestra_submit(Resource):
 
         # initialize the answer to the request
         response = BackToGinestra()
-        ### process options
+        # process options
         response.Check_Method(request)
         response.Add_Allowed(CALCULATION_OPTIONS)  
         response.input['calculation'] = prop
@@ -56,11 +56,11 @@ class Ginestra_submit(Resource):
         if response.No_HTML_Error():
             response.Check_Structure()
 
-        ### processing input
+        # processing input
         if response.No_HTML_Error():
             find_structure(response)
         
-        ### back to answering the request
+        # back to answering the request
 
         # returns the input, the structure, the data, a message
         return response.Back(), response.status_code
@@ -87,32 +87,25 @@ class Ginestra_check_existing(Resource):
             }
         else:
                 prop_group = Create_group(groupname=prop)
+                print 'cao', args    
+                qb = QueryBuilder()
+                # search 'ginestra'nodes in the query
+                qb.append(
+                    Group,
+                    tag='tag1',
+                    filters={'label': 'ginestra'}
+                )
+                if args['id']==None:
+                    args = {}
+                # finally, search in the GET query, if any
                 qb = QueryBuilder()
                 qb.append(
                     StructureData,
                     tag='tag1',
-                    project=['*']
+                    project=['*'],
+                    filters=args
                 )
-                # search ginestra nodes in the query
-                qb.append(
-                    Group,
-                    tag='tag2',
-                    with_node='tag1',
-                    filters={'label':{'==':'ginestra'}}
-                )
-                # finally, search in the GET query, if any
-                print args
-                if not args['id'] ==None:
-                    qb.append(
-                        StructureData,
-                        with_node='tag2',
-                        filters={'id':{'==':args['id']}}
-                        
-                    )
-                    try:
-                        print "cao", qb.all(), 'id' in args.keys()
-                    except:
-                        return {'message':'database error'}
+                
                 back = {}
                 for i in qb.all():
                     for i2 in i:
