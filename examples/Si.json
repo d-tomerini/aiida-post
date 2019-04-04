@@ -1,0 +1,11 @@
+{
+    "calculation": "band_gap", 
+    "structure": {
+      "structure_type": "from_database",
+      "database":"COD",
+      "query": {
+          "formula":"Si",
+          "spacegroup":"F d -3 m"
+      }
+    } 
+}
