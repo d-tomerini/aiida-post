@@ -4,14 +4,14 @@ from cod import cod_check, cod_search
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida_related.group_initialize import Create_group
 
-#from aiida.orm import Code, Computer, Data, Node, StructureData
+# from aiida.orm import Code, Computer, Data, Node, StructureData
 
 
 def find_structure(response):
-    """ 
+    """
     given the provided input, look for structure in database.
     different databases might be supported.
-    for now, support the open database through aiida 
+    for now, support the open database through aiida
     """
 
     if response.ins.get('structure_type'):
@@ -20,7 +20,7 @@ def find_structure(response):
                 # grep usable and unusable keywords for COD
                 (used, unused) = cod_check(response.ins['query'])
                 response.Structure_Add(
-                    used_query_keywords=used, 
+                    used_query_keywords=used,
                     unrecognized_query_keywords=unused)
                 # perform a database search according to the usable keywords
                 cifs = cod_search(used)  # aiida database object
@@ -45,7 +45,7 @@ def find_structure(response):
                     mystructure.store()
                     samenodes = mystructure.get_all_same_nodes()
                     for k in samenodes:
-                        print k.uuid
+                        print(k.uuid)
                     if len(mystructure.get_all_same_nodes()) != 0:
                         response.Set_Warning(
                             'Created structure id={} matches {} other structures'.format(
@@ -63,12 +63,3 @@ def find_structure(response):
                     response.Structure_Add(
                         mycif=mystructure.attributes
                     )
-                
-
-                
-                
-
-
-
-
-                
