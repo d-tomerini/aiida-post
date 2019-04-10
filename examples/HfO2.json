@@ -1,0 +1,13 @@
+{
+    "calculation": "band_gap", 
+    "structure": {
+      "structure_type": "from_database",
+      "database":"COD",
+      "query": {
+          "schemical_name":"wurtzite",
+          "formula":"Hf O2",
+          "some_data": 32
+      }
+    }, 
+    "year": "2009"
+}
