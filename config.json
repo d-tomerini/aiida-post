@@ -5,5 +5,10 @@
     ],
     "supported_database":[
         "COD"
-    ]
+    ],
+    "aiida": {
+        "qe": 240,
+        "siesta": null,
+        "upf": "efficiency" 
+    }
 }

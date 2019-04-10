@@ -4,7 +4,7 @@ Daniele Tomerini
 Initial code march 2019
 
 Initial proposal for an interface between Ginestra and Aiida
-FLASK python app. 
+FLASK python app.
 Based on JSON interchange between a server accepting requests
 and returning values and updates on the calculation
 Endpoints  changes on property, with GET and POST requests
@@ -21,7 +21,8 @@ from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 
 from aiida import load_dbenv, is_dbenv_loaded
-from aiida.orm import Node, StructureData, Dict, UpfData, ArrayData, CalculationNode, Group
+from aiida.orm import Node, StructureData, Dict, UpfData, ArrayData
+from aiida.orm import CalculationNode, Group
 from aiida.orm.querybuilder import QueryBuilder
 
 # local imports
@@ -33,6 +34,7 @@ from aiida_related.group_initialize import Create_group
 APP = Flask(__name__)
 api = Api(APP)
 
+
 class Ginestra_submit(Resource):
     def post(self, prop):
         """
@@ -41,14 +43,14 @@ class Ginestra_submit(Resource):
         containing the input required for calculation
         Data is handled and responded accordingly
 
-        :property is the quantity we required for calculation
+        : prop is the quantity we required for calculation
         """
 
         # initialize the answer to the request
         response = BackToGinestra()
         # process options
         response.Check_Method(request)
-        response.Add_Allowed(CALCULATION_OPTIONS)  
+        response.Add_Allowed(CALCULATION_OPTIONS)
         response.input['calculation'] = prop
 
         # some basic checks
@@ -59,11 +61,12 @@ class Ginestra_submit(Resource):
         # processing input
         if response.No_HTML_Error():
             find_structure(response)
-        
+
         # back to answering the request
 
         # returns the input, the structure, the data, a message
         return response.Back(), response.status_code
+
 
 class Ginestra_check_existing(Resource):
     def get(self, prop):
@@ -75,50 +78,51 @@ class Ginestra_check_existing(Resource):
         : get queries define a projection for the property in the database
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('id',type=int)
+        parser.add_argument('id', type=int)
         args = parser.parse_args()
         Ginestra_Group = Create_group(groupname='ginestra')
 
-        if not prop in CALCULATION_OPTIONS['calculation']:
-            return {'message': 'Retrieval of property {} not supported. Recognised properties: {}'.format(
-                prop, 
+        if prop not in CALCULATION_OPTIONS['calculation']:
+            return {'message': 'Retrieval of property {} not supported. Recognized properties: {}'.format(
+                prop,
                 " ,".join(CALCULATION_OPTIONS['calculation']),
                 **args)
             }
         else:
-                prop_group = Create_group(groupname=prop)
-                print( 'debug', args)    
-                qb = QueryBuilder()
-                # search 'ginestra'nodes in the query
-                qb.append(
-                    Group,
-                    tag='tag1',
-                    filters={'label': 'ginestra'}
-                )
-                if args['id']==None:
-                    args = {}
-                # finally, search in the GET query, if any
-                qb = QueryBuilder()
-                qb.append(
-                    StructureData,
-                    tag='tag1',
-                    project=['*'],
-                    filters=args
-                )
-                
-                back = {}
-                for i in qb.all():
-                    for i2 in i:
-                        back.update(
-                            {str(i2.id):{
-                                'class':i2.class_node_type,
-                                'id':i2.id,
-                                'uuid':i2.uuid,
-                                'formula':i2.get_formula()
-                                }
+            prop_group = Create_group(groupname=prop)
+            print('options', args) # debug
+            qb = QueryBuilder()
+            # search 'ginestra'nodes in the query
+            qb.append(
+                Group,
+                tag='tag1',
+                filters={'label': 'ginestra'}
+            )
+            if args['id'] is None:
+                args = {}
+            # finally, search in the GET query, if any
+            qb = QueryBuilder()
+            qb.append(
+                StructureData,
+                tag='tag1',
+                project=['*'],
+                filters=args
+            )
+
+            back = {}
+            for i in qb.all():
+                for i2 in i:
+                    back.update(
+                        {
+                            str(i2.id): {
+                                'class': i2.class_node_type,
+                                'id': i2.id,
+                                'uuid': i2.uuid,
+                                'formula': i2.get_formula()
                             }
-                        )
-                return back
+                        }
+                    )
+            return back
 
 
 class Ginestra_input(Resource):
@@ -127,49 +131,50 @@ class Ginestra_input(Resource):
         search of an input by ID that is known by the program
         returns property and/or status of the calculation
         """
-        if not prop in CALCULATION_OPTIONS['calculation']:
+        if prop not in CALCULATION_OPTIONS['calculation']:
             return {'message': 'property {} not supported. Recognised properties: {}'.format(
-                prop, 
+                prop,
                 ", ".join(CALCULATION_OPTIONS['calculation']))
             }
-        return {'message':'work in progress here!'}
+        return {'message': 'work in progress here!'}
 
 
 class Ginestra_nodes(Resource):
     def get(self, prop):
         """
         return a subset of nodes from the group ginestra
-        additionally, it filters the request 
+        additionally, it filters the request
         according to the data in the get method
         """
-        if not prop in CALCULATION_OPTIONS['calculation']:
-            return {'message': 'property {} not supported. Recognised properties: {}'.format(
-                prop, 
-                ", ".join(CALCULATION_OPTIONS['calculation']))
+        if prop not in CALCULATION_OPTIONS['calculation']:
+            return {
+                'message': 'property {} not supported. Recognised properties: {}'.format(
+                    prop,
+                    ", ".join(CALCULATION_OPTIONS['calculation']))
             }
-        return {'message':'work in progress here!'}
+        return {'message': 'work in progress here!'}
 
 
 api.add_resource(
     Ginestra_submit,
-    '/ginestra/<string:prop>/submit/'
+    '/ginestra/calculation/<string:prop>/submit/'
 )
 
 api.add_resource(
     Ginestra_check_existing,
-    '/ginestra/<string:prop>/existing',
+    '/ginestra/calculation/<string:prop>/existing',
 )
 
 api.add_resource(
     Ginestra_input,
-    '/ginestra/<string:prop>/input/',
+    '/ginestra/calculation/<string:prop>/check/',
 )
 
 
-
 if __name__ == '__main__':
+    # aiida initilization
     if not is_dbenv_loaded():
-        load_dbenv()  
+        load_dbenv()
     with open('config.json') as f:
         CALCULATION_OPTIONS = json.load(f)
     APP.run(host='127.0.0.1', port='2345', debug=True)
