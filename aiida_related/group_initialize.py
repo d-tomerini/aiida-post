@@ -15,7 +15,7 @@ def Create_group(groupname,**kwargs):
     according to nodes that are marked relevant
     """
     g, was_created = Group.objects.get_or_create(label=groupname, **kwargs)
-    print 'group {} was created: {}'.format(groupname, was_created)
+    print('group {} was created: {}'.format(groupname, was_created))
 
     return g
 

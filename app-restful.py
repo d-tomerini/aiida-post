@@ -87,7 +87,7 @@ class Ginestra_check_existing(Resource):
             }
         else:
                 prop_group = Create_group(groupname=prop)
-                print 'cao', args    
+                print( 'debug', args)    
                 qb = QueryBuilder()
                 # search 'ginestra'nodes in the query
                 qb.append(

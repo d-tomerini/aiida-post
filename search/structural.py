@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from cod import cod_check, cod_search
+from .cod import cod_check, cod_search
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida_related.group_initialize import Create_group
 
@@ -45,7 +45,7 @@ def find_structure(response):
                     mystructure.store()
                     samenodes = mystructure.get_all_same_nodes()
                     for k in samenodes:
-                        print k.uuid
+                        print ('debug ',k.uuid)
                     if len(mystructure.get_all_same_nodes()) != 0:
                         response.Set_Warning(
                             'Created structure id={} matches {} other structures'.format(
