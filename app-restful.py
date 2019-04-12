@@ -3,7 +3,7 @@
 Daniele Tomerini
 Initial code march 2019
 
-Initial proposal for an interface between Ginestra and Aiida
+Initial proposal for an interface between Ext and Aiida
 FLASK python app.
 Based on JSON interchange between a server accepting requests
 and returning values and updates on the calculation
@@ -14,31 +14,27 @@ Keywords for now are stored within a settings.json file.
 Basic checks to help ensure consistency
 """
 # general imports
-
-
 import json
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 
+# aiida
 from aiida import load_dbenv, is_dbenv_loaded
-from aiida.orm import Node, StructureData, Dict, UpfData, ArrayData
-from aiida.orm import CalculationNode, Group
-from aiida.orm.querybuilder import QueryBuilder
 
 # local imports
 from search.structural import find_structure
-from check.input import BackToGinestra
-from aiida_related.group_initialize import Create_group
+from check.input import BackToExt
+from aiida_related.group_initialize import Create_group, check_db
 
 
 APP = Flask(__name__)
 api = Api(APP)
 
 
-class Ginestra_submit(Resource):
+class Ext_submit(Resource):
     def post(self, prop):
         """
-        Route to manage the requests from ginestra
+        Route to manage the requests from ext
         Access is through a JSON file passed to the server
         containing the input required for calculation
         Data is handled and responded accordingly
@@ -47,7 +43,7 @@ class Ginestra_submit(Resource):
         """
 
         # initialize the answer to the request
-        response = BackToGinestra()
+        response = BackToExt()
         # process options
         response.Check_Method(request)
         response.Add_Allowed(CALCULATION_OPTIONS)
@@ -65,10 +61,11 @@ class Ginestra_submit(Resource):
         # back to answering the request
 
         # returns the input, the structure, the data, a message
+
         return response.Back(), response.status_code
 
 
-class Ginestra_check_existing(Resource):
+class Ext_check_existing(Resource):
     def get(self, prop):
         """
         check if there is any instance in the database
@@ -78,39 +75,24 @@ class Ginestra_check_existing(Resource):
         : get queries define a projection for the property in the database
         """
         parser = reqparse.RequestParser()
+        # This does not do what I want. Check it better
         parser.add_argument('id', type=int)
         args = parser.parse_args()
-        Ginestra_Group = Create_group(groupname='ginestra')
+        Ext_Group = Create_group(groupname='ext')
 
         if prop not in CALCULATION_OPTIONS['calculation']:
-            return {'message': 'Retrieval of property {} not supported. Recognized properties: {}'.format(
+            return {'message': 'Property {} not in supported properties: {}'.format(
                 prop,
                 " ,".join(CALCULATION_OPTIONS['calculation']),
                 **args)
             }
         else:
             prop_group = Create_group(groupname=prop)
-            print('options', args) # debug
-            qb = QueryBuilder()
-            # search 'ginestra'nodes in the query
-            qb.append(
-                Group,
-                tag='tag1',
-                filters={'label': 'ginestra'}
-            )
-            if args['id'] is None:
-                args = {}
-            # finally, search in the GET query, if any
-            qb = QueryBuilder()
-            qb.append(
-                StructureData,
-                tag='tag1',
-                project=['*'],
-                filters=args
-            )
+            print('options', args)  # debug
 
+            structs = check_db('ext', **args)
             back = {}
-            for i in qb.all():
+            for i in structs:
                 for i2 in i:
                     back.update(
                         {
@@ -125,7 +107,7 @@ class Ginestra_check_existing(Resource):
             return back
 
 
-class Ginestra_input(Resource):
+class Ext_input(Resource):
     def get(self, prop):
         """
         search of an input by ID that is known by the program
@@ -139,10 +121,10 @@ class Ginestra_input(Resource):
         return {'message': 'work in progress here!'}
 
 
-class Ginestra_nodes(Resource):
+class Ext_nodes(Resource):
     def get(self, prop):
         """
-        return a subset of nodes from the group ginestra
+        return a subset of nodes from the group ext
         additionally, it filters the request
         according to the data in the get method
         """
@@ -156,18 +138,18 @@ class Ginestra_nodes(Resource):
 
 
 api.add_resource(
-    Ginestra_submit,
-    '/ginestra/calculation/<string:prop>/submit/'
+    Ext_submit,
+    '/ext/calculation/<string:prop>/submit/'
 )
 
 api.add_resource(
-    Ginestra_check_existing,
-    '/ginestra/calculation/<string:prop>/existing',
+    Ext_check_existing,
+    '/ext/calculation/<string:prop>/existing',
 )
 
 api.add_resource(
-    Ginestra_input,
-    '/ginestra/calculation/<string:prop>/check/',
+    Ext_input,
+    '/ext/calculation/<string:prop>/check/',
 )
 
 

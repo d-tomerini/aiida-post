@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .cod import cod_check, cod_search
-from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida_related.group_initialize import Create_group
 
 # from aiida.orm import Code, Computer, Data, Node, StructureData
@@ -18,22 +17,21 @@ def find_structure(response):
         if response.ins["database"] in response.allowed['supported_database']:
             if response.ins['database'] == 'COD':
                 # grep usable and unusable keywords for COD
-                (used, unused) = cod_check(response.ins['query'])
+                used, unused = cod_check(response.ins['query'])
                 response.Structure_Add(
                     used_query_keywords=used,
                     unrecognized_query_keywords=unused)
                 # perform a database search according to the usable keywords
                 cifs = cod_search(used)  # aiida database object
-                n_structures = len(cifs)
                 response.Structure_Add(
-                    found_structures=n_structures
+                    found_structures=len(cifs)
                 )
-                if n_structures == 0:
+                if len(cifs) == 0:
                     response.Set_Warning('No structure matches the query', 400)
                     return None
                 else:
                     cod_info = []
-                    if n_structures >= 2:
+                    if len(cifs) >= 2:
                         response.Set_Warning(
                             'Multiple matches to the query. Consider adding a more specific request, or choose one ID from the list. Returning the first structure. Proceed at your own risk!', 200)
                     for i in cifs:
@@ -44,8 +42,8 @@ def find_structure(response):
                     mystructure = cifs[0].get_aiida_structure()
                     mystructure.store()
                     samenodes = mystructure.get_all_same_nodes()
-                    for k in samenodes:
-                        print ('debug ',k.uuid)
+                    # for k in samenodes:
+                    #     print ('debug ', k.uuid)
                     if len(mystructure.get_all_same_nodes()) != 0:
                         response.Set_Warning(
                             'Created structure id={} matches {} other structures'.format(
@@ -58,8 +56,8 @@ def find_structure(response):
                         aiida_id=mystructure.id,
                         aiida_uuid=mystructure.uuid
                     )
-                    Ginestra_Group = Create_group(groupname='ginestra')
-                    Ginestra_Group.add_nodes(mystructure)
+                    Ext_Group = Create_group(groupname='ext')
+                    Ext_Group.add_nodes(mystructure)
                     response.Structure_Add(
                         mycif=mystructure.attributes
                     )

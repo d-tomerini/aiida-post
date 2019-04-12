@@ -5,9 +5,10 @@ communication with the interface
 """
 
 from aiida.orm.querybuilder import QueryBuilder
-from aiida.orm import Group
+from aiida.orm import Group, StructureData
 
-def Create_group(groupname,**kwargs):
+
+def Create_group(groupname, **kwargs):
     """
     Check if a group exist in the database
     If it does not, it creates it
@@ -19,3 +20,29 @@ def Create_group(groupname,**kwargs):
 
     return g
 
+
+def check_db(mygroup, **args):
+    """
+    Query the database for existing information
+    Project the search on the query provided by the GET
+
+    """
+    qb = QueryBuilder()
+    # search 'ext'nodes in the query
+    qb.append(
+        Group,
+        tag='tag1',
+        filters={'label': mygroup}
+    )
+    if args['id'] is None:
+        args = {}
+    # finally, search in the GET query, if any
+    qb = QueryBuilder()
+    qb.append(
+        StructureData,
+        tag='tag1',
+        project=['*'],
+        filters=args
+    )
+
+    return qb.all()

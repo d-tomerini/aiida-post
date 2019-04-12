@@ -1,4 +1,4 @@
-# Ginestra-interface
+# AiiDA interface with an External program
 
 ## Communication app between an external program and AiiDA
 

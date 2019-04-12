@@ -5,7 +5,7 @@
       <database>COD</database>
       <query>
          <formula>Hf O2</formula>
-         <schemical_name>wurtzite</schemical_name>
+         <chemical_name>wurtzite</chemical_name>
       </query>
       <structure_type>from_database</structure_type>
    </structure>
