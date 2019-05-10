@@ -2,6 +2,7 @@
     "calculation": [
         "relax",
         "scf",
+        "band_structure",
         "band_gap"
     ],
     "supported_database":[

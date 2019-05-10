@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .cod import cod_check, cod_search
-from aiida_related.group_initialize import Create_group
+from utils.group_initialize import Create_group
 
 # from aiida.orm import Code, Computer, Data, Node, StructureData
 

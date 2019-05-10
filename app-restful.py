@@ -19,12 +19,12 @@ from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 
 # aiida
-from aiida import load_dbenv, is_dbenv_loaded
+from aiida import load_profile
 
 # local imports
 from search.structural import find_structure
 from check.input import BackToExt
-from aiida_related.group_initialize import Create_group, check_db
+from utils.group_initialize import Create_group, check_db
 
 
 APP = Flask(__name__)
@@ -155,8 +155,7 @@ api.add_resource(
 
 if __name__ == '__main__':
     # aiida initilization
-    if not is_dbenv_loaded():
-        load_dbenv()
+    load_profile()
     with open('config.json') as f:
         CALCULATION_OPTIONS = json.load(f)
     APP.run(host='127.0.0.1', port='2345', debug=True)
