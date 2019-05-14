@@ -21,7 +21,7 @@ from flask_restful import Resource, Api, reqparse
 # aiida
 from aiida import load_profile
 from aiida.orm import Dict, Str
-from aiida.engine import run
+from aiida.engine import launch
 
 # local imports
 from search.structural import find_structure
@@ -41,24 +41,16 @@ class Ext_submit(Resource):
         containing the input required for calculation
         Data is handled and responded accordingly
 
-        : prop is the quantity we required for calculation
+        :input prop is the quantity we required for calculation
         """
-
-        # import the request
-        # this is the main object now
-
-        params = Dict(dict=request.get_json())
-        defs = Dict(dict=CALCULATION_OPTIONS)
-
-        
-        myrequest = run(
+        # workfunction to process the incoming json dictionary
+        myrequest, node = launch.run_get_node(
             ProcessInputs,
-            req=params,
-            prop=Str(prop),
-            predef=defs,
+            request=Dict(dict=request.get_json()),
+            predefined=Dict(dict=CALCULATION_OPTIONS),
+            property=Str(prop),        
         )
         
-        print myrequest
         return 5
 
 
