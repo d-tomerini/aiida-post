@@ -25,7 +25,7 @@ class PwBandGapWorkChain(WorkChain):
             cls.get_bandgap
         )
         spec.output('band_gap', valid_type=orm.Float)
-              ccc
+
 
     def run_band_structure(self):
         """

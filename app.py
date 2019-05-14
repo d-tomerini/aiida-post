@@ -20,10 +20,12 @@ from flask_restful import Resource, Api, reqparse
 
 # aiida
 from aiida import load_profile
+from aiida.orm import Dict, Str
+from aiida.engine import run
 
 # local imports
 from search.structural import find_structure
-from check.input import BackToExt
+from check.input_wf import ProcessInputs
 from utils.group_initialize import Create_group, check_db
 
 
@@ -42,27 +44,22 @@ class Ext_submit(Resource):
         : prop is the quantity we required for calculation
         """
 
-        # initialize the answer to the request
-        response = BackToExt()
-        # process options
-        response.Check_Method(request)
-        response.Add_Allowed(CALCULATION_OPTIONS)
-        response.input['calculation'] = prop
+        # import the request
+        # this is the main object now
 
-        # some basic checks
-        response.Check_Calculation()
-        if response.No_HTML_Error():
-            response.Check_Structure()
+        params = Dict(dict=request.get_json())
+        defs = Dict(dict=CALCULATION_OPTIONS)
 
-        # processing input
-        if response.No_HTML_Error():
-            find_structure(response)
-
-        # back to answering the request
-
-        # returns the input, the structure, the data, a message
-
-        return response.Back(), response.status_code
+        
+        myrequest = run(
+            ProcessInputs,
+            req=params,
+            prop=Str(prop),
+            predef=defs,
+        )
+        
+        print myrequest
+        return 5
 
 
 class Ext_check_existing(Resource):
@@ -154,7 +151,7 @@ api.add_resource(
 
 
 if __name__ == '__main__':
-    # aiida initilization
+    # aiida initialization
     load_profile()
     with open('config.json') as f:
         CALCULATION_OPTIONS = json.load(f)
