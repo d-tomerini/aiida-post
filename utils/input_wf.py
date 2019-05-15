@@ -9,7 +9,6 @@ It process the input processing before further calculations
 from aiida.orm import StructureData, Dict, Str, Int, List
 from aiida.engine import run, Process, WorkChain, ToContext
 
-
 class ProcessInputs(WorkChain):
     """
     Workfunction to keep provenance of the request
@@ -19,7 +18,7 @@ class ProcessInputs(WorkChain):
     :param req POST json
     :param property string, requested property from endpoint
     :param predefined dictionary of set values
-    
+
     :return html_code for errors
     :return message for details
     :return structure is always needed to calculate properties
@@ -34,11 +33,11 @@ class ProcessInputs(WorkChain):
         spec.input('property', valid_type=Str)
         #spec.output('html_code', valid_type=Int)
         #spec.output('message', valid_type=Str)
-        spec.output('cifs', valid_type=StructureData)
+        spec.output('cif', valid_type=StructureData)
         spec.outline(
             cls.check_dictionary,
             cls.check_structure_input,
-            #cls.find_structure,
+            cls.find_structure,
             cls.return_results,
         )
         spec.exit_code(
@@ -57,13 +56,13 @@ class ProcessInputs(WorkChain):
             403,
             'ERROR_NO_STRUCTURE',
             'It was impossible to obtain a StructureData file')
-
-
+    
+    
     def _init_inputs(self):
         """ Initialization of internal variables"""
-
-
-
+        pass
+    
+    
     def check_dictionary(self):
         """
         Basic checks on the incoming request json
@@ -72,13 +71,13 @@ class ProcessInputs(WorkChain):
         """
         self._init_inputs()
      
-
+    
         # might be good to provide a schema, to look for required keywords 
         # actually before and not adding exception one after the other
-
+    
         # here it makes sense to expose a number of entry points
         # so that every time I introduce a new workflow, I can automatically include it here
-
+    
         v = self.inputs.property.value
         calcs = self.inputs.predefined.dict.calculation
         if v not in calcs:
@@ -87,15 +86,15 @@ class ProcessInputs(WorkChain):
                 'Recognized keywords: {}'.format(v, ", ".join(calcs))
             )
             return self.exit_codes.ERROR_NO_PROPERTY
-
+    
     def return_results(self):
         """
         Final processing of the outputs
         """
-
-        self.out('cifs', self.ctx.cifs)
+    
+        self.out('cif', self.ctx.cif)
         
-
+    
     def check_structure_input(self):
         """
         Analyze the dictionary part about the query
@@ -116,12 +115,12 @@ class ProcessInputs(WorkChain):
         if 'query' not in self.inputs.request.dict.structure:
             self.report('No "query" tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
-
+    
         # here is another point where entry points
         # would make my life easier on definitions
         # loading calcfunction to look for structures 
         # according to database 
-
+    
         if db in self.inputs.predefined.dict.supported_database:
             # cycle over the supported databases
             if db == 'COD':
@@ -131,42 +130,39 @@ class ProcessInputs(WorkChain):
             self.report('Unrecognised database')
             return self.exit_codes.ERROR_WRONG_VALUE     
         
-
+    
     def _COD_search(self):
-        from search.cod import cod_check, cod_query
+        from .search.cod import cod_check
         from aiida.tools.dbimporters.plugins.cod import CodDbImporter
         """
         Deals with the retrieval of a structure
         from the COD database, according to the request dictionary
         Returns a database search object (array of arrays of structures)
         """
- 
-        print self.ctx.db
+    
         kwords = cod_check(Dict(dict=self.ctx.db))
         self.ctx.db_valid = kwords.dict.valid
         self.ctx.db_invalid = kwords.dict.invalid
         
         # empty dictionary
-        if bool(self.ctx.db_valid):
+        if not bool(self.ctx.db_valid):
             self.report('No valid keywords in search tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
-        self.ctx.db_invalid = kwords.dict.invalid
         # query the database for structures
-        #importer = CodDbImporter()
-        #found = importer.query(self.ctx.db_valid)
-        #self.ctx.cifs = cod_query(Dict(dict=self.ctx.db_valid))
-        #self.ctx.n_structures = len(self.ctx.cifs)
+        importer = CodDbImporter()
+        self.ctx.allcifs = importer.query(**self.ctx.db_valid)
+        self.ctx.n_structures = len(self.ctx.allcifs)
         if self.ctx.n_structures == 0:
             self.report('No structure retrived')
             return self.exit_codes.ERROR_NO_STRUCTURE
         else:
-            #s = found[0].get_aiidastructure()
-            #s.store()
-            #self.ctx.cif = s
+            s = self.ctx.allcifs[0].get_aiida_structure()
+            s.store()
+            self.ctx.cif = s
             if self.ctx.n_structures >= 2:
                 self.report('{} structure satisfy the request'.format(self.ctx.n_structures))
                 
-
+    
     def find_structure(self):
         pass
-
+    
