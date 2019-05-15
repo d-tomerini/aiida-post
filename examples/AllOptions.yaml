@@ -11,7 +11,7 @@ structure:
   #  - an actual structure file
   #  - contain information on how to build such structure
   #  - be a queryable quantity
-  structure_type: 
+  location: 
     from_database # probaby the one we'll end up using for now
     #cif
     #tcod?

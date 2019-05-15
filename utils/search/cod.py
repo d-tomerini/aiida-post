@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
+from aiida.engine import calcfunction
+from aiida.orm import Dict, List
 
-
+@calcfunction
 def cod_check(cod_dict):
     """
-    basic checks to ensure the consistency of the input
-    returns a correct key:value to pass to the database search
+    Tries to infere which of the search keywords 
+    are actually valid
+    :cod_dict input dictionary
+    :output cod_rec valid keywords
+    :output cod_unrec not valid keywords
     """
     importer = CodDbImporter()
     supported = importer.get_supported_keywords()
@@ -15,22 +20,30 @@ def cod_check(cod_dict):
     # keeps only one value if key is duplicated
     cod_rec = {}
     cod_unrec = {}
-    for k, v in cod_dict.items():
+    for k, v in cod_dict.get_dict().iteritems():
         if k in supported:
             cod_rec.update({k: v})
         else:
             cod_unrec.update({k: v})
-    return cod_rec, cod_unrec
+    return Dict(dict={
+        'valid':cod_rec,
+        'invalid':cod_unrec
+    }
+    )
 
-
-def cod_search(cod_values):
+@calcfunction
+def cod_query(cod_values):
     """
     performs a search of any CIF structure that is provided
     according to the data coming from the input JSON request
     returns a list of structures and an error code if there is
     something wrong with things
     """
-
+    qlist = cod_values.get_dict()
     importer = CodDbImporter()
-    found = importer.query(**cod_values)
-    return found  # returned database object
+    found = importer.query(**qlist)
+    found_list = found.fetch_all()
+    x = [i.source['id'] for i in found_list]
+    # returned list of retrieved structures
+ 
+    return List(list=x)

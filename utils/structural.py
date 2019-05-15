@@ -13,7 +13,7 @@ def find_structure(response):
     for now, support the open database through aiida
     """
 
-    if response.ins.get('structure_type'):
+    if response.ins.get('location'):
         if response.ins["database"] in response.allowed['supported_database']:
             if response.ins['database'] == 'COD':
                 # grep usable and unusable keywords for COD

@@ -24,9 +24,8 @@ from aiida.orm import Dict, Str
 from aiida.engine import launch
 
 # local imports
-from search.structural import find_structure
-from check.input_wf import ProcessInputs
-from utils.group_initialize import Create_group, check_db
+from utils.input_wf import ProcessInputs
+from other.group_initialize import Create_group, check_db
 
 
 APP = Flask(__name__)
@@ -44,11 +43,13 @@ class Ext_submit(Resource):
         :input prop is the quantity we required for calculation
         """
         # workfunction to process the incoming json dictionary
-        myrequest, node = launch.run_get_node(
+
+   
+        myrequest, reqnode = launch.run_get_node(
             ProcessInputs,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
-            property=Str(prop),        
+            property=Str(prop)       
         )
         
         return 5

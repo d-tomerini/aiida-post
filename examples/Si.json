@@ -1,7 +1,7 @@
 {
     "calculation": "band_gap", 
     "structure": {
-      "structure_type": "from_database",
+      "location": "from_database",
       "database":"COD",
       "query": {
           "formula":"Si",
