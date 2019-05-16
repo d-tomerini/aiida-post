@@ -20,12 +20,13 @@ from flask_restful import Resource, Api, reqparse
 
 # aiida
 from aiida import load_profile
-from aiida.orm import Dict, Str
+from aiida.orm import Dict, Str, load_node
 from aiida.engine import launch
 
 # local imports
 from utils.input_wf import ProcessInputs
 from other.group_initialize import Create_group, check_db
+from submit.distributor import Distribute
 
 
 APP = Flask(__name__)
@@ -43,18 +44,35 @@ class Ext_submit(Resource):
         :input prop is the quantity we required for calculation
         """
         # workfunction to process the incoming json dictionary
-
    
-        myrequest, reqnode = launch.run_get_node(
+        # this is always required
+
+        myrequest, wf = launch.run_get_node(
             ProcessInputs,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
             property=Str(prop)       
         )
-        
-        return 5
 
+        if not wf.is_finished_ok:
+            msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
+            return {
+                'error': wf.exit_message,
+                'message': msg,
+                'stored_request': wf.inputs.request
+            }        
+        else:
+            # msg = ' Successful retrieval of structure, saved as uuid={}'.format(myrequest['structure'].uuid)
+            # return {
+            #     'error': wf.exit_message,
+            #     'message': msg,
+            #     'stored_request': wf.inputs.request.get_dict()
+            # }
+            # get to the actual calculation of the workflow
+             
+            Distribute(wf, prop)
 
+            
 class Ext_check_existing(Resource):
     def get(self, prop):
         """
