@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from aiida.orm import load_node
 from aiida.engine import launch
-from workfunctions.bandgap import PwBandGapWorkChain
+from .workfunctions.bandgap import PwBandGapWorkChain
 
 def Distribute(req, prop):
     """
@@ -15,13 +16,15 @@ def Distribute(req, prop):
         # submit a bandgap workchain
 
         calcspecs = req.inputs.predefined['aiida']
-        structure = req.outputs.structurenode
-        codenode = calcspecs['qe']
+        structure = req.outputs.structure
+        pwcode = calcspecs['qe']
+        code = load_node(pwcode)
         upfamily = calcspecs['upf']
         wf = launch.submit(
             PwBandGapWorkChain,
             structure=structure,  # aiida pk
-            code=load_node(codenode),  # code pk
+            code=code,  # code pk
         )
+        
         return wf
 

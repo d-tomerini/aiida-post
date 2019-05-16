@@ -62,15 +62,16 @@ class Ext_submit(Resource):
                 'stored_request': wf.inputs.request
             }        
         else:
-            # msg = ' Successful retrieval of structure, saved as uuid={}'.format(myrequest['structure'].uuid)
-            # return {
-            #     'error': wf.exit_message,
-            #     'message': msg,
-            #     'stored_request': wf.inputs.request.get_dict()
-            # }
+            exwf = Distribute(wf, prop)
+            msg = ' Successful retrieval of structure, saved as uuid={}'.format(exwf.uuid)
+            return {
+                'error': exwf.exit_message,
+                'message': msg,
+                'stored_request': wf.inputs.request.get_dict()
+            }
             # get to the actual calculation of the workflow
-             
-            Distribute(wf, prop)
+
+
 
             
 class Ext_check_existing(Resource):

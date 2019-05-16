@@ -33,7 +33,7 @@ class ProcessInputs(WorkChain):
         spec.input('property', valid_type=Str)
         #spec.output('html_code', valid_type=Int)
         #spec.output('message', valid_type=Str)
-        spec.output('cif', valid_type=StructureData)
+        spec.output('structure', valid_type=StructureData)
         spec.outline(
             cls.check_dictionary,
             cls.check_structure_input,
@@ -92,7 +92,7 @@ class ProcessInputs(WorkChain):
         Final processing of the outputs
         """
     
-        self.out('cif', self.ctx.cif)
+        self.out('structure', self.ctx.cif)
         
     
     def check_structure_input(self):
