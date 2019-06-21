@@ -153,7 +153,8 @@ class ProcessInputs(WorkChain):
         self.ctx.allcifs = importer.query(**self.ctx.db_valid)
         self.ctx.n_structures = len(self.ctx.allcifs)
         if self.ctx.n_structures == 0:
-            self.report('No structure retrived')
+            self.report('No structure retrieved')
+            self.ctx.cif = None
             return self.exit_codes.ERROR_NO_STRUCTURE
         else:
             s = self.ctx.allcifs[0].get_aiida_structure()

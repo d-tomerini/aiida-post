@@ -9,7 +9,7 @@
         "COD"
     ],
     "aiida": {
-        "qe": 1,
+        "qe": 376,
         "siesta": null,
         "upf": "efficiency" 
     }

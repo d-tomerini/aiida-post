@@ -20,7 +20,7 @@ from flask_restful import Resource, Api, reqparse
 
 # aiida
 from aiida import load_profile
-from aiida.orm import Dict, Str, load_node
+from aiida.orm import Dict, Str
 from aiida.engine import launch
 
 # local imports
@@ -44,14 +44,13 @@ class Ext_submit(Resource):
         :input prop is the quantity we required for calculation
         """
         # workfunction to process the incoming json dictionary
-   
         # this is always required
 
         myrequest, wf = launch.run_get_node(
             ProcessInputs,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
-            property=Str(prop)       
+            property=Str(prop)
         )
 
         if not wf.is_finished_ok:
@@ -59,8 +58,8 @@ class Ext_submit(Resource):
             return {
                 'error': wf.exit_message,
                 'message': msg,
-                'stored_request': wf.inputs.request
-            }        
+                'stored_request': wf.inputs.request.get_dict()
+            }
         else:
             exwf = Distribute(wf, prop)
             msg = ' Successful retrieval of structure, saved as uuid={}'.format(exwf.uuid)
@@ -71,9 +70,6 @@ class Ext_submit(Resource):
             }
             # get to the actual calculation of the workflow
 
-
-
-            
 class Ext_check_existing(Resource):
     def get(self, prop):
         """

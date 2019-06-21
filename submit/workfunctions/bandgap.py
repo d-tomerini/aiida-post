@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from aiida import orm
-from aiida.engine import WorkChain
+from aiida.engine import WorkChain, ToContext
+from  aiida_quantumespresso.workflows.pw.band_structure import PwBandStructureWorkChain
 from aiida.orm.nodes.data.array.bands import find_bandgap
-from aiida_quantumespresso.utils.resources import get_default_options
-
 
 class PwBandGapWorkChain(WorkChain):
     """
@@ -34,8 +33,8 @@ class PwBandGapWorkChain(WorkChain):
             'code': self.inputs.code
         }
 
-        running =  self.submit(PwBandsWorkChain, **inputs)
-        self.report('launching PwBandsWorkChain<{}>'.format(running.pk))
+        running = self.submit(PwBandStructureWorkChain, **inputs)
+        self.report('launching PwBandStructureWorkChain<{}>'.format(running.pk))
         return ToContext(workchain_bands=running)
 
     def get_bandgap(self):
@@ -45,8 +44,8 @@ class PwBandGapWorkChain(WorkChain):
         """
 
         bands = self.ctx.workchain_bands.outputs.band_structure
-        is_insulator, bandgap = bands.find_bandgap()
+        is_insulator, bandgap = find_bandgap(bands)
+        self.ctx.band_gap = orm.Float(bandgap)
+        self.out('band_gap',self.ctx.band_gap)
         self.report('calculation completed')
-        self.ctx.band_gap = bandgap
-
         return

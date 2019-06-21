@@ -3,7 +3,6 @@
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida.engine import calcfunction
 from aiida.orm import Dict, List
-import six
 
 @calcfunction
 def cod_check(cod_dict):
@@ -21,8 +20,7 @@ def cod_check(cod_dict):
     # keeps only one value if key is duplicated
     cod_rec = {}
     cod_unrec = {}
-    cd = cod_dict.get_dict()
-    for k, v in six.iteritems(cod_dict.get_dict()):
+    for k, v in cod_dict.get_dict().iteritems():
         if k in supported:
             cod_rec.update({k: v})
         else:
