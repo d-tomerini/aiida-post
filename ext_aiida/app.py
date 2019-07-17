@@ -59,7 +59,7 @@ class Ext_submit(Resource):
             predefined=Dict(dict=CALCULATION_OPTIONS),
             property=Str(prop)
         )
-        sleep(6)
+        sleep(2)
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
             return {
