@@ -2,8 +2,6 @@
 from aiida.orm import load_node
 from aiida.engine import launch
 from aiida.plugins import WorkflowFactory
-from .workfunctions.bandgap import PwBandGapWorkChain
-from  aiida_quantumespresso.workflows.pw.band_structure import PwBandStructureWorkChain
 def Distribute(req, prop):
     """
     After the retrieval of the structure,
@@ -15,12 +13,12 @@ def Distribute(req, prop):
 
     if prop == 'band_gap':
         # submit a bandgap workchain
+        xx = WorkflowFactory('ext_aiida.BandGap')
         calcspecs = req.inputs.predefined['aiida']
         structure = req.outputs.structure
         pwcode = calcspecs['qe']
         code = load_node(pwcode)
         upfamily = calcspecs['upf']
-        xx = PwBandGapWorkChain
         wf = launch.submit(
             xx,
             structure=structure,  # aiida pk
@@ -28,7 +26,7 @@ def Distribute(req, prop):
         )
     if prop == 'band_structure':
         # submit a bandgap workchain
-        xx = PwBandStructureWorkChain
+        xx = WorkflowFactory('quantumespresso.pw.band_structure')
         calcspecs = req.inputs.predefined['aiida']
         structure = req.outputs.structure
         pwcode = calcspecs['qe']

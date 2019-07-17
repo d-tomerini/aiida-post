@@ -21,12 +21,14 @@ from flask_restful import Resource, Api, reqparse
 # aiida
 from aiida import load_profile
 from aiida.orm import Dict, Str
-from aiida.engine import launch
+from aiida.engine import launch, submit, run
+from time import sleep
 
 # local imports
-from utils.input_wf import ProcessInputs
 from other.group_initialize import Create_group, check_db
 from submit.distributor import Distribute
+from aiida.plugins import WorkflowFactory
+
 
 
 APP = Flask(__name__)
@@ -37,22 +39,23 @@ class Ext_submit(Resource):
     def post(self, prop):
         """
         Route to manage the requests from ext
-        Access is through a JSON file passed to the server
+        Access is through a JSON file passed to the serveri
         containing the input required for calculation
         Data is handled and responded accordingly
 
         :input prop is the quantity we required for calculation
         """
         # workfunction to process the incoming json dictionary
-        # this is always required
-
-        myrequest, wf = launch.run_get_node(
-            ProcessInputs,
+        # here it needs a validation by 
+        
+        xx =  WorkflowFactory('ext_aiida.ProcessInputs')
+        wf = submit(
+            xx,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
             property=Str(prop)
         )
-
+        print (wf.inputs.request.pk)
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
             return {
@@ -64,7 +67,7 @@ class Ext_submit(Resource):
             exwf = Distribute(wf, prop)
             msg = ' Successful retrieval of structure, saved as uuid={}'.format(exwf.uuid)
             return {
-                'error': exwf.exit_message,
+                'error': wf.exit_message,
                 'message': msg,
                 'stored_request': wf.inputs.request.get_dict()
             }

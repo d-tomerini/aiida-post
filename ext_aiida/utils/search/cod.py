@@ -3,11 +3,12 @@
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida.engine import calcfunction
 from aiida.orm import Dict, List
+import six
 
 @calcfunction
 def cod_check(cod_dict):
     """
-    Tries to infere which of the search keywords 
+    Tries to infere which of the search keywords
     are actually valid
     :cod_dict input dictionary
     :output cod_rec valid keywords
@@ -20,7 +21,7 @@ def cod_check(cod_dict):
     # keeps only one value if key is duplicated
     cod_rec = {}
     cod_unrec = {}
-    for k, v in cod_dict.get_dict().iteritems():
+    for k, v in six.iteritems(cod_dict.get_dict()):
         if k in supported:
             cod_rec.update({k: v})
         else:
@@ -45,5 +46,5 @@ def cod_query(cod_values):
     found_list = found.fetch_all()
     x = [i.source['id'] for i in found_list]
     # returned list of retrieved structures
- 
+
     return List(list=x)
