@@ -20,6 +20,7 @@ from flask_restful import Resource, Api, reqparse
 
 # aiida
 from aiida import load_profile
+from aiida.orm import  load_node, Float
 from aiida.orm import Dict, Str
 from aiida.engine import launch, submit, run
 from time import sleep
@@ -28,6 +29,8 @@ from time import sleep
 from other.group_initialize import Create_group, check_db
 from submit.distributor import Distribute
 from aiida.plugins import WorkflowFactory
+from aiida_quantumespresso.utils.resources import get_default_options, get_automatic_parallelization_options
+
 
 
 
@@ -48,6 +51,7 @@ class Ext_submit(Resource):
         # workfunction to process the incoming json dictionary
         # here it needs a validation by 
         
+
         xx =  WorkflowFactory('ext_aiida.ProcessInputs')
         wf = submit(
             xx,
@@ -55,7 +59,7 @@ class Ext_submit(Resource):
             predefined=Dict(dict=CALCULATION_OPTIONS),
             property=Str(prop)
         )
-        print (wf.inputs.request.pk)
+        sleep(6)
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
             return {

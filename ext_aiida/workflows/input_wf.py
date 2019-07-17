@@ -132,7 +132,7 @@ class ProcessInputs(WorkChain):
         
     
     def _COD_search(self):
-        from .search.cod import cod_check
+        from  .search.cod import cod_check
         from aiida.tools.dbimporters.plugins.cod import CodDbImporter
         """
         Deals with the retrieval of a structure
