@@ -8,7 +8,10 @@ from utils.group_initialize import Create_group
 
 def find_structure(response):
     """
-    given the provided input, look for structure in database.
+    Deprecated. This was intended as a flask class to handle everything
+    It does not take into account the AiiDA ideas.
+
+    Given the provided input, look for structure in database.
     different databases might be supported.
     for now, support the open database through aiida
     """

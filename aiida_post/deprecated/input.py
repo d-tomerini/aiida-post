@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+deprecated 05/2019
+here I assumed I would want to create a flask class
+but working with AiiDA object is the clear way to go
+
 general module to handle the input to the app
 specific reponse app that contains:
     input - request

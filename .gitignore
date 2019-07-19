@@ -4,19 +4,38 @@
 ~*
 *~
 .ropeproj
-.project
+*.project
+*.pydevproject
 *.egg*
+*.egg-info
+.eggs
+.settings
 .DS_Store
+*/.DS_Store
+*/*/.DS_Store
+*/*/*/.DS_Store
+.metadata
 
-### VisualStudioCode ###
+ # files created by coverage
+ .cache
+ .pytest_cache
+ .coverage
+
+ # VisualStudioCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-### VisualStudioCode Patch ###
+# VisualStudioCode Patch 
 # Ignore all local history of files
 .history
 
-# End of https://www.gitignore.io/api/visualstudiocode
+# Files created by RPN tests
+ .ci/polish/polish_workchains/polish*
+
+# Build files
+.dist/
+ pip-wheel-metadata
+

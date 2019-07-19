@@ -69,7 +69,7 @@ class Ext_submit(Resource):
             }
         else:
             exwf = Distribute(wf, prop)
-            msg = ' Successful retrieval of structure, saved as uuid={}'.format(exwf.uuid)
+            msg = ' Successful retrieval of structure, {}, workflow at uuid {}'.format(exwf.inputs.structure.pk,exwf.pk)
             return {
                 'error': wf.exit_message,
                 'message': msg,

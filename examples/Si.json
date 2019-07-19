@@ -1,5 +1,5 @@
 {
-    "calculation": "band_gap", 
+    "calculation": "band_structure", 
     "structure": {
       "location": "from_database",
       "database":"COD",

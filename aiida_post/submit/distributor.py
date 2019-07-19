@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from aiida.orm import load_node
-from aiida.engine import launch
+from aiida.engine import submit
 from aiida.plugins import WorkflowFactory
 def Distribute(req, prop):
     """
@@ -19,23 +19,23 @@ def Distribute(req, prop):
         pwcode = calcspecs['qe']
         code = load_node(pwcode)
         upfamily = calcspecs['upf']
-        wf = launch.submit(
+        wf = submit(
             xx,
             structure=structure,  # aiida pk
             code=code,  # code pk
         )
     if prop == 'band_structure':
-        # submit a bandgap workchain
         xx = WorkflowFactory('quantumespresso.pw.band_structure')
         calcspecs = req.inputs.predefined['aiida']
         structure = req.outputs.structure
         pwcode = calcspecs['qe']
         code = load_node(pwcode)
+        print ('picc {}'.format(code))
         # upfamily = calcspecs['upf']
-        wf = launch.submit(
+        wf = submit(
             xx,
             structure=structure,  # aiida pk
-            code=code,  # code pk
+            code=code  # code pk
         )
     
     return wf
