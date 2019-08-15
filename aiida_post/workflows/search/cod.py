@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 from aiida.engine import calcfunction
 from aiida.orm import Dict, List
 import six
+
 
 @calcfunction
 def cod_check(cod_dict):
@@ -26,11 +28,8 @@ def cod_check(cod_dict):
             cod_rec.update({k: v})
         else:
             cod_unrec.update({k: v})
-    return Dict(dict={
-        'valid':cod_rec,
-        'invalid':cod_unrec
-    }
-    )
+    return Dict(dict={'valid': cod_rec, 'invalid': cod_unrec})
+
 
 @calcfunction
 def cod_query(cod_values):

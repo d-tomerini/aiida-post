@@ -1,5 +1,5 @@
 {
-    "name": "ext_aiida",
+    "name": "aiida_post",
     "author": "Daniele Tomerini",
     "author_email": "daniele.tomerini@epfl.ch",
     "description": "Flask app to interact with AiiDA through a REST interface",
@@ -11,11 +11,13 @@
     "version": "0.1.",
     "entry_points": {
         "aiida.calculations": [],
-        "aiida.parsers": [],
+        "aiida.parsers": [
+            "post.ParseInputs = aiida_post.parsers.parse_json:ProcessJSON"
+        ],
         "aiida.data": [],
         "aiida.workflows":[
-            "ext_aiida.ProcessInputs = ext_aiida.workflows.input_wf:ProcessInputs",
-            "ext_aiida.BandGap = ext_aiida.workflows.bandgap:PwBandGapWorkChain"
+            "post.ProcessInputs = aiida_post.workflows.input_wf:ProcessInputs",
+            "post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain"
         ],
         "aiida.cmdline.data": []
     },

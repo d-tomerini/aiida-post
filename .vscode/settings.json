@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/home/dtomerini/aiida-1.0.0b1/bin/python",
+    "aiida1.0.b1": "/home/dtomerini/aiida-1.0.0b1",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
+}

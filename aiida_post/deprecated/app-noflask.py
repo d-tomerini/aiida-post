@@ -14,6 +14,8 @@ Keywords for now are stored within a settings.json file.
 Basic checks to help ensure consistency
 """
 # general imports
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 
 # aiida
@@ -37,11 +39,11 @@ Data is handled and responded accordingly
 """
 # workfunction to process the incoming json dictionary
 # this is always required
-# here it needs a validation by 
+# here it needs a validation by
 prop = 'band_gap'
 load_profile()
 with open('config.json') as f:
-        CALCULATION_OPTIONS = json.load(f)
+    CALCULATION_OPTIONS = json.load(f)
 with open(sys.argv[1]) as f:
     request = f.read()
 f.close()
@@ -50,24 +52,29 @@ wf = run(
     ProcessInputs,
     request=Dict(dict=json.loads(request)),
     predefined=Dict(dict=CALCULATION_OPTIONS),
-    property=Str(prop)
+    property=Str(prop),
 )
 
-
 if not wf.is_finished_ok:
-    msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
-    print (""" {
+    msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(
+        wf.uuid
+    )
+    print(
+        """ {
         'error': wf.exit_message,
         'message': msg,
         'stored_request': wf.inputs.request.get_dict()
-    }""")
+    }"""
+    )
 else:
     exwf = Distribute(wf, prop)
     msg = ' Successful retrieval of structure, saved as uuid={}'.format(exwf.uuid)
-    print (""" {
+    print(
+        """ {
         'error': wf.exit_message,
         'message': msg,
         'stored_request': wf.inputs.request.get_dict()
     }
-    """)
+    """
+    )
     # get to the actual calculation of the workflow

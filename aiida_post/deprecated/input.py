@@ -12,12 +12,13 @@ specific reponse app that contains:
 """
 
 
-class BackToExt():
+class BackToExt:
     """
     Handles the data back to the Ext call.
     Reports back HTML response codes
     Data in dictionary form
     """
+
     def __init__(self):
         self.status_code = 200  # success code
         self.message = None  # message back to Ext
@@ -25,10 +26,7 @@ class BackToExt():
         self.allowed = None  # allowed dictionary data, imported from settings
         self.ins = {}  # incoming structural request
         self.structure = None  # dictionary structural output information
-        self.back_to_server = {
-            'data': {},
-            'workflow_status': None
-            }
+        self.back_to_server = {'data': {}, 'workflow_status': None}
 
     def Set_Warning(self, message, code):
         """
@@ -55,16 +53,18 @@ class BackToExt():
         Calculation checks.
         calculation tag needs to be there, and needs to be of the accepted type
         """
-        if self.input.get("calculation") is None:
+        if self.input.get('calculation') is None:
             self.Set_Warning('No "calculation" tag in json', 400)  # bad request
         else:
             # needs to be in the allowed calculations
-            if (not self.input['calculation'] in (self.allowed['calculation'])):
+            if not self.input['calculation'] in (self.allowed['calculation']):
                 self.Set_Warning(
                     'Calculation type {} not supported. Accepted types: {}'.format(
                         self.input['calculation'],
-                        ", ".join(self.allowed['calculation'])
-                    ), 400)  # bad request
+                        ', '.join(self.allowed['calculation']),
+                    ),
+                    400,
+                )  # bad request
 
     def Check_Structure(self):
         if self.status_code == 200:
@@ -99,7 +99,7 @@ class BackToExt():
                 'input': self.input,
                 'structure': self.structure,
                 'message': self.message,
-                'recognised_keywords': self.allowed
+                'recognised_keywords': self.allowed,
             }
         )
         return self.back_to_server

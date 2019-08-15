@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from .cod import cod_check, cod_search
 from utils.group_initialize import Create_group
 
@@ -17,18 +18,16 @@ def find_structure(response):
     """
 
     if response.ins.get('location'):
-        if response.ins["database"] in response.allowed['supported_database']:
+        if response.ins['database'] in response.allowed['supported_database']:
             if response.ins['database'] == 'COD':
                 # grep usable and unusable keywords for COD
                 used, unused = cod_check(response.ins['query'])
                 response.Structure_Add(
-                    used_query_keywords=used,
-                    unrecognized_query_keywords=unused)
+                    used_query_keywords=used, unrecognized_query_keywords=unused
+                )
                 # perform a database search according to the usable keywords
                 cifs = cod_search(used)  # aiida database object
-                response.Structure_Add(
-                    found_structures=len(cifs)
-                )
+                response.Structure_Add(found_structures=len(cifs))
                 if len(cifs) == 0:
                     response.Set_Warning('No structure matches the query', 400)
                     return None
@@ -36,12 +35,12 @@ def find_structure(response):
                     cod_info = []
                     if len(cifs) >= 2:
                         response.Set_Warning(
-                            'Multiple matches to the query. Consider adding a more specific request, or choose one ID from the list. Returning the first structure. Proceed at your own risk!', 200)
+                            'Multiple matches to the query. Consider adding a more specific request, or choose one ID from the list. Returning the first structure. Proceed at your own risk!',
+                            200,
+                        )
                     for i in cifs:
                         cod_info.append(i.source)
-                    response.Structure_Add(
-                        cod_entries=cod_info
-                    )
+                    response.Structure_Add(cod_entries=cod_info)
                     mystructure = cifs[0].get_aiida_structure()
                     mystructure.store()
                     samenodes = mystructure.get_all_same_nodes()
@@ -51,16 +50,14 @@ def find_structure(response):
                         response.Set_Warning(
                             'Created structure id={} matches {} other structures'.format(
                                 mystructure.id, len(samenodes)
-                            ), 200
+                            ),
+                            200,
                         )
                     else:
                         mystructure.store()
                     response.Structure_Add(
-                        aiida_id=mystructure.id,
-                        aiida_uuid=mystructure.uuid
+                        aiida_id=mystructure.id, aiida_uuid=mystructure.uuid
                     )
                     Ext_Group = Create_group(groupname='ext')
                     Ext_Group.add_nodes(mystructure)
-                    response.Structure_Add(
-                        mycif=mystructure.attributes
-                    )
+                    response.Structure_Add(mycif=mystructure.attributes)
