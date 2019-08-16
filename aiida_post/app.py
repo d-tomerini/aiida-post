@@ -25,17 +25,18 @@ from aiida import load_profile
 from aiida.orm import load_node, Float
 from aiida.orm import Dict, Str
 from aiida.engine import launch, submit, run
-from time import sleep
+from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
 
 # local imports
-from .submit.distributor import Distribute
-from aiida.plugins import WorkflowFactory
+from aiida_post.submit.distributor import Distribute
+from aiida_post.calculations.request import importJSON
 
 APP = Flask(__name__)
 api = Api(APP)
 
 
-class Ext_submit(Resource):
+class app_submit(Resource):
+
     def post(self, prop):
         """
         Route to manage the requests from ext
@@ -43,40 +44,23 @@ class Ext_submit(Resource):
         containing the input required for calculation
         Data is handled and responded accordingly
 
-        :input prop is the quantity we required for calculation
+        :input prop: is the quantity we required for calculation, passed as the endpoint
         """
-        # workfunction to process the incoming json dictionary
-        # here it needs a validation by
-        cao = 'cao\n'
-        print((
-                cao,cao,'data',
-                request.data,
-                cao,'args',
-                request.args.getall(),
-                cao,'form',
-                request.form,
-                cao,'files',
-                request.files,
-                cao,
-                request.values,
-                cao,
-                request.base_url,
-                cao,
-                request.date,
-                cao,
-                ))
-        xx = WorkflowFactory('ext_aiida.ProcessInputs')
-        wf = submit(
-            xx,
-            request=Dict(dict=request.get_json()),
-            predefined=Dict(dict=CALCULATION_OPTIONS),
-            property=Str(prop),
-        )
-        sleep(2)
+
+        from aiida_post.tools.convert import request_to_dict
+        HttpData = DataFactory('post.HttpData')
+        reqdata = request_to_dict(request)
+        print(('cao', reqdata))
+        importJSON(Dict(dict=reqdata))
+        #wf = submit(
+        #    xx,
+        #    request=Dict(dict=request.get_json()),
+        #    predefined=Dict(dict=CALCULATION_OPTIONS),
+        #    property=Str(prop),
+        #)
+        print('bao')
         if not wf.is_finished_ok:
-            msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(
-                wf.uuid
-            )
+            msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
             return {
                 'error': wf.exit_message,
                 'message': msg,
@@ -95,7 +79,8 @@ class Ext_submit(Resource):
             # get to the actual calculation of the workflow
 
 
-class Ext_check_existing(Resource):
+class app_check_existing(Resource):
+
     def get(self, prop):
         """
         check if there is any instance in the database
@@ -114,7 +99,8 @@ class Ext_check_existing(Resource):
 
         if prop not in CALCULATION_OPTIONS['calculation']:
             return {
-                'message': 'Property {} not in supported properties: {}'.format(
+                'message':
+                'Property {} not in supported properties: {}'.format(
                     prop, ' ,'.join(CALCULATION_OPTIONS['calculation']), **args
                 )
             }
@@ -126,20 +112,19 @@ class Ext_check_existing(Resource):
             back = {}
             for i in structs:
                 for i2 in i:
-                    back.update(
-                        {
-                            str(i2.id): {
-                                'class': i2.class_node_type,
-                                'id': i2.id,
-                                'uuid': i2.uuid,
-                                'formula': i2.get_formula(),
-                            }
+                    back.update({
+                        str(i2.id): {
+                            'class': i2.class_node_type,
+                            'id': i2.id,
+                            'uuid': i2.uuid,
+                            'formula': i2.get_formula(),
                         }
-                    )
+                    })
             return back
 
 
-class Ext_input(Resource):
+class app_input(Resource):
+
     def get(self, prop):
         """
         search of an input by ID that is known by the program
@@ -147,14 +132,16 @@ class Ext_input(Resource):
         """
         if prop not in CALCULATION_OPTIONS['calculation']:
             return {
-                'message': 'property {} not supported. Recognised properties: {}'.format(
+                'message':
+                'property {} not supported. Recognised properties: {}'.format(
                     prop, ', '.join(CALCULATION_OPTIONS['calculation'])
                 )
             }
         return {'message': 'work in progress here!'}
 
 
-class Ext_nodes(Resource):
+class app_nodes(Resource):
+
     def get(self, prop):
         """
         return a subset of nodes from the group ext
@@ -163,18 +150,19 @@ class Ext_nodes(Resource):
         """
         if prop not in CALCULATION_OPTIONS['calculation']:
             return {
-                'message': 'property {} not supported. Recognised properties: {}'.format(
+                'message':
+                'property {} not supported. Recognised properties: {}'.format(
                     prop, ', '.join(CALCULATION_OPTIONS['calculation'])
                 )
             }
         return {'message': 'work in progress here!'}
 
 
-api.add_resource(Ext_submit, '/ext/calculation/<string:prop>/submit/')
+api.add_resource(app_submit, '/ext/calculation/<string:prop>/submit/')
 
-api.add_resource(Ext_check_existing, '/ext/calculation/<string:prop>/existing')
+api.add_resource(app_check_existing, '/ext/calculation/<string:prop>/existing')
 
-api.add_resource(Ext_input, '/ext/calculation/<string:prop>/check/')
+api.add_resource(app_input, '/ext/calculation/<string:prop>/check/')
 
 if __name__ == '__main__':
     # aiida initialization

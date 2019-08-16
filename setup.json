@@ -10,11 +10,15 @@
     ],
     "version": "0.1.",
     "entry_points": {
-        "aiida.calculations": [],
+        "aiida.calculations": [
+            "post.request = aiida_post.calculations.request:importJSON"
+        ],
         "aiida.parsers": [
             "post.ParseInputs = aiida_post.parsers.parse_json:ProcessJSON"
         ],
-        "aiida.data": [],
+        "aiida.data": [
+            "post.HttpData = aiida_post.data.httpdata:HttpData"
+        ],
         "aiida.workflows":[
             "post.ProcessInputs = aiida_post.workflows.input_wf:ProcessInputs",
             "post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain"
