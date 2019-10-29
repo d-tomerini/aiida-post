@@ -14,14 +14,11 @@ Keywords for now are stored within a settings.json file.
 Basic checks to help ensure consistency
 """
 # general imports
-from __future__ import absolute_import
-from __future__ import print_function
 import json
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 
 # aiida
-from aiida import load_profile
 from aiida.orm import load_node, Float
 from aiida.orm import Dict, Str
 from aiida.engine import launch, submit, run
@@ -31,9 +28,10 @@ from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
 from aiida_post.submit.distributor import Distribute
 from aiida_post.calculations.request import importJSON
 
-APP = Flask(__name__)
-api = Api(APP)
 
+from aiida.restapi.api import AiidaApi, App
+from aiida.restapi.run_api import run_api
+from aiida.cmdline.utils import decorators
 
 class app_submit(Resource):
 
@@ -52,7 +50,7 @@ class app_submit(Resource):
         reqdata = request_to_dict(request)
         print(('cao', reqdata))
         importJSON(Dict(dict=reqdata))
-        wf = submit(
+        res, wf = run.get_node(
             xx,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
@@ -157,15 +155,131 @@ class app_nodes(Resource):
         return {'message': 'work in progress here!'}
 
 
-api.add_resource(app_submit, '/ext/calculation/<string:prop>/submit/')
 
-api.add_resource(app_check_existing, '/ext/calculation/<string:prop>/existing')
+class NewResource(Resource):
+    """
+    resource containing GET and POST methods. Description of each method
+    follows:
 
-api.add_resource(app_input, '/ext/calculation/<string:prop>/check/')
+    GET: returns id, ctime, and attributes of the latest created Dict.
+
+    POST: creates a Dict object, stores it in the database,
+    and returns its newly assigned id.
+
+    """
+
+    def get(self):
+        from aiida.orm import QueryBuilder, Dict
+
+        qb = QueryBuilder()
+        qb.append(Dict,
+                  project=['id', 'ctime', 'attributes'],
+                  tag='pdata')
+        qb.order_by({'pdata': {'ctime': "desc"}})
+        result = qb.first()
+
+        # Results are returned as a dictionary, datetime objects is
+        # serialized as ISO 8601
+        return dict(id=result[0],
+                    ctime=result[1].isoformat(),
+                    attributes=result[2])
+
+    def post(self):
+        from aiida.orm import Dict
+
+        params = dict(property1="spam", property2="egg")
+        paramsData = Dict(dict=params).store()
+
+        return {'id': paramsData.pk}
+
+
+class NewApi(AiidaApi):
+
+    def __init__(self, app=None, **kwargs):
+        """
+        This init serves to add new endpoints to the basic AiiDA Api
+
+        """
+        super(NewApi, self).__init__(app=app, **kwargs)
+
+        self.add_resource(NewResource, '/new-endpoint/', strict_slashes=False)
+        self.add_resource(app_submit, '/ext/calculation/<string:prop>/submit/')
+        self.add_resource(app_check_existing, '/ext/calculation/<string:prop>/existing')
+        self.add_resource(app_input, '/ext/calculation/<string:prop>/check/')
+
+
+# end of the endpoint definitions
+# start of the click resource to launch the script
+
+from aiida.cmdline.params.options import HOSTNAME, PORT
+
+import aiida.restapi.common as common
+CONFIG_DIR = common.__path__[0]
+
+import click
+@click.command()
+@HOSTNAME(default='127.0.0.1')
+@PORT(default=5000)
+@click.option(
+    '-c',
+    '--config-dir',
+    type=click.Path(exists=True),
+    default=CONFIG_DIR,
+    help='the path of the configuration directory'
+)
+@click.option(
+        '--debug', 
+        'debug', 
+        is_flag=True, 
+        default=False, 
+        help='run app in debug mode')
+@click.option(
+    '--wsgi-profile',
+    'wsgi_profile',
+    is_flag=True,
+    default=False,
+    help='to use WSGI profiler middleware for finding bottlenecks in web application'
+)
+@click.option(
+        '--hookup/--no-hookup', 
+        'hookup', 
+        is_flag=True, 
+        default=True, 
+        help='to hookup app')
+
+@decorators.with_dbenv()
+def extendedrest(hostname, port, config_dir, debug, wsgi_profile, hookup):
+    """ 
+    command line script to run an extended REST api of AiiDA
+    """
+
+    # Construct parameter dictionary
+    kwargs = dict(
+        prog_name='verdi-restapi',
+        hostname=hostname,
+        port=port,
+        config=config_dir,
+        debug=debug,
+        wsgi_profile=wsgi_profile,
+        hookup=hookup,
+    )
+
+    # Invoke the runner
+    run_api(App, NewApi, **kwargs)
+
 
 if __name__ == '__main__':
-    # aiida initialization
-    load_profile()
+    """
+    Run the app accepting arguments.
+
+    Ex:
+     python extended.py --host=127.0.0.2 --port=6000 --config-dir
+
+    Defaults:
+     address: 127.0.01:5000,
+     config directory: <aiida_path>/aiida/restapi/common
+    """
+
     with open('config.json') as f:
         CALCULATION_OPTIONS = json.load(f)
-    APP.run(host='127.0.0.1', port='2345', debug=True)
+    extendedrest()
