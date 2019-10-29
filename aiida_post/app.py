@@ -17,15 +17,15 @@ Basic checks to help ensure consistency
 from __future__ import absolute_import
 from __future__ import print_function
 import json
-from flask import Flask, request
-from flask_restful import Resource, Api, reqparse
+from flask import Flask  #, request
+from flask_restful import Api, reqparse, Resource
 
 # aiida
 from aiida import load_profile
-from aiida.orm import load_node, Float
+# from aiida.orm import Float   , load_node
 from aiida.orm import Dict, Str
-from aiida.engine import launch, submit, run
-from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
+from aiida.engine import submit  #, run, launch
+from aiida.plugins import DataFactory, WorkflowFactory  # , CalculationFactory
 
 # local imports
 from aiida_post.submit.distributor import Distribute
@@ -49,15 +49,17 @@ class app_submit(Resource):
 
         from aiida_post.tools.convert import request_to_dict
         HttpData = DataFactory('post.HttpData')
+        ProcessInputs = WorkflowFactory('post.ProcessInputs')
         reqdata = request_to_dict(request)
-        print(('cao', reqdata))
+
+        print('cao', reqdata)
         importJSON(Dict(dict=reqdata))
-        #wf = submit(
-        #    xx,
-        #    request=Dict(dict=request.get_json()),
-        #    predefined=Dict(dict=CALCULATION_OPTIONS),
-        #    property=Str(prop),
-        #)
+        wf = submit(
+            ProcessInputs,
+            request=Dict(dict=request.get_json()),
+            predefined=Dict(dict=CALCULATION_OPTIONS),
+            property=Str(prop),
+        )
         print('bao')
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)

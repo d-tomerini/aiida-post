@@ -15,11 +15,25 @@ def importJSON(req):
     :param req : HttpRequest, a Dict
     """
 
-    #myjson = check_dictionary(req.attributes['json'])
+    myjson = check_dictionary(req.attributes['json'])
     return Dict(dict=myjson)
 
 
-def check_dictionary(dic):
+@calcfunction
+def importJSONNoFlask(props):
+    """
+    Calcfunction to process the received just a dictionary,
+    and convert it to AiiDA objects that can be used
+    in the actual calculation/workflow loaded by the
+    endpoint requested
+    :param req : HttpRequest, a Dict
+    """
+
+    myjson = check_dictionary(props)
+    return Dict(dict=myjson)
+
+
+def check_dictionary(props):
     """
     Basic checks on the incoming request json
     'property' needs to be in the predefined workchain
@@ -30,8 +44,40 @@ def check_dictionary(dic):
     # actually before and not adding exception one after the other
 
     # here it makes sense to expose a number of entry points
-    print(('caocao', dic))
-    return dic
+    """
+    Analyze the dictionary part about the query
+    Try to get the structure according to the required method
+    Proceed to the actual structure search
+    """
+
+    if 'structure' not in props.attributes:
+        print('No "structure" tag in json')
+        return
+
+    if 'location' not in props.attributes['structure']:
+        print('No "location" tag in json. ' 'I do not know where to search for the structure required')
+        return
+
+    # assuming database search
+    # duplicate code from above
+    db = props.attributes['structure']['database']
+
+    if 'query' not in props.attributes['structure']:
+        print('No "query" tag in json')
+        return
+
+    # here is another point where entry points
+    # would make my life easier on definitions
+    # loading calcfunction to look for structures
+    # according to database
+
+    if db in props.attributes['predefined']['supported_database']:
+        # cycle over the supported databases
+        if db == 'COD':
+            return None
+    else:
+        print('Unrecognised database')
+        return
 
 
 def return_results(self):

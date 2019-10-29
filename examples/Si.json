@@ -1,5 +1,5 @@
 {
-    "calculation": "band_structure", 
+    "calculation": "band_gap",
     "structure": {
       "location": "from_database",
       "database":"COD",
@@ -7,5 +7,5 @@
           "formula":"Si",
           "spacegroup":"F d -3 m"
       }
-    } 
+    }
 }

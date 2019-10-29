@@ -17,21 +17,19 @@ def Distribute(req, prop):
 
     if prop == 'band_gap':
         # submit a bandgap workchain
-        xx = WorkflowFactory('ext_aiida.BandGap')
+        workflow = WorkflowFactory('post.BandGap')
         calcspecs = req.inputs.predefined['aiida']
         structure = req.outputs.structure
         pwcode = calcspecs['qe']
         code = load_node(pwcode)
-        upfamily = calcspecs['upf']
-        wf = submit(xx, structure=structure, code=code)  # aiida pk  # code pk
-    if prop == 'band_structure':
-        xx = WorkflowFactory('quantumespresso.pw.band_structure')
-        calcspecs = req.inputs.predefined['aiida']
-        structure = req.outputs.structure
-        pwcode = calcspecs['qe']
-        code = load_node(pwcode)
-        print(('picc {}'.format(code)))
         # upfamily = calcspecs['upf']
-        wf = submit(xx, structure=structure, code=code)  # aiida pk  # code pk
+    if prop == 'band_structure':
+        workflow = WorkflowFactory('quantumespresso.pw.band_structure')
+        calcspecs = req.inputs.predefined['aiida']
+        structure = req.outputs.structure
+        pwcode = calcspecs['qe']
+        code = load_node(pwcode)
+        # upfamily = calcspecs['upf']
 
-    return wf
+    calcnode = submit(workflow, structure=structure, code=code)  # aiida pk  # code pk
+    return calcnode
