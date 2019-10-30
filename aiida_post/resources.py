@@ -3,7 +3,7 @@
 Daniele Tomerini
 Initial code march 2019
 
-This module contains the general resources to be called 
+This module contains the general resources to be called
 by the main api
 """
 # general imports
@@ -76,7 +76,7 @@ class app_check_existing(Resource):
         : prop endpoint to the calculation prop
         : get queries define a projection for the property in the database
         """
-        from .other.group_initialize import check_db
+        from aiida_post.other.group_initialize import check_db
 
         parser = reqparse.RequestParser()
         # This does not do what I want. Check it better
