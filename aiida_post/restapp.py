@@ -63,7 +63,7 @@ def extendedrest(hostname, port, config_dir, debug, wsgi_profile, hookup):
     """ 
     command line script to run an extended REST api of AiiDA
     """
-
+    from aiida_post.api import InterfaceApi
     # Construct parameter dictionary
     kwargs = dict(
         prog_name='verdi-restapi',
@@ -76,7 +76,7 @@ def extendedrest(hostname, port, config_dir, debug, wsgi_profile, hookup):
     )
 
     # Invoke the runner
-    run_api(App, AiidaApi, **kwargs)
+    run_api(App, InterfaceApi, **kwargs)
 
 
 if __name__ == '__main__':
