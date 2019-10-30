@@ -11,6 +11,6 @@
     "aiida": {
         "qe": 376,
         "siesta": null,
-        "upf": "efficiency" 
+        "upf": "efficiency"
     }
 }
