@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Daniele Tomerini
-Initial code march 2019
-"""
 
 from __future__ import absolute_import
+
 from aiida.restapi.api import AiidaApi
-from aiida_post.resources import NewResource, app_submit, app_check_existing, app_input
+from aiida_post.resources import submit, existing, input
 
 
 class InterfaceApi(AiidaApi):
@@ -22,7 +19,8 @@ class InterfaceApi(AiidaApi):
 
         super(InterfaceApi, self).__init__(app=app, prefix=kwargs['PREFIX'], catch_all_404s=True, **kwargs)
 
-        self.add_resource(NewResource, '/new-endpoint/', strict_slashes=False)
-        self.add_resource(app_submit, '/ext/calculation/<string:prop>/submit/')
-        self.add_resource(app_check_existing, '/ext/calculation/<string:prop>/existing')
-        self.add_resource(app_input, '/ext/calculation/<string:prop>/check/')
+        # all AiiDA's endpoint, plus the following
+
+        self.add_resource(submit, '/ginestra/<string:prop>/submit/')
+        self.add_resource(existing, '/ginestra/<string:prop>/existing')
+        self.add_resource(input, '/ginestra/<string:prop>/check/')

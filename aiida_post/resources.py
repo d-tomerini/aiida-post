@@ -6,8 +6,8 @@ Initial code march 2019
 This module contains the general resources to be called
 by the main api
 """
-# general imports
-import json
+from __future__ import absolute_import
+from __future__ import print_function
 from flask import request
 from flask_restful import Resource, Api, reqparse
 
@@ -22,8 +22,7 @@ from aiida_post.submit.distributor import Distribute
 from aiida_post.calculations.request import importJSON
 
 
-
-class app_submit(Resource):
+class submit(Resource):
 
     def post(self, prop):
         """
@@ -40,7 +39,7 @@ class app_submit(Resource):
         reqdata = request_to_dict(request)
         print(('cao', reqdata))
         importJSON(Dict(dict=reqdata))
-        res, wf = run.get_node(
+        res, wf = submit(
             xx,
             request=Dict(dict=request.get_json()),
             predefined=Dict(dict=CALCULATION_OPTIONS),
@@ -66,7 +65,7 @@ class app_submit(Resource):
             # get to the actual calculation of the workflow
 
 
-class app_check_existing(Resource):
+class existing(Resource):
 
     def get(self, prop):
         """
@@ -110,7 +109,7 @@ class app_check_existing(Resource):
             return back
 
 
-class app_input(Resource):
+class input(Resource):
 
     def get(self, prop):
         """
@@ -145,7 +144,6 @@ class app_nodes(Resource):
         return {'message': 'work in progress here!'}
 
 
-
 class NewResource(Resource):
     """
     resource containing GET and POST methods. Description of each method
@@ -162,23 +160,18 @@ class NewResource(Resource):
         from aiida.orm import QueryBuilder, Dict
 
         qb = QueryBuilder()
-        qb.append(Dict,
-                  project=['id', 'ctime', 'attributes'],
-                  tag='pdata')
-        qb.order_by({'pdata': {'ctime': "desc"}})
+        qb.append(Dict, project=['id', 'ctime', 'attributes'], tag='pdata')
+        qb.order_by({'pdata': {'ctime': 'desc'}})
         result = qb.first()
 
         # Results are returned as a dictionary, datetime objects is
         # serialized as ISO 8601
-        return dict(id=result[0],
-                    ctime=result[1].isoformat(),
-                    attributes=result[2])
+        return dict(id=result[0], ctime=result[1].isoformat(), attributes=result[2])
 
     def post(self):
         from aiida.orm import Dict
 
-        params = dict(property1="spam", property2="egg")
+        params = dict(property1='spam', property2='egg')
         paramsData = Dict(dict=params).store()
 
         return {'id': paramsData.pk}
-

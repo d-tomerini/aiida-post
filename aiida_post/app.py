@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-Daniele Tomerini
-Initial code march 2019
+Daniele Tomerini for the INTERSECT project
 
 General click command to run the extended AiiDA REST API
-
 This file heavily borrows from aiida.restapi.run_api
 """
 
-
 from __future__ import absolute_import
+
 import click
 import json
+
 from aiida.cmdline.utils import decorators
 from aiida.cmdline.params.options import HOSTNAME, PORT
 
-import aiida.restapi
+# configuration of the REST API and additional variables to set
+# import aiida.restapi --> we can get the CONFIG file from there
+
 import aiida_post
-CONFIG_DIR = str(aiida.restapi.__path__[0]) + '/common/'
-APP_DIR = str(aiida_post.__path__[0]) + '/common/'
+CONFIG_DIR = str(aiida_post.__path__[0]) + '/common/'
 
 
 @click.command()
@@ -30,55 +30,48 @@ APP_DIR = str(aiida_post.__path__[0]) + '/common/'
     'config',
     type=click.Path(exists=True),
     default=CONFIG_DIR,
-    help='the path of the configuration directory'
+    help='The path of the configuration directory'
 )
-@click.option('--debug', 'debug', is_flag=True, default=False, help='run app in debug mode')
 @click.option(
     '--wsgi-profile',
     'wsgi_profile',
     is_flag=True,
     default=False,
-    help='to use WSGI profiler middleware for finding bottlenecks in web application'
+    help='Flag to use WSGI profiler middleware for finding bottlenecks in web application'
 )
 @click.option('--hookup/--no-hookup', 'hookup', is_flag=True, default=True, help='to hookup app')
-@click.option(
-    '--app-dir',
-    '-a',
-    type=click.Path(exists=True),
-    default=APP_DIR,
-    help='contains the configuration needed for aiida_post'
-)
+@click.option('--debug', 'debug', is_flag=True, default=False, help='run app in debug mode')
 @decorators.with_dbenv()
 def extendedrest(**kwargs):
     """
-    command line script to run an extended REST api of AiiDA
+    Command line script to run an extended REST api of AiiDA
     """
     from aiida_post.api import InterfaceApi
     from aiida.restapi.api import App
     from aiida.restapi.run_api import run_api
 
-    # Construct parameter dictionary
+    # Extend the passed parameter dictionary
+    # Program name is just eye candy
+    # catch_internal_server allows for printing the available endpoints
+    # when the requested endpoint does not exist
     myargs = dict(
         prog_name='Interface-restapi',
         catch_internal_server=True,
     )
+    kwargs.update(myargs)
 
-    # Invoke the runner
-    run_api(App, InterfaceApi, **kwargs, **myargs)
+    # Run the flask app; invoke the runner
+    run_api(App, InterfaceApi, **kwargs)
 
 
 if __name__ == '__main__':
     """
     Run the app accepting arguments.
 
-    Ex:
-     python extended.py --host=127.0.0.2 --port=6000 --config-dir
+    For example:
 
-    Defaults:
-     address: 127.0.01:5000,
-     config directory: <aiida_path>/aiida/restapi/common
+    verdi run app.py --host=127.0.0.2 --port=6000 --config-dir
+
     """
 
-    #    with open('config.json') as f:
-    #        CALCULATION_OPTIONS = json.load(f)
     extendedrest()
