@@ -46,9 +46,9 @@ def extendedrest(**kwargs):
     """
     Command line script to run an extended REST api of AiiDA
     """
-    from aiida_post.api import InterfaceApi
     from aiida.restapi.api import App
-    from aiida.restapi.run_api import run_api
+    from aiida_post.api import InterfaceApi
+    from aiida_post.run_api import run_api
 
     # Extend the passed parameter dictionary
     # Program name is just eye candy

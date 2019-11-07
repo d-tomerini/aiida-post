@@ -21,6 +21,21 @@ class InterfaceApi(AiidaApi):
 
         # all AiiDA's endpoint, plus the following
 
-        self.add_resource(submit, '/ginestra/<string:prop>/submit/')
-        self.add_resource(existing, '/ginestra/<string:prop>/existing')
-        self.add_resource(input, '/ginestra/<string:prop>/check/')
+        self.add_resource(
+            submit,
+            '/ginestra/<string:prop>/submit/',
+            strict_slashes=False,
+            resource_class_kwargs=kwargs
+        )
+        self.add_resource(
+            existing,
+            '/ginestra/<string:prop>/existing',
+            strict_slashes=False,
+            resource_class_kwargs=kwargs
+        )
+        self.add_resource(
+            input, 
+            '/ginestra/<string:prop>/check/', 
+            strict_slashes=False, 
+            resource_class_kwargs=kwargs
+        )

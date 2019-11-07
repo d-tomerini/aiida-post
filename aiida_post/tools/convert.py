@@ -2,7 +2,7 @@
 # General tools to handle the conversion between data types
 
 
-def request_to_dict(req):
+def Request_To_Dictionary(req):
     """
     Receive a :Flask.request datatypes, and it process its content.
     The information is saved inside a dictionary, that can be used

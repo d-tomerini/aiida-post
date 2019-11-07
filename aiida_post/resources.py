@@ -16,34 +16,49 @@ from aiida.orm import load_node, Float
 from aiida.orm import Dict, Str
 from aiida.engine import launch, submit, run
 from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
+from aiida.restapi.resources import BaseResource
 
 # local imports
 from aiida_post.submit.distributor import Distribute
 from aiida_post.calculations.request import importJSON
 
 
-class submit(Resource):
+class submit(BaseResource):
+
+    def __init__(self, **kwargs):
+        super(submit, self).__init__(**kwargs)
+        # Add the configuration file for my app
+        # Taken almost verbatim from the configuration handling of BaseResource
+        conf_keys = ('CALCULATION', 'SUPPORTED_DATABASE', 'AVAILABLE_CODES')
+        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def post(self, prop):
         """
-        Route to manage the requests from ext
-        Access is through a JSON file passed to the serveri
-        containing the input required for calculation
+        Route to manage the requests from the app
+        Access is through a JSON file passed to the server containing the input required for calculation
         Data is handled and responded accordingly
 
-        :input prop: is the quantity we required for calculation, passed as the endpoint
+        :param prop: the quantity we required for calculation, passed as the endpoint
         """
 
-        from aiida_post.tools.convert import request_to_dict
+        from aiida_post.tools.convert import Request_To_Dictionary
+
         HttpData = DataFactory('post.HttpData')
-        reqdata = request_to_dict(request)
-        print(('cao', reqdata))
-        importJSON(Dict(dict=reqdata))
+        reqdata = Request_To_Dictionary(request)
+        hp = HttpData(dict=reqdata)
+        print (hp)
+        xx = CalculationFactory('post.request')
+
+        #print('pop', self.extended)
+        #print(('cao', reqdata))
+
+        hp = importJSON(Dict(dict=reqdata))
+
         res, wf = submit(
             xx,
-            request=Dict(dict=request.get_json()),
-            predefined=Dict(dict=CALCULATION_OPTIONS),
-            property=Str(prop),
+            incoming_request=hp,
+            predefined=Dict(dict=self.extended),
+            property_to_calculate=Str(prop),
         )
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
