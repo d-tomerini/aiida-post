@@ -30,9 +30,9 @@ class ProcessInputs(WorkChain):
     @classmethod
     def define(cls, spec):
         super(ProcessInputs, cls).define(spec)
-        spec.input('request', valid_type=Dict)
+        spec.input('incoming_request', valid_type=HttpData)
         spec.input('predefined', valid_type=Dict)
-        spec.input('property', valid_type=Str)
+        spec.input('property_to_calculate', valid_type=Str)
         # spec.output('html_code', valid_type=Int)
         # spec.output('message', valid_type=Str)
         spec.output('structure', valid_type=StructureData)
@@ -43,8 +43,9 @@ class ProcessInputs(WorkChain):
             cls.return_results,
         )
         spec.exit_code(
-            400, 'ERROR_NO_PROPERTY', 'No workflow defined for this property'
-        )
+            400, 
+            'ERROR_NO_PROPERTY', 
+            'No workflow defined for this property')
         spec.exit_code(
             401,
             'ERROR_MISSING_KEY',
@@ -105,10 +106,7 @@ class ProcessInputs(WorkChain):
             self.report('No "structure" tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
         if 'location' not in self.inputs.request.dict.structure:
-            self.report(
-                'No "location" tag in json. '
-                'I do not know where to search for the structure required'
-            )
+            self.report('No "location" tag in json. ' 'I do not know where to search for the structure required')
             return self.exit_codes.ERROR_MISSING_KEY
 
         # assuming database search
@@ -135,7 +133,6 @@ class ProcessInputs(WorkChain):
     def _COD_search(self):
         from .search.cod import cod_check
         from aiida.tools.dbimporters.plugins.cod import CodDbImporter
-
         """
         Deals with the retrieval of a structure
         from the COD database, according to the request dictionary
@@ -163,9 +160,7 @@ class ProcessInputs(WorkChain):
             s.store()
             self.ctx.cif = s
             if self.ctx.n_structures >= 2:
-                self.report(
-                    '{} structure satisfy the request'.format(self.ctx.n_structures)
-                )
+                self.report('{} structure satisfy the request'.format(self.ctx.n_structures))
 
     def find_structure(self):
         pass
