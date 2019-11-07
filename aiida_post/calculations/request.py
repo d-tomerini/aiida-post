@@ -16,6 +16,7 @@ def importJSON(req):
     """
 
     #myjson = check_dictionary(req.attributes['json'])
+    print('ownownow')
     return Dict(dict=myjson)
 
 
