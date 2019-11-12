@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from aiida.orm import load_node
-from aiida.engine import submit
+from aiida.engine import submit, run
 from aiida.plugins import WorkflowFactory
 
 
@@ -15,24 +15,28 @@ def Distribute(req, prop):
     : prop property to calculate
     """
 
+    calcspecs = req.inputs.predefined['aiida']
+    structure = req.outputs.structure
     if prop == 'band_gap':
         # submit a bandgap workchain
         workflow = WorkflowFactory('post.BandGap')
-        calcspecs = req.inputs.predefined['aiida']
-        structure = req.outputs.structure
         pwcode = calcspecs['qe']
-        code = load_node(pwcode)
+        params = {
+            'code': load_node(pwcode),
+            'structure': structure
+        }
 
         # upfamily = calcspecs['upf']
     if prop == 'band_structure':
         workflow = WorkflowFactory('quantumespresso.pw.band_structure')
-        calcspecs = req.inputs.predefined['aiida']
-        structure = req.outputs.structure
         pwcode = calcspecs['qe']
-        code = load_node(pwcode)
-        # upfamily = calcspecs['upf']
+        params = {
+            'code': load_node(pwcode),
+            'structure': structure
+        }
 
     print()
-    print('calcspecs', calcspecs, 'req.pk', req.pk)
-    calcnode = submit(workflow, structure=structure, code=code)  # aiida pk  # code pk
+    print('calcspecs', calcspecs, 'structure.pk', structure.pk)
+
+    calcnode = submit(workflow, **params)  # aiida pk  # code pk
     return calcnode

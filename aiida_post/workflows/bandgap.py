@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 from aiida import orm
 from aiida.engine import WorkChain, ToContext
-from aiida_quantumespresso.workflows.pw.band_structure import PwBandStructureWorkChain
 
 
 class PwBandGapWorkChain(WorkChain):
@@ -15,9 +14,14 @@ class PwBandGapWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
         super(PwBandGapWorkChain, cls).define(spec)
+        #inputs
         spec.input('code', valid_type=orm.Code)
         spec.input('structure', valid_type=orm.StructureData)
-        spec.outline(cls.run_band_structure, cls.get_bandgap)
+        #outline
+        spec.outline(
+            cls.run_band_structure, 
+            cls.get_bandgap)
+        #outputs
         spec.output('output_parameters', valid_type=orm.Dict)
 
     def run_band_structure(self):
@@ -25,6 +29,8 @@ class PwBandGapWorkChain(WorkChain):
         Run the PwBandsWorkChain to compute the band structure
         """
 
+        from aiida.plugins import WorkflowFactory 
+        PwBandStructureWorkChain = WorkflowFactory('quantumespresso.pw.band_structure')
         inputs = {
                 'structure': self.inputs.structure,
                 'code': self.inputs.code}
