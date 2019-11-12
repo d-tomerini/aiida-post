@@ -10,6 +10,9 @@ from __future__ import absolute_import
 from aiida.orm import StructureData, Dict, Str, Int, List
 from aiida.engine import run, Process, WorkChain, ToContext
 
+from aiida.plugins import DataFactory
+HttpData = DataFactory('post.HttpData')
+
 
 class ProcessInputs(WorkChain):
     """
@@ -42,10 +45,7 @@ class ProcessInputs(WorkChain):
             cls.find_structure,
             cls.return_results,
         )
-        spec.exit_code(
-            400, 
-            'ERROR_NO_PROPERTY', 
-            'No workflow defined for this property')
+        spec.exit_code(400, 'ERROR_NO_PROPERTY', 'No workflow defined for this property')
         spec.exit_code(
             401,
             'ERROR_MISSING_KEY',
@@ -80,7 +80,7 @@ class ProcessInputs(WorkChain):
         # here it makes sense to expose a number of entry points
         # so that every time I introduce a new workflow, I can automatically include it here
 
-        v = self.inputs.property.value
+        v = self.inputs.property_to_calculate.value
         calcs = self.inputs.predefined.dict.calculation
         if v not in calcs:
             self.report(
@@ -102,17 +102,17 @@ class ProcessInputs(WorkChain):
         Try to get the structure according to the required method
         Proceed to the actual structure search
         """
-        if 'structure' not in self.inputs.request.attributes_keys():
+        if 'structure' not in self.inputs.incoming_request.attributes_keys():
             self.report('No "structure" tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
-        if 'location' not in self.inputs.request.dict.structure:
+        if 'location' not in self.inputs.incoming_request.dict.structure:
             self.report('No "location" tag in json. ' 'I do not know where to search for the structure required')
             return self.exit_codes.ERROR_MISSING_KEY
 
         # assuming database search
         # duplicate code from above
-        db = self.inputs.request.dict.structure['database']
-        if 'query' not in self.inputs.request.dict.structure:
+        db = self.inputs.incoming_request.dict.structure['database']
+        if 'query' not in self.inputs.incoming_request.dict.structure:
             self.report('No "query" tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
 
@@ -124,7 +124,7 @@ class ProcessInputs(WorkChain):
         if db in self.inputs.predefined.dict.supported_database:
             # cycle over the supported databases
             if db == 'COD':
-                self.ctx.db = self.inputs.request.dict.structure['query']
+                self.ctx.db = self.inputs.incoming_request.dict.structure['query']
                 self._COD_search()
         else:
             self.report('Unrecognised database')

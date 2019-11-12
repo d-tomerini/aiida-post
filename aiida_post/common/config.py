@@ -18,7 +18,7 @@ SUPPORTED_DATABASE = ['COD']
 # for now, list is given by the nodes that are loaded in the database
 # in the future it will probably be given as a list of "suggested to use"
 # also, upf co not belong here
-AVAILABLE_CODES = {'qe': 376, 'siesta': None, 'upf': 'efficiency'}
+AVAILABLE_CODES = {'qe': 174, 'siesta': None, 'upf': 'efficiency'}
 
 # AiiDA REST CONFIG file
 # made a copy here in case I want to change something (like the prefix, for instance)

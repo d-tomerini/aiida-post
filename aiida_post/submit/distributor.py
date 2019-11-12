@@ -22,6 +22,7 @@ def Distribute(req, prop):
         structure = req.outputs.structure
         pwcode = calcspecs['qe']
         code = load_node(pwcode)
+
         # upfamily = calcspecs['upf']
     if prop == 'band_structure':
         workflow = WorkflowFactory('quantumespresso.pw.band_structure')
@@ -31,5 +32,7 @@ def Distribute(req, prop):
         code = load_node(pwcode)
         # upfamily = calcspecs['upf']
 
+    print()
+    print('calcspecs', calcspecs, 'req.pk', req.pk)
     calcnode = submit(workflow, structure=structure, code=code)  # aiida pk  # code pk
     return calcnode
