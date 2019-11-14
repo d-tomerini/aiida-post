@@ -13,13 +13,13 @@ def Request_To_Dictionary(req):
     """
     alldata = {}
     # environment properties
-    alldata['environ'] = req.environ
+    #alldata['environ'] = req.environ
     # arguments passed in the url request
     alldata['args'] = req.args.to_dict()
     # date
     alldata['date'] = req.date
     # values
-    alldata['values'] = req.values
+    # alldata['values'] = req.values
     # incoming json info
     alldata['json'] = req.get_json()
 

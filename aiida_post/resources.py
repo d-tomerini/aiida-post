@@ -12,16 +12,16 @@ from flask import request
 from flask_restful import Resource, Api, reqparse
 
 # aiida
-from aiida.orm import load_node, Float
-from aiida.orm import Dict, Str
-from aiida.engine import launch, submit, run
+from aiida.orm import load_node, Float, Dict, Str
+from aiida.engine import submit, run
 from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
 from aiida.restapi.resources import BaseResource
 
 # local imports
 from aiida_post.submit.distributor import Distribute
 from aiida_post.calculations.request import importJSON
-
+from aiida_post.common.threaded import submit_job, run_calculation
+import asyncio
 
 class submit(BaseResource):
 
@@ -42,26 +42,56 @@ class submit(BaseResource):
         """
 
         from aiida_post.tools.convert import Request_To_Dictionary
-
         HttpData = DataFactory('post.HttpData')
         reqdata = Request_To_Dictionary(request)
-        hp = HttpData(dict=reqdata)
-        print (hp)
-        xx = CalculationFactory('post.request')
+        hp = Dict(dict=reqdata)
 
-        #print('pop', self.extended)
-        #print(('cao', reqdata))
+        #a = Dict(dict=reqdata)
+        #y = run_calculation(
+        #    importJSON,
+        #    Dict(dict=reqdata),
+        #    Dict(dict=self.extended)
+        #)
+        #print(y)
+        #hp = y.result_queue.get()
+        
+        
+        #loop.run_until_complete(
+        #        rrun_calculation(
+        #            importJSON,
+        #            a
+        #        )
+        #)
+        #y = run_calculation(
+        #    importJSON,
+        #    a
+        #)
 
-        hp = importJSON(Dict(dict=reqdata))
+        #print(y)
+        #hp = y.result_queue.get()
+        #thread = Thread(target=importJSON,args=(a.pk,))
+        #importJSON(a)
+        #thread.daemon = True
+        #thread.start()
+        xx = WorkflowFactory('post.ProcessInputs')
+        print(xx)
+        print('MUUUUU', self.extended)
+        submit_kwargs = {
+                'incoming_request':hp,
+                'predefined':Dict(dict=self.extended),
+                'property_to_calculate': Str(prop)
+                }
+        y = submit_job(xx, **submit_kwargs)
+        print(y)
+        wf = y.result_queue.get()
 
-        res, wf = submit(
-            xx,
-            incoming_request=hp,
-            predefined=Dict(dict=self.extended),
-            property_to_calculate=Str(prop),
-        )
+        #thread = Thread(target=submit_job,args=(hp),kwargs={submit_kwargs})
+        #thread.daemon = True
+        #thread.start()
+        import time
+        time.sleep(2)
         if not wf.is_finished_ok:
-            msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
+            print('Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid))
             return {
                 'error': wf.exit_message,
                 'message': msg,
@@ -69,9 +99,9 @@ class submit(BaseResource):
             }
         else:
             exwf = Distribute(wf, prop)
-            msg = ' Successful retrieval of structure, {}, workflow at uuid {}'.format(
-                exwf.inputs.structure.pk, exwf.pk
-            )
+            print( ' Successful retrieval of structure, {}, workflow at uuid {}'.format(
+                wf.inputs.structure.pk, exwf.pk
+            ))
             return {
                 'error': wf.exit_message,
                 'message': msg,
@@ -159,34 +189,3 @@ class app_nodes(Resource):
         return {'message': 'work in progress here!'}
 
 
-class NewResource(Resource):
-    """
-    resource containing GET and POST methods. Description of each method
-    follows:
-
-    GET: returns id, ctime, and attributes of the latest created Dict.
-
-    POST: creates a Dict object, stores it in the database,
-    and returns its newly assigned id.
-
-    """
-
-    def get(self):
-        from aiida.orm import QueryBuilder, Dict
-
-        qb = QueryBuilder()
-        qb.append(Dict, project=['id', 'ctime', 'attributes'], tag='pdata')
-        qb.order_by({'pdata': {'ctime': 'desc'}})
-        result = qb.first()
-
-        # Results are returned as a dictionary, datetime objects is
-        # serialized as ISO 8601
-        return dict(id=result[0], ctime=result[1].isoformat(), attributes=result[2])
-
-    def post(self):
-        from aiida.orm import Dict
-
-        params = dict(property1='spam', property2='egg')
-        paramsData = Dict(dict=params).store()
-
-        return {'id': paramsData.pk}

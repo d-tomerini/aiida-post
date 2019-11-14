@@ -24,7 +24,7 @@ import imp
 import os
 
 from flask_cors import CORS
-
+from aiida_post.celery_app import make_celery
 
 def run_api(flask_app, flask_api, **kwargs):
     """
@@ -69,6 +69,12 @@ def run_api(flask_app, flask_api, **kwargs):
     # Config the app
     app.config.update(**confs.APP_CONFIG)
 
+    # celery config
+#    app.config['CELERY_BROKER'] = 'amqp://jerry:jerry123@localhost/jerry_vhost'
+#    app.config['CELERY_RESULT_BACKEND'] = 'rpc://'
+
+#    celery = make_celery(app)
+
     # cors
     cors_prefix = os.path.join(confs.PREFIX, '*')
     CORS(app, resources={r'' + cors_prefix: {'origins': '*'}})
@@ -77,6 +83,7 @@ def run_api(flask_app, flask_api, **kwargs):
     if confs.SERIALIZER_CONFIG:
         from aiida.restapi.common.utils import CustomJSONEncoder
         app.json_encoder = CustomJSONEncoder
+
 
     # If the user selects the profiling option, then we need
     # to do a little extra setup
@@ -116,3 +123,4 @@ def run_api(flask_app, flask_api, **kwargs):
         # the user-defined configuration of the app is ineffective (it only
         # affects the internal werkzeug server used by Flask).
         return (app, api)
+

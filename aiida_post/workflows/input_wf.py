@@ -33,7 +33,7 @@ class ProcessInputs(WorkChain):
     @classmethod
     def define(cls, spec):
         super(ProcessInputs, cls).define(spec)
-        spec.input('incoming_request', valid_type=HttpData)
+        spec.input('incoming_request', valid_type=Dict)
         spec.input('predefined', valid_type=Dict)
         spec.input('property_to_calculate', valid_type=Str)
         # spec.output('html_code', valid_type=Int)
@@ -81,7 +81,7 @@ class ProcessInputs(WorkChain):
         # so that every time I introduce a new workflow, I can automatically include it here
 
         v = self.inputs.property_to_calculate.value
-        calcs = self.inputs.predefined.dict.calculation
+        calcs = self.inputs.predefined.dict.CALCULATION
         if v not in calcs:
             self.report(
                 'WARNING. Property type {} not supported. '
@@ -121,7 +121,7 @@ class ProcessInputs(WorkChain):
         # loading calcfunction to look for structures
         # according to database
 
-        if db in self.inputs.predefined.dict.supported_database:
+        if db in self.inputs.predefined.dict.SUPPORTED_DATABASE:
             # cycle over the supported databases
             if db == 'COD':
                 self.ctx.db = self.inputs.incoming_request.dict.structure['query']

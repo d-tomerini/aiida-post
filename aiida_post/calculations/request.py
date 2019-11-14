@@ -6,7 +6,7 @@ from aiida.engine import calcfunction
 
 
 @calcfunction
-def importJSON(req):
+def importJSON(req, predefined):
     """
     Calcfunction to process the received Flask request
     and convert it to AiiDA objects that can be used
@@ -14,9 +14,7 @@ def importJSON(req):
     endpoint requested
     :param req : HttpRequest, a Dict
     """
-
-    #myjson = check_dictionary(req.attributes['json'])
-    print('ownownow')
+    myjson = check_dictionary(req.dict.json, predefined.dict)
     return Dict(dict=myjson)
 
 
@@ -34,7 +32,7 @@ def importJSONNoFlask(props):
     return Dict(dict=myjson)
 
 
-def check_dictionary(props):
+def check_dictionary(props, predefined):
     """
     Basic checks on the incoming request json
     'property' needs to be in the predefined workchain
@@ -51,19 +49,19 @@ def check_dictionary(props):
     Proceed to the actual structure search
     """
 
-    if 'structure' not in props.attributes:
+    if 'structure' not in props:
         print('No "structure" tag in json')
         return
 
-    if 'location' not in props.attributes['structure']:
+    if 'location' not in props['structure']:
         print('No "location" tag in json. ' 'I do not know where to search for the structure required')
         return
 
     # assuming database search
     # duplicate code from above
-    db = props.attributes['structure']['database']
+    db = props['structure']['database']
 
-    if 'query' not in props.attributes['structure']:
+    if 'query' not in props['structure']:
         print('No "query" tag in json')
         return
 
@@ -72,13 +70,14 @@ def check_dictionary(props):
     # loading calcfunction to look for structures
     # according to database
 
-    if db in props.attributes['predefined']['supported_database']:
+    if db in predefined['SUPPORTED_DATABASE']:
         # cycle over the supported databases
         if db == 'COD':
-            return None
+            pass
     else:
         print('Unrecognised database')
-        return
+    
+    return props
 
 
 def return_results(self):

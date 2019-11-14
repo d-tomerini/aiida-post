@@ -4,6 +4,7 @@ from __future__ import print_function
 from aiida.orm import load_node
 from aiida.engine import submit, run
 from aiida.plugins import WorkflowFactory
+from aiida_post.common.threaded import submit_job
 
 
 def Distribute(req, prop):
@@ -15,7 +16,7 @@ def Distribute(req, prop):
     : prop property to calculate
     """
 
-    calcspecs = req.inputs.predefined['aiida']
+    calcspecs = req.inputs.predefined.dict.AVAILABLE_CODES
     structure = req.outputs.structure
     if prop == 'band_gap':
         # submit a bandgap workchain
@@ -38,5 +39,7 @@ def Distribute(req, prop):
     print()
     print('calcspecs', calcspecs, 'structure.pk', structure.pk)
 
-    calcnode = submit(workflow, **params)  # aiida pk  # code pk
+    y = submit_job(workflow, **params)
+    print(y)
+    calcnode = y.result_queue.get()  # aiida pk  # code pk
     return calcnode
