@@ -102,7 +102,8 @@ class ProcessInputs(WorkChain):
         Try to get the structure according to the required method
         Proceed to the actual structure search
         """
-        if 'structure' not in self.inputs.incoming_request.attributes_keys():
+        self.report('mimimi {}'.format(self.inputs.incoming_request.attributes))
+        if 'structure' not in self.inputs.incoming_request.attributes:
             self.report('No "structure" tag in json')
             return self.exit_codes.ERROR_MISSING_KEY
         if 'location' not in self.inputs.incoming_request.dict.structure:

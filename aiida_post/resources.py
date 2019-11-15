@@ -29,7 +29,11 @@ class submit(BaseResource):
         super(submit, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('CALCULATION', 'SUPPORTED_DATABASE', 'AVAILABLE_CODES')
+        conf_keys = (
+            'CALCULATION',        
+            'SUPPORTED_DATABASE',         
+            'AVAILABLE_CODES'
+        )
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def post(self, prop):
@@ -42,60 +46,29 @@ class submit(BaseResource):
         """
 
         from aiida_post.tools.convert import Request_To_Dictionary
+
         HttpData = DataFactory('post.HttpData')
+        # This takes some info from the flask query, and store it into a node
         reqdata = Request_To_Dictionary(request)
-        hp = Dict(dict=reqdata)
 
-        #a = Dict(dict=reqdata)
-        #y = run_calculation(
-        #    importJSON,
-        #    Dict(dict=reqdata),
-        #    Dict(dict=self.extended)
-        #)
-        #print(y)
-        #hp = y.result_queue.get()
-        
-        
-        #loop.run_until_complete(
-        #        rrun_calculation(
-        #            importJSON,
-        #            a
-        #        )
-        #)
-        #y = run_calculation(
-        #    importJSON,
-        #    a
-        #)
+        hp = Dict(dict=reqdata['json'])
 
-        #print(y)
-        #hp = y.result_queue.get()
-        #thread = Thread(target=importJSON,args=(a.pk,))
-        #importJSON(a)
-        #thread.daemon = True
-        #thread.start()
-        xx = WorkflowFactory('post.ProcessInputs')
-        print(xx)
-        print('MUUUUU', self.extended)
+        workflow = WorkflowFactory('post.ProcessInputs')
         submit_kwargs = {
                 'incoming_request':hp,
                 'predefined':Dict(dict=self.extended),
                 'property_to_calculate': Str(prop)
                 }
-        y = submit_job(xx, **submit_kwargs)
-        print(y)
-        wf = y.result_queue.get()
+        y = submit_job(workflow, **submit_kwargs)
+        
+        wf = y.result()
 
-        #thread = Thread(target=submit_job,args=(hp),kwargs={submit_kwargs})
-        #thread.daemon = True
-        #thread.start()
-        import time
-        time.sleep(2)
         if not wf.is_finished_ok:
-            print('Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid))
+            msg = 'Structure retrieval error. See node uuid <{}> for more specific report'.format(wf.uuid)
             return {
                 'error': wf.exit_message,
                 'message': msg,
-                'stored_request': wf.inputs.request.get_dict(),
+                'stored_request': wf.inputs.incoming_request.attributes
             }
         else:
             exwf = Distribute(wf, prop)
@@ -105,7 +78,7 @@ class submit(BaseResource):
             return {
                 'error': wf.exit_message,
                 'message': msg,
-                'stored_request': wf.inputs.request.get_dict(),
+                'stored_request': wf.inputs.incoming_request.attributes,
             }
             # get to the actual calculation of the workflow
 
