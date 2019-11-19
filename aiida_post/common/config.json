@@ -1,16 +1,5 @@
-{
-    "calculation": [
-        "relax",
-        "scf",
-        "band_structure",
-        "band_gap"
-    ],
-    "supported_database":[
-        "COD"
-    ],
-    "aiida": {
+{    "DEFAULT_CODES": {
         "qe": 667,
         "siesta": null,
-        "upf": "efficiency"
     }
 }

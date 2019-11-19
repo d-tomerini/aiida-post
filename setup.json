@@ -2,7 +2,7 @@
     "name": "aiida_post",
     "author": "Daniele Tomerini",
     "author_email": "daniele.tomerini@epfl.ch",
-    "description": "Extension of the AiiDA REST API to deal with job submissions, checking and retrieval",
+    "description": "Extension of the AiiDA REST API to deal with AiiDA job submissions, checking and retrieval",
     "url": "",
     "license": "MIT",
     "classifiers": [
@@ -23,7 +23,13 @@
             "post.ProcessInputs = aiida_post.workflows.input_wf:ProcessInputs",
             "post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain"
         ],
-        "aiida.cmdline.data": []
+        "aiida.cmdline.data": [],
+        "aiida_post.property_mapping" = [
+            "structure.cod = ",
+            "relax.pw = ",
+            "band_structure.pw = ",
+            "band_gap.pw = ", 
+        ]
     },
     "setup_requires": ["reentry"],
     "extras_require": {

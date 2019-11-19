@@ -19,9 +19,8 @@ from aiida.restapi.resources import BaseResource
 
 # local imports
 from aiida_post.submit.distributor import Distribute
-from aiida_post.calculations.request import importJSON
+# from aiida_post.calculations.request import importJSON
 from aiida_post.common.threaded import submit_job, run_calculation
-import asyncio
 
 class submit(BaseResource):
 
@@ -29,8 +28,7 @@ class submit(BaseResource):
         super(submit, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = (
-            'CALCULATION',        
+        conf_keys = (      
             'SUPPORTED_DATABASE',         
             'AVAILABLE_CODES'
         )
@@ -53,15 +51,6 @@ class submit(BaseResource):
 
         hp = Dict(dict=reqdata['json'])
 
-        workflow = WorkflowFactory('post.ProcessInputs')
-        submit_kwargs = {
-                'incoming_request':hp,
-                'predefined':Dict(dict=self.extended),
-                'property_to_calculate': Str(prop)
-                }
-        y = submit_job(workflow, **submit_kwargs)
-        
-        wf = y.result()
 
         if not wf.is_finished_ok:
             msg = 'Structure retrieval error. See node uuid <{}> for more specific report'.format(wf.uuid)
@@ -160,5 +149,18 @@ class app_nodes(Resource):
                 )
             }
         return {'message': 'work in progress here!'}
+
+
+class properties(Resource):
+
+    def get(self, prop):
+        """
+        Returns a list of the properties that are available for calculation
+        This is related to the entry points on aiida_post.workflow, that relate
+        a keyword to the workflow in charge of the calculation.
+        It might be interesting to trigger individual json file to see how this property
+        is called inside a result node of the workflow, as we would not want to have a
+        link with the specific name, but a general attribute/node type/name
+        """
 
 

@@ -20,7 +20,8 @@ class PwBandGapWorkChain(WorkChain):
         #outline
         spec.outline(
             cls.run_band_structure, 
-            cls.get_bandgap)
+            cls.get_bandgap
+        )
         #outputs
         spec.output('output_parameters', valid_type=orm.Dict)
 
@@ -32,8 +33,9 @@ class PwBandGapWorkChain(WorkChain):
         from aiida.plugins import WorkflowFactory 
         PwBandStructureWorkChain = WorkflowFactory('quantumespresso.pw.band_structure')
         inputs = {
-                'structure': self.inputs.structure,
-                'code': self.inputs.code}
+            'structure': self.inputs.structure,
+            'code': self.inputs.code
+        }
 
         running = self.submit(PwBandStructureWorkChain, **inputs)
         self.report('launching PwBandStructureWorkChain<{}>'.format(running.pk))
@@ -52,5 +54,5 @@ class PwBandGapWorkChain(WorkChain):
         output['band_gap'] = bandgap
         output['is_insulator'] = is_insulator
         self.out('output_parameters', Dict(dict=output))
-        self.report('calculation completed')
+        self.report('Calculation completed')
         return
