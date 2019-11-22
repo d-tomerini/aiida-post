@@ -1,0 +1,11 @@
+{
+    "calculation": "structure.cod",
+    "input": {
+      "codquery": {
+          "schemical_name":"wurtzite",
+          "formula":"Hf O2",
+          "some_data": 32
+      },
+      "strictcheck": true
+    }
+}

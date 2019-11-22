@@ -25,6 +25,7 @@ import os
 
 from flask_cors import CORS
 
+
 def run_api(flask_app, flask_api, **kwargs):
     """
     Takes a flask.Flask instance and runs it.
@@ -77,7 +78,6 @@ def run_api(flask_app, flask_api, **kwargs):
         from aiida.restapi.common.utils import CustomJSONEncoder
         app.json_encoder = CustomJSONEncoder
 
-
     # If the user selects the profiling option, then we need
     # to do a little extra setup
     if wsgi_profile:
@@ -88,8 +88,10 @@ def run_api(flask_app, flask_api, **kwargs):
 
     # intersect related options
     # CALCULATION: types of suported requests
-    # SUPPORTED_DATABASE to know when I request a structure
     # AVAILABLE_CODES to know what I have installed
+    # PROPERTY_MAPPING to know what keyword refers to what workflow
+
+    #
     # all of these do not need to be here; better options for sure
 
     # Instantiate an Api by associating its app
@@ -97,9 +99,9 @@ def run_api(flask_app, flask_api, **kwargs):
         PREFIX=confs.PREFIX,
         PERPAGE_DEFAULT=confs.PERPAGE_DEFAULT,
         LIMIT_DEFAULT=confs.LIMIT_DEFAULT,
-        CALCULATION=confs.CALCULATION,
         SUPPORTED_DATABASE=confs.SUPPORTED_DATABASE,
-        AVAILABLE_CODES=confs.AVAILABLE_CODES
+        AVAILABLE_CODES=confs.AVAILABLE_CODES,
+        PROPERTY_MAPPING=confs.PROPERTY_MAPPING
     )
 
     api = flask_api(app, **api_kwargs)
@@ -116,4 +118,3 @@ def run_api(flask_app, flask_api, **kwargs):
         # the user-defined configuration of the app is ineffective (it only
         # affects the internal werkzeug server used by Flask).
         return (app, api)
-

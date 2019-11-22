@@ -20,16 +20,10 @@
             "post.HttpData = aiida_post.data.httpdata:HttpData"
         ],
         "aiida.workflows":[
-            "post.ProcessInputs = aiida_post.workflows.input_wf:ProcessInputs",
+            "post.CODImport = aiida_post.workflows.COD_import:CODImportWorkChain",
             "post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain"
         ],
-        "aiida.cmdline.data": [],
-        "aiida_post.property_mapping" = [
-            "structure.cod = ",
-            "relax.pw = ",
-            "band_structure.pw = ",
-            "band_gap.pw = ", 
-        ]
+        "aiida.cmdline.data": []
     },
     "setup_requires": ["reentry"],
     "extras_require": {

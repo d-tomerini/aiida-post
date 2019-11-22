@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-# General tools to handle the conversion between data types
+"""
+General tools to handle the conversion between data types
+Probably useless if I do not save this info
+"""
 
 
 def Request_To_Dictionary(req):
@@ -18,6 +21,5 @@ def Request_To_Dictionary(req):
     alldata['args'] = req.args.to_dict()
     alldata['date'] = req.date
     alldata['json'] = req.get_json()
-    node = Dict(dict=alldata)
 
-    return node
+    return alldata

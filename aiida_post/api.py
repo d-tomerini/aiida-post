@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-
+"""
+This class deals with the extension of the AiiDA REST api (v.4)
+and defines the additional endpoints
+"""
 from __future__ import absolute_import
 
 from aiida.restapi.api import AiidaApi
-from aiida_post.resources import submit, existing, input
+from aiida_post.resources import submit, existing, status, duplicates, properties
 
 
 class InterfaceApi(AiidaApi):
     """
-    This class hanldes the extension of the
-    AiidaApi class, in order to deal with nore endpoints
+    Extension of the AiiDaApi, that is an extension of the Flask API
     """
 
     def __init__(self, app=None, **kwargs):
@@ -21,21 +23,18 @@ class InterfaceApi(AiidaApi):
 
         # all AiiDA's endpoint, plus the following
 
+        self.add_resource(submit, '/ginestra/submit/', strict_slashes=False, resource_class_kwargs=kwargs)
+        self.add_resource(existing, '/ginestra/existing', strict_slashes=False, resource_class_kwargs=kwargs)
         self.add_resource(
-            submit,
-            '/ginestra/<string:prop>/submit/',
+            duplicates, '/ginestra/<string:prop>/check/', strict_slashes=False, resource_class_kwargs=kwargs
+        )
+
+        self.add_resource(
+            status,
+            '/ginestra/<string:id>/status/',
+            '/ginestra/status/',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
-        self.add_resource(
-            existing,
-            '/ginestra/<string:prop>/existing',
-            strict_slashes=False,
-            resource_class_kwargs=kwargs
-        )
-        self.add_resource(
-            input, 
-            '/ginestra/<string:prop>/check/', 
-            strict_slashes=False, 
-            resource_class_kwargs=kwargs
-        )
+
+        self.add_resource(properties, '/ginestra/properties/', strict_slashes=False, resource_class_kwargs=kwargs)

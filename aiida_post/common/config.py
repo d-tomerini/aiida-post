@@ -7,8 +7,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 # supported workchain. Will be changed to check the available endpoint in the definitions
 
-CALCULATION = ['relax', 'scf', 'band_structure', 'band_gap']
-
 # also will be superseded by something better, i.e. how to get
 # information from structure and property databases
 
@@ -19,6 +17,19 @@ SUPPORTED_DATABASE = ['COD']
 # in the future it will probably be given as a list of "suggested to use"
 # also, upf co not belong here
 AVAILABLE_CODES = {'qe': 667, 'siesta': None, 'upf': 'efficiency'}
+
+# map of properties to single workchain
+# it should be interesting (necessary?) to also map WHERE to
+# find this value / object (output name/location)
+PROPERTY_MAPPING = {
+    'structure.cod': 'post.CODImport',
+    'relax.pw': 'quantumespresso.pw.relax',
+    'band_structure.pw': 'quantumespresso.pw.band_structure',
+    'band_gap.pw': 'post.BandGap',
+}
+#####################################################################
+##BELOW COPIED AND SLIGHTLY MODIFIED FROM AIIDA REST API CONFIG FILE
+#####################################################################
 
 # AiiDA REST CONFIG file
 # made a copy here in case I want to change something (like the prefix, for instance)

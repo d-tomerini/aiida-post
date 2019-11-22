@@ -1,18 +1,30 @@
+"""
+Module to handle concurrent execution in different threads
+"""
+
+from __future__ import absolute_import
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import wraps
 
 _DEFAULT_POOL = ThreadPoolExecutor()
 
 
-def threaded(f, executor=None):
-    @wraps(f)
+def threaded(func, executor=None):
+    """
+    Class to run a subroutine from a different thread, and return a
+    future. I will mainly run short subroutine that would have run
+    concurrently, but cannot because of flask
+    """
+
+    @wraps(func)
     def wrap(*args, **kwargs):
-        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
+        return (executor or _DEFAULT_POOL).submit(func, *args, **kwargs)
 
     return wrap
 
+
 @threaded
-def submit_job(wf, *args,**kwargs):
+def submit_job(workflow, inputs):
     """
     Simple wrapper to submit asyncronously a job to the scheduler
     : param wf: workchain to be submitted
@@ -20,16 +32,40 @@ def submit_job(wf, *args,**kwargs):
     """
     from aiida.engine import submit
 
-    node = submit(wf, *args, **kwargs)
+    node = submit(workflow, **inputs)
     return node
+
 
 @threaded
-def run_calculation(wf, *args,**kwargs):
+def run_calculation(workflow, *args, **kwargs):
     """
-    submit asyncronously a job to the scheduler
-    returns the uuid of the node responding to the request
+    Submit asyncronously a calculation to the scheduler
+    returns the the node responding to the request
     """
-    #aargs = [load_node(x)  for x in args]
-    node = wf(*args,**kwargs)
+
+    node = workflow(*args, **kwargs)
     return node
 
+
+@threaded
+def get_builder(workflow):
+    """
+    Building of namespaces triggers events that needs to be run asyncronously
+    : input WF: AiiDA process type
+    """
+    builder = workflow.get_builder()
+
+    return builder
+
+
+@threaded
+def submit_builder(builder):
+    """
+    Simple wrapper to submit asyncronously a job from its builder class
+    : param wf: workchain to be submitted
+    : output: the node object
+    """
+    from aiida.engine import submit
+
+    node = submit(builder)
+    return node

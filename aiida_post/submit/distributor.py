@@ -1,210 +1,215 @@
 # -*- coding: utf-8 -*-
 """
 This module deals with the submission process.
-This needs to be handled from a process in a separate thread from 
+This needs to be handled from a process in a separate thread from
 Flask, and it is handled by the threaded fucnction, that spawn a new thread
-and submit it from there. Since the submission job itself is a minimally 
+and submit it from there. Since the submission job itself is a minimally
 intensive process, it should not be a problem to have cuncurrent threads
 """
 
 from __future__ import absolute_import
 from __future__ import print_function
 
-from pkg_resources import get_entry_map, load_entry_point
-
-from aiida.orm import load_node
 from aiida.plugins import WorkflowFactory
-from aiida.plugins.entry_point import get_entry_point_names
-
-from aiida.common.exceptions import MissingEntryPointError, MultipleEntryPointError, LoadingEntryPointError
-
-from aiida_post.common.threaded import submit_job
+from aiida_post.common.threaded import get_builder, submit_builder
 
 
-
-
-def Distribute(req, prop):
+def Distribute(req, info):
     """
     After the retrieval of the structure, we proceed with the distribution of the task
     according to the requested data.
-    : input req: a Dict node that contains info about the incoming request and the POST file
+    : input req: a dictionary that contains info about the incoming request and the POST file
+    : input info: a dictionary of CONFIG values that can be useful
     : return response: a dictionary with the workflow info, error message and additional info
     """
-    
+    from aiida_post.common.formatter import format_wf
     # prepare to return data containing eventual error messages and workchain properties
     response = {}
-    error_message = None
-    workflow = None
+    error_message = ''
+    error_info = ''
+    wfinfo = None
+
+    # this needs to be handled by schemas for future-proofness
+
+    required_keys = ['calculation', 'input']
+    for key in required_keys:
+        if key not in req:
+            raise ValueError('Not found compulsory key <{}> is json'.format(key))
+
+    prop = req['calculation']
+
     # initial checks
-    
-    # check entry point
-    available_properties = pkg_resources.get_entry_map('aiida_post', 'property_mapping')
+
+    # check my property list
+    available_properties = info['PROPERTY_MAPPING']
+
     if prop not in available_properties:
         error_message = '<{}> is not in the list of available properties.'.format(prop)
         error_info = available_properties
     else:
-        try:
-            entry = load_entry_point('aiida_post', 'aiida_post.workflows', prop)
-        except ImportError:
-            error_message = 'Could not load entry point for property <{}>.'.format(prop)
+        entry = available_properties[prop]
+        WorkFlow = WorkflowFactory(entry)
 
-        try:
-            workflow =  WorkflowFactory(entry)
-        except MissingEntryPointError:
-            error_message = 'Entry point <{}> not found in aiida.workflows.'.format(prop)
-        except MultipleEntryPointError:
-            error_message = 'Multiple entry points for <{}> found in aiida.workflows.'.format(prop)
-        except Exception as inst:
-            error_message = inst
-        
-        calcspecs = req.inputs.predefined.dict.AVAILABLE_CODES
-        structure = req.outputs.structure
-        if prop == 'band_gap':
-            # submit a bandgap workchain
-            workflow = WorkflowFactory('post.BandGap')
-            pwcode = calcspecs['qe']
-            submit_kwargs = {
-                'code': load_node(pwcode),
-                'structure': structure
-            }
-    
-        if prop == 'band_structure':
-            workflow = WorkflowFactory('quantumespresso.pw.band_structure')
-            pwcode = calcspecs['qe']
-            submit_kwargs = {
-                'code': load_node(pwcode),
-                'structure': structure
-            }
-    
-        if prop == 'structure.cod':
-            workflow = WorkflowFactory('post.ProcessInputs')
-            submit_kwargs = {
-                    'incoming_request':hp,
-                    'predefined':Dict(dict=self.extended),
-                    'property_to_calculate': Str(prop)
-                    }
-            y = submit_job(workflow, **submit_kwargs)
-        
-        
-    print()
-    print('calcspecs', calcspecs, 'structure.pk', structure.pk)
+        # creating the namespaces for the workflow, from the
 
-    y = submit_job(workflow, **submit_kwargs)
-    wf = y.result()
+        future = get_builder(WorkFlow)
+        builder = future.result()
+        # standard code needs thinking
+        #Assign_code(builder, req)
+        # Assign ports to the workflow
+        error_message = Process_NameSpaces(builder, req['input'])
+
+    if not error_message:
+        future = submit_builder(builder)
+        workflow = future.result()
+        wfinfo = format_wf(workflow)
+
+    response.update(workflow=wfinfo, error=error_message, error_info=error_info)
 
     return response
 
-def Process_NameSpaces(namespace, req, error=None):
-    from aiida.orm import load_node, Node, ArrayData, BandsData, Bool, Code, Dict, Float, FolderData, KpointsData
-    from aiida.orm import XyData, TrajectoryData, SinglefileData, RemoteData, OrbitalData, List
-    from  aiida.engine.processes.ports import PortNamespace
+
+def Process_NameSpaces(builder, req):
     """
     Process the request in order to create a dictionary of the right type of Nodes for the input of a workchain.
     :input namespace: created namespace for the worklow
-    :input req: a dictionary for the workchain inputs. 
+    :input req: a dictionary for the workchain inputs.
     :returns out: a dictionary with the AiiDA objects to run the calculation
-    the value of a key is expected to contain a value to fill the AiiDA data type; 
-    if instead it has to load an `aiida.orm.Node` from the database, it NEEDS to be a dictionary with one key with the 
-    value 'NODE'.
+    the value of a key is expected to contain a value to fill the AiiDA data type;
+    if instead it has to load an `aiida.orm.Node` from the database, it NEEDS to be a dictionary with one key with the
+    value 'LOADNODE'.
     The subroutine runs recursively (for nested namespaces) in order to create the correct input
     """
+    from aiida.orm import load_node, Node, ArrayData, Bool, Code, Dict, Float, Int, List
+    from aiida.engine.processes.ports import PortNamespace
 
-    output = {}
-    # If we decide Codes can be default, I need this check
-    if 'Code' 
+    namespace = builder._port_namespace
+    error = ''
+    # If we decide Codes can be default, I need something here to assign things
     for key, value in req.items():
         if key not in namespace:
-            error = ' <{}> is not a valid input for the workflow'
-            return None, error
-        #check if it is a dictionary, and I should load the node
-        valid = namespace.valid_type
+            error = ' <{}> is not a valid input for the workflow'.format(key)
+            return error
+        valid = namespace[key].valid_type
+        #check if it is a dictionary, and I should load the node instead of taking the value
         if isinstance(value, dict):
-            if 'NODE' in value:
+            if 'LOADNODE' in value:
                 try:
-                    node = load_node(value('NODE'))
+                    node = load_node(value('LOADNODE'))
                 except:
                     error = 'Problems loading node <{}> from the database'.format(value('NODE'))
-                    return None, error
                 if isinstance(node, valid):
-                    output[key] = node
+                    builder[key] = node
                 else:
-                    error = '<{}> is not a valid class for <{}>. Expected: {}.format(
-                        node.__class,
-                        key,
-                        valid
-                    )
-                    return None, error
+                    error = '<{}> is not a valid type: <{}>. Expected: {}'.format(node.__class, key, valid)
+        if isinstance(namespace[key], PortNamespace):
+            # recursevily look for deeper namespaces
+            error = Process_NameSpaces(namespace[key], req[key])
+        else:
+            print(valid, value.__class__)
+            # finally, process the individual values
+            # maybe we can do better than dumb iteration?
+            if isinstance(Int(), valid):
+                try:
+                    builder[key] = Int(int(value))
+                except:
+                    error = 'Error while assigning integer <{}> to Int class.'.format(value)
+            elif isinstance(Float(), valid):
+                try:
+                    builder[key] = Float(float(value))
+                except:
+                    error = 'Error while assigning float <{}> to Float class.'.format(value)
+            elif isinstance(Bool(), valid):
+                try:
+                    builder[key] = Bool(bool(value))
+                except:
+                    error = 'Error while assigning boolean <{}> to Bool class.'.format(value)
+            elif isinstance(Dict(), valid):
+
+                try:
+                    builder[key] = Dict(dict=value)
+                except:
+                    error = 'Error while assigning dict <{}> to Dict class.'.format(value)
+            elif isinstance(List(), valid):
+                try:
+                    builder[key] = List(value)
+                except:
+                    error = 'Error while assigning list <{}> to List class.'.format(value)
             else:
-                if isinstance(namespace[key], PortNamespace):
-                    # recursevily look for deeper namespaces
-                    output[key], error = Process_NameSpaces(
-                        namespace[key],
-                        req[key],
-                        error
-                    )
+                # now trying to assign data that I expect is going to be a Node...
+                node = load_node(value)
+                if isinstance(node, valid):
+                    try:
+                        builder[key] = node
+                    except:
+                        error = 'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
+                            value, key, node
+                        )
                 else:
-                    # finally, process the individual values
-                    # maybe we can do better?
-                    if isinstance(Int, valid):
-                        try:
-                            output[key] = Int(int(value))
-                        except:
-                            error = 'Error while assigning integer <{}> to Int class.'.format(value)
-                    elif isinstance(Float, valid):
-                       try:
-                            output[key] = Float(float(value))
-                        except:
-                            error = 'Error while assigning float <{}> to Float class.'.format(value)
-                    elif isinstance(Bool, valid):
-                       try:
-                            output[key] = Bool(bool(value))
-                        except:
-                            error = 'Error while assigning boolean <{}> to Bool class.'.format(value)
-                    elif isinstance(Dict, valid):
-                       try:
-                            output[key] = Dict(dict=bool(value))
-                        except:
-                            error = 'Error while assigning dict <{}> to Dict class.'.format(value)
-                    elif isinstance(List, valid):
-                       try:
-                            output[key] = List(value)
-                        except:
-                            error = 'Error while assigning list <{}> to List class.'.format(value)
-                    else:
-                        # now trying to assign data that is going to be a Node...
-                        othertypes = [
-                            ArrayData,
-                            BandsData,
-                            Code,
-                            FolderData,
-                            KpointsData,
-                            XyData,
-                            TrajectoryData,
-                            SinglefileData,
-                            RemoteData,
-                            OrbitalData
-                        ]
-                        for othertype in othertypes:
-                            if isinstance(othertype, valid):
-                                try:
-                                    output[key] = load_node(value)
-                                except:
-                                    error = 'Error while loading datatype {} from node <{}>. '.format(
-                                        othertype,
-                                        value
-                                    )
-        if not error:
-            # something bad happened during these assignments; go back one step at the time
-            return None, error
-    return output, error
+                    error = 'Node {} is not of a valid type: {}'.format(node, valid)
+        if error:
+            # something bad happened during these assignments
+            # exit now, at the first check instead of waiting for the last one
+            return error
+    return error
 
 
-def Recursively_Assign_Code(namespace, code, error=None):
+# needs thinking
+#def Assign_Code(builder, props):
+#    """
+#    Initialize the dictionary where to find the standard codes for the given workflow,
+#    and assign it to the workflow builder if it has no key.
+#    Maybe it is easier with a json schema?
+#    : input builder: the process builder
+#    : input props: the dictionary of keywords to be passed to the workflow
+#    """
+#    import json
+#    SCHEMA_DIR = str(aiida_post.__path__[0]) + '/schemas/'
+#
+#    # get the name of the file to grep for the code
+#    # these are stored under the process name in the 'schema' folder
+#
+#    name = builder._process_class.__name__
+#    code_schema = SCHEMA_DIR + name + '.json'
+#    with open(code_schema) as jsonfile:
+#        codes = json.loads
+#
+#    Recursively_Assign_Code(
+#        builder._port_namespace,
+#        props,
+#        codes
+#    )
+#
+#    return
+#
+#
+#
+#def Recursively_Assign_Code(namespace, req, codes, error=None):
+#    """
+#    Needed to pass the standard code down the workchain to where it is needed
+#    For the moment, we are going to assume that the code stays uniformly the same
+#    throught the workchain; if this is not the case, it is probably better to
+#    implement some kind of validation dictionary for each of the workchains that we support
+#    """
+#    # let's leave it for now
+#    from aiida.orm import Code
+#
+#    for key, value in namespace.items():
+#        # try to assign it only if REALLY necessary
+#        if isinstance(namespace[key], Code):
+#            if (key == 'code' and value.required and 'code' not in req and isinstance(namespace[key], Code)):
+#
+#
+#
+
+
+def Return_Expected_Namespace(builder, req):
     """
-    Needed to pass the standard code down the workchain to where it is needed
-    For the moment, we are going to assume that the code stays uniformly the same
-    throught the workchain; if this is not the case, it is probably better to 
-    implement some kind of validation dictionary for each of the workchains that we support
+    Helper function (similar to verdi plugin aiida.workflow xxx provides info about xxx)
+    On submission failure, return a list of all the namespaces, with
+    name, valid type and help, in order to provide better info if someone mishandled
+    the data type
+    To be implemented
+
     """
-    copy the code above
-    recursively assign every instance of ``code`` to the standard one
+    pass
