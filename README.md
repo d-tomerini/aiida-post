@@ -10,11 +10,10 @@ This program will act as a bridge to convey to AiiDA information through HTML co
 [AiiDA](http://www.aiida.net/) is a flexible and scalable informatics' infrastructure to manage, preserve,
 and disseminate the simulations, data, and workflows of modern-day computational science.
 
-Our interconnection app will provede very basic interaction with a AIiiDA from a server,
-to deal with:
+Our interconnection app will provede very basic extension to the existing REST API of AiiDA, to deal specifically with:
 1. Requests for calculated data
 2. Requests for stored data
-3. Information on stored database nodes (calculations, previous requests)
+3. Information on stored database nodes (calculations, previous requests, calculation logs)
 4. Information on ongoing calculations
 
 ## Running the app
@@ -25,13 +24,15 @@ of the necessary classes for the execution:
 ``
   verdi run app.py
 ``
+## TODO 
 
-In the future we will extend the functionality to have it run directly through a ``verdi`` command.
-
+In the future we will extend the functionality to have it run directly through a ``verdi`` command , or its own executable.
 
 ## Installation
 
-The app can be downloaded from the gitlab directory.
+The app can be downloaded from the gitlab directory at this address:
+https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida/tree/develop
+
 
 ## Acknowledgements
 

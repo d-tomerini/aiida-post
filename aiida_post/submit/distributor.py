@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from aiida.plugins import WorkflowFactory
+from aiida.common import exceptions
 from aiida_post.common.threaded import get_builder, submit_builder
 
 
@@ -88,23 +89,21 @@ def Process_NameSpaces(builder, req):
     # If we decide Codes can be default, I need something here to assign things
     for key, value in req.items():
         if key not in namespace:
-            error = ' <{}> is not a valid input for the workflow'.format(key)
-            return error
+            raise exceptions.InputValidationError(
+                ' <{}> is not a valid input for the workflow'.format(key))
         valid = namespace[key].valid_type
         #check if it is a dictionary, and I should load the node instead of taking the value
         if isinstance(value, dict):
             if 'LOADNODE' in value:
-                try:
-                    node = load_node(value('LOADNODE'))
-                except:
-                    error = 'Problems loading node <{}> from the database'.format(value('NODE'))
+                node = load_node(value('LOADNODE'))
                 if isinstance(node, valid):
                     builder[key] = node
                 else:
-                    error = '<{}> is not a valid type: <{}>. Expected: {}'.format(node.__class, key, valid)
+                    raise exceptions.InputValidationError(
+                        '<{}> is not a valid type: <{}>. Expected: {}'.format(node.__class, key, valid))
         if isinstance(namespace[key], PortNamespace):
             # recursevily look for deeper namespaces
-            error = Process_NameSpaces(namespace[key], req[key])
+            Process_NameSpaces(namespace[key], req[key])
         else:
             print(valid, value.__class__)
             # finally, process the individual values
@@ -113,28 +112,32 @@ def Process_NameSpaces(builder, req):
                 try:
                     builder[key] = Int(int(value))
                 except:
-                    error = 'Error while assigning integer <{}> to Int class.'.format(value)
+                    raise exceptions.InputValidationError(
+                        'Error while assigning integer <{}> to Int class.'.format(value))
             elif isinstance(Float(), valid):
                 try:
                     builder[key] = Float(float(value))
                 except:
-                    error = 'Error while assigning float <{}> to Float class.'.format(value)
+                    raise exceptions.InputValidationError(
+                        'Error while assigning float <{}> to Float class.'.format(value))
             elif isinstance(Bool(), valid):
                 try:
                     builder[key] = Bool(bool(value))
                 except:
-                    error = 'Error while assigning boolean <{}> to Bool class.'.format(value)
+                    raise exceptions.InputValidationError(
+                        'Error while assigning boolean <{}> to Bool class.'.format(value))
             elif isinstance(Dict(), valid):
-
                 try:
                     builder[key] = Dict(dict=value)
                 except:
-                    error = 'Error while assigning dict <{}> to Dict class.'.format(value)
+                    raise exceptions.InputValidationError(
+                        'Error while assigning dict <{}> to Dict class.'.format(value))
             elif isinstance(List(), valid):
                 try:
                     builder[key] = List(value)
                 except:
-                    error = 'Error while assigning list <{}> to List class.'.format(value)
+                    raise exceptions.InputValidationError(
+                        'Error while assigning list <{}> to List class.'.format(value))
             else:
                 # now trying to assign data that I expect is going to be a Node...
                 node = load_node(value)
@@ -142,17 +145,80 @@ def Process_NameSpaces(builder, req):
                     try:
                         builder[key] = node
                     except:
-                        error = 'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
-                            value, key, node
-                        )
+                        raise exceptions.InputValidationError(
+                            'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
+                                value, key, node))
                 else:
-                    error = 'Node {} is not of a valid type: {}'.format(node, valid)
-        if error:
-            # something bad happened during these assignments
-            # exit now, at the first check instead of waiting for the last one
-            return error
-    return error
+                    raise exceptions.InputValidationError(
+                        'Node {} is not of a valid type: {}'.format(node, valid))
 
+    return
+
+
+def Get_Namespace_schema(builder):
+    """
+    Recursively process the namespace of a workflow in order to extract information about the 
+    input namespace, their type, if they're requested, and a help if it is available
+    """
+    from aiida.orm import load_node, Node, ArrayData, Bool, Code, Dict, Float, Int, List
+    from aiida.engine.processes.ports import PortNamespace
+
+    namespace = builder._port_namespace
+    error = ''
+    # If we decide Codes can be default, I need something here to assign things
+    for key, value in namespace.items():
+        if isinstance(namespace[key], PortNamespace):
+            # recursevily look for deeper namespaces
+            Process_NameSpaces(namespace[key], req[key])
+        else:
+            print(valid, value.__class__)
+            # finally, process the individual values
+            # maybe we can do better than dumb iteration?
+            if isinstance(Int(), valid):
+                try:
+                    builder[key] = Int(int(value))
+                except:
+                    raise exceptions.InputValidationError(
+                        'Error while assigning integer <{}> to Int class.'.format(value))
+            elif isinstance(Float(), valid):
+                try:
+                    builder[key] = Float(float(value))
+                except:
+                    raise exceptions.InputValidationError(
+                        'Error while assigning float <{}> to Float class.'.format(value))
+            elif isinstance(Bool(), valid):
+                try:
+                    builder[key] = Bool(bool(value))
+                except:
+                    raise exceptions.InputValidationError(
+                        'Error while assigning boolean <{}> to Bool class.'.format(value))
+            elif isinstance(Dict(), valid):
+                try:
+                    builder[key] = Dict(dict=value)
+                except:
+                    raise exceptions.InputValidationError(
+                        'Error while assigning dict <{}> to Dict class.'.format(value))
+            elif isinstance(List(), valid):
+                try:
+                    builder[key] = List(value)
+                except:
+                    raise exceptions.InputValidationError(
+                        'Error while assigning list <{}> to List class.'.format(value))
+            else:
+                # now trying to assign data that I expect is going to be a Node...
+                node = load_node(value)
+                if isinstance(node, valid):
+                    try:
+                        builder[key] = node
+                    except:
+                        raise exceptions.InputValidationError(
+                            'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
+                                value, key, node))
+                else:
+                    raise exceptions.InputValidationError(
+                        'Node {} is not of a valid type: {}'.format(node, valid))
+
+    return
 
 # needs thinking
 #def Assign_Code(builder, props):
