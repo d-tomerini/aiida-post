@@ -24,7 +24,7 @@ of the necessary classes for the execution:
 ``
   verdi run app.py
 ``
-## TODO 
+## TODO
 
 In the future we will extend the functionality to have it run directly through a ``verdi`` command , or its own executable.
 
