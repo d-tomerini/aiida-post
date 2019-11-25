@@ -27,6 +27,12 @@ of the necessary classes for the execution:
 ``
 
 In the future we will extend the functionality to have it run directly through a ``verdi`` command.
+
+
+## Installation
+
+The app can be downloaded from the gitlab directory.
+
 ## Acknowledgements
 
 This work is supported by the [INTERSECT project](http://intersect-project.eu/),

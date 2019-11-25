@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Python package &mdash; aiida_post 0.2 documentation</title>
+
+
+
+
+
+
+
+
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+
+
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="index.html" class="icon icon-home"> aiida_post
+
+
+
+          </a>
+
+
+
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Python package</a><ul>
+<li><a class="reference internal" href="#updating-the-entry-points">Updating the entry points</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">aiida_post</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="index.html">Docs</a> &raquo;</li>
+
+      <li>Python package</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <blockquote id="installation">
+<div><p>Prerequisites</p>
+</div></blockquote>
+<hr class="docutils" />
+<p>The aiida_post extension requires an installation of AiiDA &gt; 1.0.0, and of its REST API extension.
+To download it and installed it, preferentially inside a virtual environment, follow the instructtion you can find at this
+<a class="reference external" href="https://aiida-core.readthedocs.io/en/latest/install/installation.html">page</a>.</p>
+<p>Please set up a virtual environmente with python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
+depends on asyncronous features available on python 3 only.</p>
+<p>The installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
+can be done with the commands below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir &lt;your_directory&gt;
+$ cd &lt;your_directory&gt;
+$ git clone https://github.com/aiidateam/aiida-core[atomic_tools,docs,advanced_plotting,rest]
+$ pip install
+</pre></div>
+</div>
+<p>To simply install the most recent stable version of AiiDA from PyPi it suffices to just type in a terminal
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">aiida-core[atomic_tools,docs,advanced_plotting,rest]</span></code>.</p>
+<p>The options in square bracket are a list of useful AiiDA extensions. Only the REST extension is required.</p>
+<div class="section" id="python-package">
+<h1>Python package<a class="headerlink" href="#python-package" title="Permalink to this headline">¶</a></h1>
+<p>The python package can be obtained from the <a class="reference external" href="https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida">Intersect gitlab repository</a>.
+The repository can be cloned locally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir &lt;your_directory&gt;
+$ cd &lt;your_directory&gt;
+$ git clone https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida
+(aiida) $ pip install -e aiida-post
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">-e</span></code> option instructs to find the package specifically on the provided path.</p>
+<div class="section" id="updating-the-entry-points">
+<h2>Updating the entry points<a class="headerlink" href="#updating-the-entry-points" title="Permalink to this headline">¶</a></h2>
+<p>AiiDA (and its extensions) uses the <code class="docutils literal notranslate"><span class="pre">reentry</span></code> package to cache the entry points. This provides access to the classes and workflows avaible to AiiDA.
+After installing or updating a package is necessary to update the reentry cache by typing</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reentry</span> <span class="n">scan</span>
+</pre></div>
+</div>
+<p>please set up
+AiiDA depends on a number of specific third party packages. For this reason
+The git repository can be found</p>
+</div>
+</div>
+
+
+           </div>
+
+          </div>
+          <footer>
+
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, daniele tomerini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>
