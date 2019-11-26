@@ -63,7 +63,7 @@ def Distribute(req, info):
     workflow = future.result()
     wfinfo = format_wf(workflow)
 
-    response.update(workflow=wfinfo, error=error_message, error_info=error_info)
+    response.update(workflow=wfinfo)
 
     return response
 
