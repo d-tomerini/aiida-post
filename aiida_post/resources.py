@@ -9,12 +9,9 @@ by the main api
 from __future__ import absolute_import
 from __future__ import print_function
 from flask import request
-from flask_restful import Resource, reqparse
 from six.moves.urllib.parse import unquote  # pylint: disable=import-error
 
 # aiida
-from aiida.orm import Float, Dict, Str
-from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
 from aiida.restapi.resources import BaseResource, ProcessNode
 
 # local imports
@@ -22,6 +19,9 @@ from aiida_post.submit.distributor import Distribute
 
 
 class submit(BaseResource):
+    """
+    Endpoint to submit AiiDA workflows
+    """
 
     def __init__(self, **kwargs):
         super(submit, self).__init__(**kwargs)
@@ -35,22 +35,18 @@ class submit(BaseResource):
         Route to manage the requests from the app
         Access is through a JSON file passed to the server containing the input required for calculation
         Data is handled and responded accordingly
-
-        :param prop: the quantity we required for calculation, passed as the endpoint
         """
         from aiida.orm import Dict
         from aiida_post.tools.convert import Request_To_Dictionary
 
         # initialize response
-        path = unquote(request.path)
-        query_string = unquote(request.query_string.decode('utf-8'))
         url = unquote(request.url)
         url_root = unquote(request.url_root)
 
         # This takes some additional info from the flask query, and store it into a node
         # not sure yet if it makes sense to store it.
         # but at least it can be returned after the request
-        HttpData = DataFactory('post.HttpData')
+        #HttpData = DataFactory('post.HttpData')
 
         reqdata = Request_To_Dictionary(request)
         node = Dict(dict=reqdata).store()
@@ -60,6 +56,7 @@ class submit(BaseResource):
             self.extended
         )
 
+        request_content = dict(data=reqdata['json'], node=node.uuid)
         data = dict(
             method=request.method,
             url=url,
@@ -68,101 +65,17 @@ class submit(BaseResource):
             id=None,
             query_string=request.query_string.decode('utf-8'),
             resource_type='submission of workflows',
-            request_content=reqdata['json'],
+            request_content=request_content,
             data=response
         )
 
         return self.utils.build_response(status=200, data=data)
 
 
-class existing(Resource):
-
-    def __init__(self, **kwargs):
-        super(existing, self).__init__(**kwargs)
-        # Add the configuration file for my app
-        # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
-        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
-
-    def get(self):
-        """
-        check if there is any instance in the database
-        related to the calculation required for a material
-        returns any items that need to be checked
-        : prop endpoint to the calculation prop
-        : get queries define a projection for the property in the database
-        """
-        from aiida_post.other.group_initialize import check_db
-
-        parser = reqparse.RequestParser()
-        # This does not do what I want. Check it better
-        parser.add_argument('id', type=int)
-        args = parser.parse_args()
-        Ext_Group = Create_group(groupname='ext')
-
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'Property {} not in supported properties: {}'.format(
-                    prop, ' ,'.join(CALCULATION_OPTIONS['calculation']), **args
-                )
-            }
-        else:
-            prop_group = Create_group(groupname=prop)
-            print(('options', args))  # debug
-
-            structs = check_db('ext', **args)
-            back = {}
-            for i in structs:
-                for i2 in i:
-                    back.update({
-                        str(i2.id): {
-                            'class': i2.class_node_type,
-                            'id': i2.id,
-                            'uuid': i2.uuid,
-                            'formula': i2.get_formula(),
-                        }
-                    })
-            return back
-
-
-class duplicates(Resource):
-
-    def get(self):
-        """
-        search of an input by ID that is known by the program
-        returns property and/or status of the calculation
-        This will probably go away to be integrated with the submit check
-        """
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'property {} not supported. Recognised properties: {}'.format(
-                    prop, ', '.join(CALCULATION_OPTIONS['calculation'])
-                )
-            }
-        return {'message': 'work in progress here!'}
-
-
-class app_nodes(Resource):
-
-    def get(self):
-        """
-        return a subset of nodes from the group ext
-        additionally, it filters the request
-        according to the data in the get method
-        """
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'property {} not supported. Recognised properties: {}'.format(
-                    prop, ', '.join(CALCULATION_OPTIONS['calculation'])
-                )
-            }
-        return {'message': 'work in progress here!'}
-
-
 class properties(BaseResource):
+    """
+    Endpoint to return a list of supported calculation properties
+    """
 
     def __init__(self, **kwargs):
         super(properties, self).__init__(**kwargs)
@@ -180,7 +93,7 @@ class properties(BaseResource):
         is called inside a result node of the workflow, as we would not want to have a
         link with the specific name, but a general attribute/node type/name
         """
-        path = unquote(request.path)
+
         url = unquote(request.url)
         url_root = unquote(request.url_root)
 
@@ -202,10 +115,12 @@ class properties(BaseResource):
 
 
 class status(ProcessNode):
-
+    """
+    endpoint to check the status of a workflow, together with its log messages
+    """
     _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
 
-    def get(self, id=None):
+    def get(self, node_id=None):
         """
         Returns the log file and the status of the workflow in progress
         """
@@ -215,8 +130,6 @@ class status(ProcessNode):
         path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
-
-        (resource_type, page, node_id, query_type) = self.utils.parse_path(path, parse_pk_uuid=self.parse_pk_uuid)
 
         node = self._load_and_verify(node_id)
 
@@ -230,8 +143,117 @@ class status(ProcessNode):
             path=path,
             id=node_id,
             query_string=request.query_string.decode('utf-8'),
-            resource_type=resource_type,
+            resource_type='workflow status',
             data=data
         )
 
         return self.utils.build_response(status=200, data=data)
+
+
+class workflow_inputs(BaseResource):
+    """
+    Endpoint to return the workflow input specification
+    """
+
+    def __init__(self, **kwargs):
+        super(workflow_inputs, self).__init__(**kwargs)
+        # Add the configuration file for my app
+        # Taken almost verbatim from the configuration handling of BaseResource
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
+
+    def get(self, node_id=None):
+        """
+        Returns all the possible inputs of a workflow as a schema
+        """
+        from aiida.plugins import WorkflowFactory
+        from aiida_post.submit.distributor import Get_Namespace_Schema
+        from aiida_post.common.threaded import get_builder
+
+        # Unpack the URL
+        path = unquote(request.path)
+        url = unquote(request.url)
+        url_root = unquote(request.url_root)
+
+        available_properties = self.extended['PROPERTY_MAPPING']
+
+        try:
+            entry = available_properties[node_id]
+        except:
+            raise ValueError('<{}> is not in the list of available properties.'.format(node_id))
+
+        WorkFlow = WorkflowFactory(entry)
+
+        # creating the namespaces for the workflow, from the
+
+        future = get_builder(WorkFlow)
+        builder = future.result()
+
+        schema = {}
+        Get_Namespace_Schema(builder._port_namespace, schema)
+
+        output = dict(workflow_input_schema=schema)
+
+        data = dict(
+            method=request.method,
+            url=url,
+            url_root=url_root,
+            path=path,
+            id=None,
+            query_string=request.query_string.decode('utf-8'),
+            resource_type='return workflow input schema',
+            data=output
+        )
+
+        return self.utils.build_response(status=200, data=data)
+
+
+# Additional endpoints to implement if useful
+
+
+class existing(BaseResource):
+    """
+    Endpoint to query for existing resources types
+    """
+
+    def __init__(self, **kwargs):
+        super(existing, self).__init__(**kwargs)
+        # Add the configuration file for my app
+        # Taken almost verbatim from the configuration handling of BaseResource
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
+
+    def get(self):
+        """
+        check if there is any instance in the database
+        related to the calculation required for a material
+        Needs thinking on how to query for properties -- probably schema is best
+        """
+        raise ValueError('Endpoint not yet implemented')
+
+
+class duplicates(BaseResource):
+    """
+    Endpoint to query for existing queries of the same type
+    Probably I need to save a POST query and look for dictionary databases of the same type.
+    Useful?
+    """
+
+    def get(self):
+        """
+        To implement
+        """
+        raise ValueError('Endpoint not yet implemented')
+
+
+class app_nodes(BaseResource):
+    """
+    Endpoint to return all the already executed calculation of a specific kind
+    Useful? To implement
+    """
+
+    def get(self):
+        """
+        To check if useful
+        """
+        raise ValueError('Endpoint not yet implemented')

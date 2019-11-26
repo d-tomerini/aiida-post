@@ -26,7 +26,6 @@ def Distribute(req, info):
     from aiida_post.common.formatter import format_wf
     # prepare to return data containing eventual error messages and workchain properties
     response = {}
-    error_message = ''
     error_info = ''
     wfinfo = None
 
@@ -45,25 +44,24 @@ def Distribute(req, info):
     available_properties = info['PROPERTY_MAPPING']
 
     if prop not in available_properties:
-        error_message = '<{}> is not in the list of available properties.'.format(prop)
-        error_info = available_properties
-    else:
-        entry = available_properties[prop]
-        WorkFlow = WorkflowFactory(entry)
+        raise ValueError('<{}> is not in the list of available properties.'.format(prop))
 
-        # creating the namespaces for the workflow, from the
+    entry = available_properties[prop]
+    WorkFlow = WorkflowFactory(entry)
 
-        future = get_builder(WorkFlow)
-        builder = future.result()
-        # standard code needs thinking
-        #Assign_code(builder, req)
-        # Assign ports to the workflow
-        error_message = Process_NameSpaces(builder, req['input'])
+    # creating the namespaces for the workflow, from the
+    future = get_builder(WorkFlow)
+    builder = future.result()
 
-    if not error_message:
-        future = submit_builder(builder)
-        workflow = future.result()
-        wfinfo = format_wf(workflow)
+    # standard code needs thinking
+    #Assign_code(builder, req)
+    # Assign ports to the workflow
+    Process_NameSpaces(builder, req['input'])
+
+
+    future = submit_builder(builder)
+    workflow = future.result()
+    wfinfo = format_wf(workflow)
 
     response.update(workflow=wfinfo, error=error_message, error_info=error_info)
 
@@ -85,7 +83,6 @@ def Process_NameSpaces(builder, req):
     from aiida.engine.processes.ports import PortNamespace
 
     namespace = builder._port_namespace
-    error = ''
     # If we decide Codes can be default, I need something here to assign things
     for key, value in req.items():
         if key not in namespace:
@@ -103,12 +100,14 @@ def Process_NameSpaces(builder, req):
                     )
         if isinstance(namespace[key], PortNamespace):
             # recursevily look for deeper namespaces
-            Process_NameSpaces(namespace[key], req[key])
+            Process_NameSpaces(builder[key], req[key])
         else:
-            print(valid, value.__class__)
             # finally, process the individual values
             # maybe we can do better than dumb iteration?
-            if isinstance(Int(), valid):
+            # first standard python types
+            if isinstance(key, valid):
+                builder[key] = value
+            elif isinstance(Int(), valid):
                 try:
                     builder[key] = Int(int(value))
                 except:
@@ -151,7 +150,7 @@ def Process_NameSpaces(builder, req):
                         builder[key] = node
                     except:
                         raise exceptions.InputValidationError(
-                            'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
+                            'Error, expected {} of {} to be a node instance, but I cannot load <{}> .'.format(
                                 value, key, node
                             )
                         )
@@ -161,76 +160,31 @@ def Process_NameSpaces(builder, req):
     return
 
 
-def Get_Namespace_schema(builder):
+def Get_Namespace_Schema(namespace, schema):
     """
     Recursively process the namespace of a workflow in order to extract information about the
-    input namespace, their type, if they're requested, and a help if it is available
+    input namespace, their type, if and what is  the defaul valuesif they're requested, and a help if it is available
     """
-    from aiida.orm import load_node, Node, ArrayData, Bool, Code, Dict, Float, Int, List
     from aiida.engine.processes.ports import PortNamespace
 
-    namespace = builder._port_namespace
-    error = ''
-    # If we decide Codes can be default, I need something here to assign things
     for key, value in namespace.items():
-        if isinstance(namespace[key], PortNamespace):
+        if isinstance(value, PortNamespace):
             # recursevily look for deeper namespaces
-            Process_NameSpaces(namespace[key], req[key])
+            schema[key] = {}
+            Get_Namespace_Schema(value, schema[key])
         else:
-            print(valid, value.__class__)
-            # finally, process the individual values
-            # maybe we can do better than dumb iteration?
-            if isinstance(Int(), valid):
-                try:
-                    builder[key] = Int(int(value))
-                except:
-                    raise exceptions.InputValidationError(
-                        'Error while assigning integer <{}> to Int class.'.format(value)
-                    )
-            elif isinstance(Float(), valid):
-                try:
-                    builder[key] = Float(float(value))
-                except:
-                    raise exceptions.InputValidationError(
-                        'Error while assigning float <{}> to Float class.'.format(value)
-                    )
-            elif isinstance(Bool(), valid):
-                try:
-                    builder[key] = Bool(bool(value))
-                except:
-                    raise exceptions.InputValidationError(
-                        'Error while assigning boolean <{}> to Bool class.'.format(value)
-                    )
-            elif isinstance(Dict(), valid):
-                try:
-                    builder[key] = Dict(dict=value)
-                except:
-                    raise exceptions.InputValidationError(
-                        'Error while assigning dict <{}> to Dict class.'.format(value)
-                    )
-            elif isinstance(List(), valid):
-                try:
-                    builder[key] = List(value)
-                except:
-                    raise exceptions.InputValidationError(
-                        'Error while assigning list <{}> to List class.'.format(value)
-                    )
-            else:
-                # now trying to assign data that I expect is going to be a Node...
-                node = load_node(value)
-                if isinstance(node, valid):
-                    try:
-                        builder[key] = node
-                    except:
-                        raise exceptions.InputValidationError(
-                            'Error, expected {} of {} to be a node instance, but I cannot load <{}> . '.format(
-                                value, key, node
-                            )
-                        )
-                else:
-                    raise exceptions.InputValidationError('Node {} is not of a valid type: {}'.format(node, valid))
-
-    return
+            # Give all the values that might be interesting for the user.
+            # name, type, has_default(), default, help
+            default = None
+            if value.has_default():
+                default = value.default
+            schema[key] = dict(
+                valid_type=str(value.valid_type),
+                is_required=value.required,
+                has_default=value.has_default(),
+                default=str(default),
+                help_string=value.help
+            )
 
 
 # needs thinking
@@ -280,15 +234,3 @@ def Get_Namespace_schema(builder):
 #
 #
 #
-
-
-def Return_Expected_Namespace(builder, req):
-    """
-    Helper function (similar to verdi plugin aiida.workflow xxx provides info about xxx)
-    On submission failure, return a list of all the namespaces, with
-    name, valid type and help, in order to provide better info if someone mishandled
-    the data type
-    To be implemented
-
-    """
-    pass

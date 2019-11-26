@@ -6,7 +6,7 @@ and defines the additional endpoints
 from __future__ import absolute_import
 
 from aiida.restapi.api import AiidaApi
-from aiida_post.resources import submit, existing, status, duplicates, properties
+from aiida_post.resources import submit, existing, status, duplicates, properties, workflow_inputs
 
 
 class InterfaceApi(AiidaApi):
@@ -28,13 +28,11 @@ class InterfaceApi(AiidaApi):
         self.add_resource(
             duplicates, '/ginestra/<string:prop>/check/', strict_slashes=False, resource_class_kwargs=kwargs
         )
-
+        self.add_resource(status, '/ginestra/status/<string:node_id>', strict_slashes=False, resource_class_kwargs=kwargs)
+        self.add_resource(properties, '/ginestra/properties/', strict_slashes=False, resource_class_kwargs=kwargs)
         self.add_resource(
-            status,
-            '/ginestra/<string:id>/status/',
-            '/ginestra/status/',
+            workflow_inputs,
+            '/ginestra/workflow_inputs/<string:node_id>',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
-
-        self.add_resource(properties, '/ginestra/properties/', strict_slashes=False, resource_class_kwargs=kwargs)

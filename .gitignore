@@ -11,15 +11,13 @@
 .eggs
 .settings
 .DS_Store
-*/.DS_Store
-*/*/.DS_Store
-*/*/*/.DS_Store
+**/*/.DS_Store
 .metadata
 
  # files created by coverage
- .cache
- .pytest_cache
- .coverage
+**/*/.cache
+**/*/.pytest_cache
+**/*/.coverage
 
  # VisualStudioCode
 .vscode/*
@@ -28,7 +26,7 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# VisualStudioCode Patch 
+# VisualStudioCode Patch
 # Ignore all local history of files
 .history
 

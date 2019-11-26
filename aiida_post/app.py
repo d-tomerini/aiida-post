@@ -1,3 +1,5 @@
+#!/usr/bin/env runaiida
+
 # -*- coding: utf-8 -*-
 """
 Daniele Tomerini for the INTERSECT project
@@ -8,8 +10,8 @@ This file heavily borrows from aiida.restapi.run_api
 
 from __future__ import absolute_import
 
-import click
 import json
+import click
 
 from aiida.cmdline.utils import decorators
 from aiida.cmdline.params.options import HOSTNAME, PORT
@@ -65,13 +67,4 @@ def extendedrest(**kwargs):
 
 
 if __name__ == '__main__':
-    """
-    Run the app accepting arguments.
-
-    For example:
-
-    verdi run app.py --host=127.0.0.2 --port=6000 --config-dir
-
-    """
-
     extendedrest()

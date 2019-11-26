@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="installation/install.html" />
+    <link rel="next" title="Installation" href="install.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,9 +79,16 @@
 
 
 
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow_howto.html">Adding new workflows</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running the app</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behaviour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-endpoints">Available endpoints</a></li>
 </ul>
 
 
@@ -149,16 +156,40 @@
   <div class="section" id="welcome-to-the-documentation-of-the-aiida-post-plugin">
 <h1>Welcome to the documentation of the AiiDA POST plugin<a class="headerlink" href="#welcome-to-the-documentation-of-the-aiida-post-plugin" title="Permalink to this headline">¶</a></h1>
 <p>The aim of this plugin is to provide a way to extend the AiiDA REST api in order to submit, check
-and retrieve ths results of a workflow.</p>
+and retrieve ths results of an AiiDA workflow.</p>
 <p>The plugin is available at <a class="reference external" href="https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida">https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida</a></p>
 <div class="section" id="user-s-guide">
 <h2>User’s guide<a class="headerlink" href="#user-s-guide" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation/install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation/install.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/install.html#python-package">Python package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#python-package">Python package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workflow_howto.html">Adding new workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workflow_howto.html#the-aiida-entrypoint-list">The AiiDA entrypoint list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow_howto.html#importing-workflows">Importing workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow_howto.html#writing-a-workflow">Writing a  workflow</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running the app</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="running.html#configuration-options">Configuration options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behaviour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-endpoints">Available endpoints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#properties">properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#submit">submit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#workflow-inputs-property">workflow_inputs/&lt;property&gt;</a></li>
 </ul>
 </li>
 </ul>
@@ -175,7 +206,7 @@ and retrieve ths results of a workflow.</p>
 </div>
 <div class="section" id="acknowledgements">
 <h1>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h1>
-<p>The plugin has been developed while workin in the <a class="reference external" href="http://theossrv1.epfl.ch/">THEOS group</a> ,
+<p>The plugin has been developed while working in the <a class="reference external" href="http://theossrv1.epfl.ch/">THEOS group</a> ,
 Theory and simulation of materials, EPFL, Lausanne (CH)</p>
 <p>This work is supported by the <cite>INTERSECT project &lt;http://intersect-project.eu&gt;_</cite>,
 Interoperable Material-to-Device simulation box for disruptive electronics.
@@ -190,7 +221,7 @@ A H2020-NMBP-TO-IND-2018 funded project: GA n. 814487</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
 
-        <a href="installation/install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
 
 
     </div>

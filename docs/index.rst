@@ -16,9 +16,19 @@ User's guide
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents:
 
-    installation/install
+    install
+
+.. toctree::
+    :maxdepth: 2
+
+    workflow_howto
+
+.. toctree::
+    :maxdepth: 2
+
+    running
+    endpoints
 
 
 Indices and tables

@@ -1,20 +1,20 @@
-.. _installation:
+.. _install:
 
- ************
- Installation
- ************
+************
+Installation
+************
 
- Prerequisites
+Prerequisites
 ===============
 
 The aiida_post extension requires an installation of AiiDA > 1.0.0, and of its REST API extension.
 To download it and installed it, preferentially inside a virtual environment, follow the instructtion you can find at this
 `page <https://aiida-core.readthedocs.io/en/latest/install/installation.html>`_.
 
-Please set up a virtual environmente with python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
-depends on asyncronous features available on python 3 only.
+Please set up a virtual environmente with Python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
+depends on asyncronous features available on Python > 3.4 only.
 
-The installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
+Quick installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
 can be done with the commands below: ::
 
      $ mkdir <your_directory>
@@ -25,7 +25,7 @@ can be done with the commands below: ::
 To simply install the most recent stable version of AiiDA from PyPi it suffices to just type in a terminal
 ``pip install aiida-core[atomic_tools,docs,advanced_plotting,rest]``.
 
-The options in square bracket are a list of useful AiiDA extensions. Only the REST extension is required.
+The options in square bracket are a list of useful AiiDA extensions. The REST extension is required for this plugin to work, as it works as an extension.
 
 Python package
 ==============
@@ -43,15 +43,10 @@ The ``-e`` option instructs to find the package specifically on the provided pat
 Updating the entry points
 -------------------------
 
-AiiDA (and its extensions) uses the ``reentry`` package to cache the entry points. This provides access to the classes and workflows avaible to AiiDA.
+AiiDA (and its extensions) uses the ``reentry`` package to cache the entry points.
+This provides access to the classes and workflows available to AiiDA.
 After installing or updating a package is necessary to update the reentry cache by typing ::
 
     reentry scan
 
 
-
-
-.. _install_optional_dependencies:
-please set up
-AiiDA depends on a number of specific third party packages. For this reason
-The git repository can be found

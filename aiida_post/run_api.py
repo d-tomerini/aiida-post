@@ -99,10 +99,12 @@ def run_api(flask_app, flask_api, **kwargs):
         PREFIX=confs.PREFIX,
         PERPAGE_DEFAULT=confs.PERPAGE_DEFAULT,
         LIMIT_DEFAULT=confs.LIMIT_DEFAULT,
-        SUPPORTED_DATABASE=confs.SUPPORTED_DATABASE,
-        AVAILABLE_CODES=confs.AVAILABLE_CODES,
-        PROPERTY_MAPPING=confs.PROPERTY_MAPPING
+        AVAILABLE_CODES=confs.AVAILABLE_CODES
     )
+
+    # properties related to the app, not rest
+
+    api_kwargs.update(dict(PROPERTY_MAPPING=confs.PROPERTY_MAPPING))
 
     api = flask_api(app, **api_kwargs)
 

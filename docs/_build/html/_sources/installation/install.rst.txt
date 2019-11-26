@@ -11,10 +11,10 @@ The aiida_post extension requires an installation of AiiDA > 1.0.0, and of its R
 To download it and installed it, preferentially inside a virtual environment, follow the instructtion you can find at this
 `page <https://aiida-core.readthedocs.io/en/latest/install/installation.html>`_.
 
-Please set up a virtual environmente with python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
-depends on asyncronous features available on python 3 only.
+Please set up a virtual environmente with Python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
+depends on asyncronous features available on Python > 3.4 only.
 
-The installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
+Quick installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
 can be done with the commands below: ::
 
      $ mkdir <your_directory>
@@ -25,7 +25,7 @@ can be done with the commands below: ::
 To simply install the most recent stable version of AiiDA from PyPi it suffices to just type in a terminal
 ``pip install aiida-core[atomic_tools,docs,advanced_plotting,rest]``.
 
-The options in square bracket are a list of useful AiiDA extensions. Only the REST extension is required.
+The options in square bracket are a list of useful AiiDA extensions. The REST extension is required for this plugin to work, as it works as an extension.
 
 Python package
 ==============

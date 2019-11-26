@@ -31,7 +31,7 @@ def cod_check(cod_dict):
             cod_recognized.update({key: value})
         else:
             cod_unrecognized.update({key: value})
-    return Dict(dict={'valid': cod_rec, 'invalid': cod_unrec})
+    return Dict(dict={'valid': cod_recognized, 'invalid': cod_unrecognized})
 
 
 @calcfunction

@@ -6,6 +6,9 @@
           "formula":"Hf O2",
           "some_data": 32
       },
-      "strictcheck": false
+      "strictcheck": false,
+      "metadata":{
+          "label": "somelabel"
+      }
     }
 }

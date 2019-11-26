@@ -8,15 +8,12 @@ from __future__ import absolute_import
 # supported workchain. Will be changed to check the available endpoint in the definitions
 
 # also will be superseded by something better, i.e. how to get
-# information from structure and property databases
-
-SUPPORTED_DATABASE = ['COD']
 
 # list of the supported codes to use in the database
 # for now, list is given by the nodes that are loaded in the database
 # in the future it will probably be given as a list of "suggested to use"
 # also, upf co not belong here
-AVAILABLE_CODES = {'qe': 667, 'siesta': None, 'upf': 'efficiency'}
+AVAILABLE_CODES = {'qe': 667, 'siesta': 668, 'upf': 'efficiency'}
 
 # map of properties to single workchain
 # it should be interesting (necessary?) to also map WHERE to
