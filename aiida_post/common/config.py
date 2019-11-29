@@ -2,9 +2,6 @@
 General variables used by the app
 """
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 # supported workchain. Will be changed to check the available endpoint in the definitions
 
 # also will be superseded by something better, i.e. how to get
@@ -23,6 +20,7 @@ PROPERTY_MAPPING = {
     'relax.pw': 'quantumespresso.pw.relax',
     'band_structure.pw': 'quantumespresso.pw.band_structure',
     'band_gap.pw': 'post.BandGap',
+    'formationenergy.qe': 'defects.formation_energy.qe'
 }
 #####################################################################
 ##BELOW COPIED AND SLIGHTLY MODIFIED FROM AIIDA REST API CONFIG FILE

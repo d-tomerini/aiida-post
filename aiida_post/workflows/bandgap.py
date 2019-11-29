@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+"""
+Very basic workchain to calculate the bandgap
+from the result of a PwBandsWorkChain workflow
+"""
+
 from __future__ import absolute_import
 from aiida import orm
 from aiida.engine import WorkChain, ToContext
@@ -18,10 +22,7 @@ class PwBandGapWorkChain(WorkChain):
         spec.input('code', valid_type=orm.Code)
         spec.input('structure', valid_type=orm.StructureData)
         #outline
-        spec.outline(
-            cls.run_band_structure, 
-            cls.get_bandgap
-        )
+        spec.outline(cls.run_band_structure, cls.get_bandgap)
         #outputs
         spec.output('output_parameters', valid_type=orm.Dict)
 
@@ -30,12 +31,9 @@ class PwBandGapWorkChain(WorkChain):
         Run the PwBandsWorkChain to compute the band structure
         """
 
-        from aiida.plugins import WorkflowFactory 
+        from aiida.plugins import WorkflowFactory
         PwBandStructureWorkChain = WorkflowFactory('quantumespresso.pw.band_structure')
-        inputs = {
-            'structure': self.inputs.structure,
-            'code': self.inputs.code
-        }
+        inputs = {'structure': self.inputs.structure, 'code': self.inputs.code}
 
         running = self.submit(PwBandStructureWorkChain, **inputs)
         self.report('launching PwBandStructureWorkChain<{}>'.format(running.pk))

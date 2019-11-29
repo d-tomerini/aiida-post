@@ -49,7 +49,10 @@ def COD_find_and_store(query):
     allcifs = importer.query(**kwargs).fetch_all()
     allstructures = []
     for structure in allcifs:
-        node = structure.get_aiida_structure()
+        try:
+            node = structure.get_aiida_structure()
+        except:
+            pass
         node.source = structure.source
         node.store()
         allstructures.append(node.uuid)

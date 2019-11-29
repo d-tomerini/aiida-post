@@ -9,8 +9,6 @@ This file heavily borrows from aiida.restapi.run_api
 """
 
 from __future__ import absolute_import
-
-import json
 import click
 
 from aiida.cmdline.utils import decorators

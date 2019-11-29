@@ -6,8 +6,8 @@ Initial code march 2019
 This module contains the general resources to be called
 by the main api
 """
+
 from __future__ import absolute_import
-from __future__ import print_function
 from flask import request
 from six.moves.urllib.parse import unquote  # pylint: disable=import-error
 
