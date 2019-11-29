@@ -4,6 +4,21 @@
 Running the app
 ***************
 
+.. warning::
+    AiiDA must be active! This implies that **at the very least** PostGres is running, so that the
+    database is accessible; to run a calculation, the RabbitMQ service should be active and the daemon running.
+
+    Check that the command ``verdi status`` returns everything working as expected:
+
+    .. code-block:: console
+
+        ✓ profile:     On profile tomerini
+        ✓ repository:  /home/dtomerini/.virtualenvs/aiida/.aiida/repository/tomerini
+        ✓ postgres:    Connected as aiida_qs_dtomerini_13d3f27e28d94d9d0f2372d27f0cc2b0@localhost:5432
+        ✓ rabbitmq:    Connected to amqp://127.0.0.1?heartbeat=600
+        ✓ daemon:      Daemon is running as PID 31452 since 2019-11-28 10:50:34
+
+
 The main executable is the file app.py, a click executable that launch an extension of the AiiDA REST api.
 The executable can be either run as ``verdi run app.py`` or by copying the wrapper
 `aiida_ginestra_interface` file is a wrapper to the bin folder and given adequate permission to be executed: ::

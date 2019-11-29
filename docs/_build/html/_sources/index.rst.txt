@@ -29,6 +29,7 @@ User's guide
 
     running
     endpoints
+    examples
 
 
 Indices and tables
