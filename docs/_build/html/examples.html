@@ -186,55 +186,56 @@ The additional hurde for this is to add a dictionary of property-workflow mappin
 <div class="section" id="searching-a-structure">
 <h2>Searching a structure<a class="headerlink" href="#searching-a-structure" title="Permalink to this headline">¶</a></h2>
 <p>I’ve written an extremely basic workflow to search for structures in the COD database.
-This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form.</p>
+This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form.
+A structure query can be performed as</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2_strict</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-<p>The file contains some wrong keywords, <code class="docutils literal notranslate"><span class="pre">schemical,</span> <span class="pre">``somedata</span></code>, that are filtered out by the workflow.
-The search effectively goes through the accepted <code class="docutils literal notranslate"><span class="pre">formula</span></code> query.
-There is an input,  <code class="docutils literal notranslate"><span class="pre">&quot;strictcheck&quot;:</span> <span class="pre">true,</span></code> that does NOT allow for  bad keywords, or even no keywords.
-No keywords means that the whole COD database will be downloaded! So this is a sanity check.</p>
+<p>If you inspect the <code class="docutils literal notranslate"><span class="pre">search_HfO2_strict.json</span></code> you see that the file contains some wrong keywords,
+as <code class="docutils literal notranslate"><span class="pre">schemical</span></code>, <code class="docutils literal notranslate"><span class="pre">somedata</span></code>, that are filtered out by the workflow.
+There is an input,  <code class="docutils literal notranslate"><span class="pre">&quot;strictcheck&quot;:</span> <span class="pre">true,</span></code> that does NOT allow for bad keywords, or even no keywords.
+No keywords means that <strong>the whole COD database</strong> will be downloaded! So this acts as a sanity check.</p>
 <p>A possible output of this command is:</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-    <span class="s2">&quot;workflow&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;attributes&quot;</span><span class="o">:</span> <span class="p">{</span>
-            <span class="s2">&quot;exit_message&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-            <span class="s2">&quot;exit_status&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-            <span class="s2">&quot;process_class&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-            <span class="s2">&quot;process_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;process_state&quot;</span><span class="o">:</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;stepper_state_info&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-            <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="p">{</span>
-                <span class="s2">&quot;core&quot;</span><span class="o">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;plugin&quot;</span><span class="o">:</span> <span class="s2">&quot;0.1a1&quot;</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;exit_message&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nt">&quot;exit_status&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nt">&quot;process_class&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nt">&quot;process_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;process_state&quot;</span><span class="p">:</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;stepper_state_info&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;core&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;plugin&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1a1&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span>
+        <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span>
     <span class="p">}</span>
 <span class="p">},</span>
-<span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-<span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-<span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
-<span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="s2">&quot;request_content&quot;</span><span class="o">:</span> <span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;calculation&quot;</span><span class="o">:</span> <span class="s2">&quot;structure.cod&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;input&quot;</span><span class="o">:</span> <span class="p">{</span>
-            <span class="s2">&quot;codquery&quot;</span><span class="o">:</span> <span class="p">{</span>
-                <span class="s2">&quot;formula&quot;</span><span class="o">:</span> <span class="s2">&quot;Hf O2&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;schemical_name&quot;</span><span class="o">:</span> <span class="s2">&quot;wurtzite&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;some_data&quot;</span><span class="o">:</span> <span class="mi">32</span>
+<span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+<span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+<span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+<span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;structure.cod&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;codquery&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;formula&quot;</span><span class="p">:</span> <span class="s2">&quot;Hf O2&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;schemical_name&quot;</span><span class="p">:</span> <span class="s2">&quot;wurtzite&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;some_data&quot;</span><span class="p">:</span> <span class="mi">32</span>
             <span class="p">},</span>
-            <span class="s2">&quot;strictcheck&quot;</span><span class="o">:</span> <span class="kc">true</span>
+            <span class="nt">&quot;strictcheck&quot;</span><span class="p">:</span> <span class="kc">true</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;node&quot;</span><span class="o">:</span> <span class="s2">&quot;b3e4652d-5c04-40ee-9625-833ef2b49c6b&quot;</span>
+    <span class="nt">&quot;node&quot;</span><span class="p">:</span> <span class="s2">&quot;b3e4652d-5c04-40ee-9625-833ef2b49c6b&quot;</span>
 <span class="p">},</span>
-<span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
-<span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
-<span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
+<span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+<span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 </pre></div>
 </div>
 <p>In this response you should focus on the <code class="docutils literal notranslate"><span class="pre">workflow{uuid}</span></code> identifier, that is required for
@@ -247,42 +248,43 @@ check the status of the calculation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">status</span><span class="o">/</span><span class="mi">03</span><span class="n">d55d92</span><span class="o">-</span><span class="mi">8589</span><span class="o">-</span><span class="mi">4587</span><span class="o">-</span><span class="n">b2b0</span><span class="o">-</span><span class="mi">2108</span><span class="n">f18f2856</span>
 </pre></div>
 </div>
-<p>That should give a negative response (your uuid should of course differ from mine!), that looks like:</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;logs&quot;</span><span class="o">:</span> <span class="p">[</span>
+<p>That should give a negative response (your uuid should of course differ from mine!), since we
+defined non-existing keywords. The http response will look like:</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;logs&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;dbnode_id&quot;</span><span class="o">:</span> <span class="mi">5996</span><span class="p">,</span>
-                <span class="s2">&quot;levelname&quot;</span><span class="o">:</span> <span class="s2">&quot;REPORT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;loggername&quot;</span><span class="o">:</span> <span class="s2">&quot;aiida.orm.nodes.process.workflow.workchain.WorkChainNode&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;message&quot;</span><span class="o">:</span> <span class="s2">&quot;[5996|CODImportWorkChain|check_keywords]: The query contains invalid keys: {&#39;some_data&#39;: 32, &#39;schemical_name&#39;: &#39;wurtzite&#39;}&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;time&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span>
+                <span class="nt">&quot;dbnode_id&quot;</span><span class="p">:</span> <span class="mi">5996</span><span class="p">,</span>
+                <span class="nt">&quot;levelname&quot;</span><span class="p">:</span> <span class="s2">&quot;REPORT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;loggername&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida.orm.nodes.process.workflow.workchain.WorkChainNode&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;[5996|CODImportWorkChain|check_keywords]: The query contains invalid keys: {&#39;some_data&#39;: 32, &#39;schemical_name&#39;: &#39;wurtzite&#39;}&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">&quot;workflow&quot;</span><span class="o">:</span> <span class="p">{</span>
-            <span class="s2">&quot;attributes&quot;</span><span class="o">:</span> <span class="p">{</span>
-                <span class="s2">&quot;exit_message&quot;</span><span class="o">:</span> <span class="s2">&quot;The query contains invalid keywords&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;exit_status&quot;</span><span class="o">:</span> <span class="mi">201</span><span class="p">,</span>
-                <span class="s2">&quot;process_class&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;process_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_state&quot;</span><span class="o">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;stepper_state_info&quot;</span><span class="o">:</span> <span class="s2">&quot;1:if_(should_check_query)&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;core&quot;</span><span class="o">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;plugin&quot;</span><span class="o">:</span> <span class="s2">&quot;0.1a1&quot;</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;exit_message&quot;</span><span class="p">:</span> <span class="s2">&quot;The query contains invalid keywords&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;exit_status&quot;</span><span class="p">:</span> <span class="mi">201</span><span class="p">,</span>
+                <span class="nt">&quot;process_class&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;process_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_state&quot;</span><span class="p">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;stepper_state_info&quot;</span><span class="p">:</span> <span class="s2">&quot;1:if_(should_check_query)&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;core&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;plugin&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1a1&quot;</span>
                 <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span>
+            <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:17:29 GMT&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -299,51 +301,52 @@ through a scheduler) or <code class="docutils literal notranslate"><span class="
 </div>
 <div class="section" id="submitting-a-search-with-no-strict-checks">
 <h2>Submitting a search with no strict checks<a class="headerlink" href="#submitting-a-search-with-no-strict-checks" title="Permalink to this headline">¶</a></h2>
-<p>If we submit another example where the strict check has been disabled</p>
+<p>If we submit another example where the strict check has been disabled,
+the search effectively goes through the accepted <code class="docutils literal notranslate"><span class="pre">formula</span></code> keyword and ignore all the rest:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span>  <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 <p>Returns</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-   <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-       <span class="s2">&quot;workflow&quot;</span><span class="o">:</span> <span class="p">{</span>
-           <span class="s2">&quot;attributes&quot;</span><span class="o">:</span> <span class="p">{</span>
-               <span class="s2">&quot;exit_message&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-               <span class="s2">&quot;exit_status&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-               <span class="s2">&quot;process_class&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-               <span class="s2">&quot;process_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;process_state&quot;</span><span class="o">:</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;stepper_state_info&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-               <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="p">{</span>
-                   <span class="s2">&quot;core&quot;</span><span class="o">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;plugin&quot;</span><span class="o">:</span> <span class="s2">&quot;0.1a1&quot;</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+       <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="p">{</span>
+           <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;exit_message&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+               <span class="nt">&quot;exit_status&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+               <span class="nt">&quot;process_class&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+               <span class="nt">&quot;process_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;process_state&quot;</span><span class="p">:</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;stepper_state_info&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+               <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+                   <span class="nt">&quot;core&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+                   <span class="nt">&quot;plugin&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1a1&quot;</span>
                <span class="p">}</span>
            <span class="p">},</span>
-           <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span>
+           <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
+           <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span>
        <span class="p">}</span>
    <span class="p">},</span>
-   <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-   <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;request_content&quot;</span><span class="o">:</span> <span class="p">{</span>
-       <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-           <span class="s2">&quot;calculation&quot;</span><span class="o">:</span> <span class="s2">&quot;structure.cod&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;input&quot;</span><span class="o">:</span> <span class="p">{</span>
-               <span class="s2">&quot;codquery&quot;</span><span class="o">:</span> <span class="p">{</span>
-                   <span class="s2">&quot;formula&quot;</span><span class="o">:</span> <span class="s2">&quot;Hf O2&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;schemical_name&quot;</span><span class="o">:</span> <span class="s2">&quot;wurtzite&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;some_data&quot;</span><span class="o">:</span> <span class="mi">32</span>
+   <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+   <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="p">{</span>
+       <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+           <span class="nt">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;structure.cod&quot;</span><span class="p">,</span>
+           <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;codquery&quot;</span><span class="p">:</span> <span class="p">{</span>
+                   <span class="nt">&quot;formula&quot;</span><span class="p">:</span> <span class="s2">&quot;Hf O2&quot;</span><span class="p">,</span>
+                   <span class="nt">&quot;schemical_name&quot;</span><span class="p">:</span> <span class="s2">&quot;wurtzite&quot;</span><span class="p">,</span>
+                   <span class="nt">&quot;some_data&quot;</span><span class="p">:</span> <span class="mi">32</span>
                <span class="p">},</span>
-               <span class="s2">&quot;strictcheck&quot;</span><span class="o">:</span> <span class="kc">false</span>
+               <span class="nt">&quot;strictcheck&quot;</span><span class="p">:</span> <span class="kc">false</span>
            <span class="p">}</span>
        <span class="p">},</span>
-       <span class="s2">&quot;node&quot;</span><span class="o">:</span> <span class="s2">&quot;f0edad7a-09b2-404e-a270-f4b696d21fcc&quot;</span>
+       <span class="nt">&quot;node&quot;</span><span class="p">:</span> <span class="s2">&quot;f0edad7a-09b2-404e-a270-f4b696d21fcc&quot;</span>
    <span class="p">},</span>
-   <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+   <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -352,46 +355,46 @@ through a scheduler) or <code class="docutils literal notranslate"><span class="
 </pre></div>
 </div>
 <p>yelds:</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;logs&quot;</span><span class="o">:</span> <span class="p">[</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;logs&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;dbnode_id&quot;</span><span class="o">:</span> <span class="mi">6003</span><span class="p">,</span>
-                <span class="s2">&quot;levelname&quot;</span><span class="o">:</span> <span class="s2">&quot;REPORT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;loggername&quot;</span><span class="o">:</span> <span class="s2">&quot;aiida.orm.nodes.process.workflow.workchain.WorkChainNode&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;message&quot;</span><span class="o">:</span> <span class="s2">&quot;[6003|CODImportWorkChain|find_structures_and_return]: 6 structures satisfies the query&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;time&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span>
+                <span class="nt">&quot;dbnode_id&quot;</span><span class="p">:</span> <span class="mi">6003</span><span class="p">,</span>
+                <span class="nt">&quot;levelname&quot;</span><span class="p">:</span> <span class="s2">&quot;REPORT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;loggername&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida.orm.nodes.process.workflow.workchain.WorkChainNode&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;[6003|CODImportWorkChain|find_structures_and_return]: 6 structures satisfies the query&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">&quot;workflow&quot;</span><span class="o">:</span> <span class="p">{</span>
-            <span class="s2">&quot;attributes&quot;</span><span class="o">:</span> <span class="p">{</span>
-                <span class="s2">&quot;exit_message&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;exit_status&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;process_class&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;process_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_state&quot;</span><span class="o">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;stepper_state_info&quot;</span><span class="o">:</span> <span class="s2">&quot;2:find_structures_and_return&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;core&quot;</span><span class="o">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;plugin&quot;</span><span class="o">:</span> <span class="s2">&quot;0.1a1&quot;</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;exit_message&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;exit_status&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="nt">&quot;process_class&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;process_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_state&quot;</span><span class="p">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;stepper_state_info&quot;</span><span class="p">:</span> <span class="s2">&quot;2:find_structures_and_return&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;core&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;plugin&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1a1&quot;</span>
                 <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span>
+            <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Now we have a different log, with the succesful end of workflow (6 structures retrieved),
-exit_status equal zero, e no exit_message</p>
+<code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is  equal zero, e no <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> signal a correct execution of the workflow.</p>
 </div>
 <div class="section" id="checking-the-outputs-of-a-workflow">
 <h2>Checking the outputs of a workflow<a class="headerlink" href="#checking-the-outputs-of-a-workflow" title="Permalink to this headline">¶</a></h2>
@@ -401,57 +404,57 @@ a process:</p>
 </pre></div>
 </div>
 <p>That returns a response that looks like:</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;outgoing&quot;</span><span class="o">:</span> <span class="p">[</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;outgoing&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;full_type&quot;</span><span class="o">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.cod_check&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mi">6004</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="o">:</span> <span class="s2">&quot;cod_check&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_type&quot;</span><span class="o">:</span> <span class="s2">&quot;call_calc&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mtime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;node_type&quot;</span><span class="o">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_type&quot;</span><span class="o">:</span> <span class="s2">&quot;aiida_post.calculations.COD.cod_check&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;user_id&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;f732e9c3-99ff-4cd1-87f2-876848a0f7c7&quot;</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.cod_check&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6004</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;cod_check&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_calc&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida_post.calculations.COD.cod_check&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;f732e9c3-99ff-4cd1-87f2-876848a0f7c7&quot;</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;full_type&quot;</span><span class="o">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mi">6006</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="o">:</span> <span class="s2">&quot;COD_find_and_store&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_label&quot;</span><span class="o">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_type&quot;</span><span class="o">:</span> <span class="s2">&quot;call_calc&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mtime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;node_type&quot;</span><span class="o">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_type&quot;</span><span class="o">:</span> <span class="s2">&quot;aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;user_id&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;19ba2bdb-c631-4c80-90de-d0904af82f27&quot;</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6006</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_calc&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;19ba2bdb-c631-4c80-90de-d0904af82f27&quot;</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;full_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.list.List.|&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mi">6013</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_label&quot;</span><span class="o">:</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_type&quot;</span><span class="o">:</span> <span class="s2">&quot;return&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mtime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;node_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.list.List.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_type&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;user_id&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;36b1abcd-d28c-4362-8147-08e279e4ca5d&quot;</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.list.List.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6013</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;return&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.list.List.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;36b1abcd-d28c-4362-8147-08e279e4ca5d&quot;</span>
             <span class="p">}</span>
         <span class="p">]</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -466,44 +469,44 @@ databases. <code class="docutils literal notranslate"><span class="pre">id</span
 </pre></div>
 </div>
 <p>That returns the inputs of a workflow (or for a node, all the nodes that points to it):</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;incoming&quot;</span><span class="o">:</span> <span class="p">[</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;incoming&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;full_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.dict.Dict.|&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mi">6001</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_label&quot;</span><span class="o">:</span> <span class="s2">&quot;codquery&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_type&quot;</span><span class="o">:</span> <span class="s2">&quot;input_work&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mtime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;node_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.dict.Dict.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_type&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;user_id&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;1a6cfe33-4275-4320-8f35-da2cacd9d43a&quot;</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.dict.Dict.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6001</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;codquery&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;input_work&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.dict.Dict.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;1a6cfe33-4275-4320-8f35-da2cacd9d43a&quot;</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;ctime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;full_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.bool.Bool.|&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mi">6002</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_label&quot;</span><span class="o">:</span> <span class="s2">&quot;strictcheck&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;link_type&quot;</span><span class="o">:</span> <span class="s2">&quot;input_work&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mtime&quot;</span><span class="o">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;node_type&quot;</span><span class="o">:</span> <span class="s2">&quot;data.bool.Bool.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;process_type&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
-                <span class="s2">&quot;user_id&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;uuid&quot;</span><span class="o">:</span> <span class="s2">&quot;5751b30f-ab5f-4dc7-a9c8-0e864d6f9d5f&quot;</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:58 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.bool.Bool.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6002</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;strictcheck&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;input_work&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.bool.Bool.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;5751b30f-ab5f-4dc7-a9c8-0e864d6f9d5f&quot;</span>
             <span class="p">}</span>
         <span class="p">]</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -514,10 +517,10 @@ are stored in the database.</p>
 </pre></div>
 </div>
 <p>That returns</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;attributes&quot;</span><span class="o">:</span> <span class="p">{</span>
-            <span class="s2">&quot;list&quot;</span><span class="o">:</span> <span class="p">[</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;list&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="s2">&quot;ffdf766d-6130-47da-b62f-e2a8ef063fa8&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;47090f18-3c80-4482-b4ea-89e4bd1a6ad3&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;c3d4b113-8faa-4caa-8141-2d76f149c843&quot;</span><span class="p">,</span>
@@ -527,17 +530,17 @@ are stored in the database.</p>
             <span class="p">]</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;36b1abcd-d28c-4362-8147-08e279e4ca5d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="o">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="s2">&quot;/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;query_string&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="o">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;url_root&quot;</span><span class="o">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;36b1abcd-d28c-4362-8147-08e279e4ca5d&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>And gives us a list of the uuid of the structure data that we retrieved from the COD</p>
+<p>And gives us a list of the uuid of the structure data that we retrieved from the COD.</p>
 </div>
 </div>
 

@@ -9,7 +9,7 @@ Welcome to the documentation of the AiiDA POST plugin
 The aim of this plugin is to provide a way to extend the AiiDA REST api in order to submit, check
 and retrieve ths results of an AiiDA workflow.
 
-The plugin is available at https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida
+The plugin is available at `this repository. <https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida>`_
 
 User's guide
 ++++++++++++
@@ -43,9 +43,9 @@ Indices and tables
 Acknowledgements
 ===================
 
-The plugin has been developed while working in the `THEOS group <http://theossrv1.epfl.ch/>`_ ,
-Theory and simulation of materials, EPFL, Lausanne (CH)
+The plugin has been developed while working in the `THEOS group <http://theossrv1.epfl.ch/>`_,
+Theory and simulation of materials, EPFL, Lausanne (CH).
 
-This work is supported by the `INTERSECT project <http://intersect-project.eu>_`,
+This work is supported by the `INTERSECT project <http://intersect-project.eu>`_,
 Interoperable Material-to-Device simulation box for disruptive electronics.
-A H2020-NMBP-TO-IND-2018 funded project: GA n. 814487
+A H2020-NMBP-TO-IND-2018 funded project: GA n. 814487.

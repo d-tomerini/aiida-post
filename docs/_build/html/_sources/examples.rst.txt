@@ -30,18 +30,19 @@ Searching a structure
 +++++++++++++++++++++
 
 I've written an extremely basic workflow to search for structures in the COD database.
-This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form. ::
+This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form.
+A structure query can be performed as ::
 
     http 127.0.0.1:5000/intersect/v4/submit < examples/search_HfO2_strict.json
 
-The file contains some wrong keywords, ``schemical, ``somedata``, that are filtered out by the workflow.
-The search effectively goes through the accepted ``formula`` query.
-There is an input,  ``"strictcheck": true,`` that does NOT allow for  bad keywords, or even no keywords.
-No keywords means that the whole COD database will be downloaded! So this is a sanity check.
+If you inspect the ``search_HfO2_strict.json`` you see that the file contains some wrong keywords,
+as ``schemical``, ``somedata``, that are filtered out by the workflow.
+There is an input,  ``"strictcheck": true,`` that does NOT allow for bad keywords, or even no keywords.
+No keywords means that **the whole COD database** will be downloaded! So this acts as a sanity check.
 
 A possible output of this command is:
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
     "data": {
@@ -95,9 +96,10 @@ check the status of the calculation: ::
 
     http 127.0.0.1:5000/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856
 
-That should give a negative response (your uuid should of course differ from mine!), that looks like:
+That should give a negative response (your uuid should of course differ from mine!), since we
+defined non-existing keywords. The http response will look like:
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "data": {
@@ -155,13 +157,14 @@ through a scheduler) or ``running`` (some calculation is going on, at same stage
 Submitting a search with no strict checks
 +++++++++++++++++++++++++++++++++++++++++
 
-If we submit another example where the strict check has been disabled ::
+If we submit another example where the strict check has been disabled,
+the search effectively goes through the accepted ``formula`` keyword and ignore all the rest: ::
 
     http 127.0.0.1:5000/intersect/v4/ginestra/submit <  examples/search_HfO2.json
 
 Returns
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
        "data": {
@@ -211,7 +214,7 @@ And upon checking on the node ``1e6d99e4-1966-45c7-b481-55513d3ed827``: ::
 
 yelds:
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "data": {
@@ -251,7 +254,7 @@ yelds:
     }
 
 Now we have a different log, with the succesful end of workflow (6 structures retrieved),
-exit_status equal zero, e no exit_message
+``exit_status`` is  equal zero, e no ``exit_message`` signal a correct execution of the workflow.
 
 
 
@@ -265,7 +268,7 @@ a process: ::
 
 That returns a response that looks like:
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "data": {
@@ -336,7 +339,7 @@ There is a similar endpoint for inputs, instead that for outputs: ::
 
 That returns the inputs of a workflow (or for a node, all the nodes that points to it):
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "data": {
@@ -387,7 +390,7 @@ Coming back to the results, we can pirnt the content by querying for the attribu
 
 That returns
 
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "data": {
@@ -411,7 +414,7 @@ That returns
         "url_root": "http://127.0.0.1:5000/"
     }
 
-And gives us a list of the uuid of the structure data that we retrieved from the COD
+And gives us a list of the uuid of the structure data that we retrieved from the COD.
 
 
 
