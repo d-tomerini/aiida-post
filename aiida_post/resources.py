@@ -18,13 +18,13 @@ from aiida.restapi.resources import BaseResource, ProcessNode
 from aiida_post.submit.distributor import Distribute
 
 
-class submit(BaseResource):
+class GSubmit(BaseResource):
     """
     Endpoint to submit AiiDA workflows
     """
 
     def __init__(self, **kwargs):
-        super(submit, self).__init__(**kwargs)
+        super(GSubmit, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -37,26 +37,46 @@ class submit(BaseResource):
         Data is handled and responded accordingly
         """
         from aiida.orm import Dict
-        from aiida_post.tools.convert import Request_To_Dictionary
+        #from aiida_post.tools.convert import Request_To_Dictionary
 
         # initialize response
+        path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
+
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+
+        #reqdata = Request_To_Dictionary(request)
+        content = request.get_json()
+        node = Dict(dict=content).store()
+
+        # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
+        submission = pathlist[-1]
+        required_keys = ['calculation', 'input']
+        for key in required_keys:
+            if key not in content:
+                raise ValueError('Not found compulsory key <{}> is json'.format(key))
+        prop = content['calculation']
+        # simply assume the workflow is loaded from the property from the entrypoint
+
+        if submission == 'workflow':
+            # load the entrypoint directly
+            entrypoint = prop
+        else:
+            # get the workflow associated with the property
+            available_properties = self.extended['PROPERTY_MAPPING']
+            if prop not in available_properties:
+                raise ValueError('<{}> is not in the list of available properties.'.format(prop))
+            entrypoint = available_properties[prop]
 
         # This takes some additional info from the flask query, and store it into a node
         # not sure yet if it makes sense to store it.
         # but at least it can be returned after the request
         #HttpData = DataFactory('post.HttpData')
 
-        reqdata = Request_To_Dictionary(request)
-        node = Dict(dict=reqdata).store()
+        response = Distribute(content, entrypoint)
 
-        response = Distribute(
-            reqdata['json'],  # the actual json input of the request
-            self.extended
-        )
-
-        request_content = dict(data=reqdata['json'], node=node.uuid)
+        request_content = dict(content, node=node.uuid)
         data = dict(
             method=request.method,
             url=url,
@@ -72,19 +92,19 @@ class submit(BaseResource):
         return self.utils.build_response(status=200, data=data)
 
 
-class properties(BaseResource):
+class GProperties(BaseResource):
     """
     Endpoint to return a list of supported calculation properties
     """
 
     def __init__(self, **kwargs):
-        super(properties, self).__init__(**kwargs)
+        super(GProperties, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
-    def get(self):
+    def get(self, node_id=None):
         """
         Returns a list of the properties that are available for calculation
         This is related to the entry points on aiida_post.workflow, that relate
@@ -93,11 +113,35 @@ class properties(BaseResource):
         is called inside a result node of the workflow, as we would not want to have a
         link with the specific name, but a general attribute/node type/name
         """
-
+        from aiida.plugins import WorkflowFactory
+        from aiida_post.common.formatter import pop_underscore
+        # Unpack the URL
+        path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
 
-        mapping = self.extended['PROPERTY_MAPPING']
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+
+        if pathlist[-1] == 'properties':
+            # just a request for the available properties connected to a workflow
+            outdata = self.extended['PROPERTY_MAPPING']
+            resource_type = 'Information about the properties available for calculation'
+        else:
+            available_properties = self.extended['PROPERTY_MAPPING']
+            try:
+                entry = available_properties[node_id]
+            except:
+                raise ValueError('<{}> is not in the list of available properties.'.format(node_id))
+
+            workflow = WorkflowFactory(entry)
+            schema = pathlist[-1]
+            resource_type = 'Information about the workflow {}'.format(schema)
+            # which part of the description do we want to print out?
+            description = workflow.get_description()
+            mydata = description['spec'][schema]
+            if schema != 'outline':
+                pop_underscore(mydata)
+            outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
         data = dict(
             method=request.method,
@@ -106,15 +150,15 @@ class properties(BaseResource):
             path=request.path,
             id=None,
             query_string=request.query_string.decode('utf-8'),
-            resource_type='Information about the properties available for calculation',
+            resource_type=resource_type,
             request_content=None,
-            data=mapping
+            data=outdata
         )
 
         return self.utils.build_response(status=200, data=data)
 
 
-class status(ProcessNode):
+class GStatus(ProcessNode):
     """
     endpoint to check the status of a workflow, together with its log messages
     """
@@ -150,49 +194,49 @@ class status(ProcessNode):
         return self.utils.build_response(status=200, data=data)
 
 
-class workflow_inputs(BaseResource):
+class GWorkflows(BaseResource):
     """
-    Endpoint to return the workflow input specification
+    Endpoint to return the workflow input specification.
+    This takes into account the workflow entry point, and not the property, as to be more general.
+    It is a generalization of the endpoint properties
     """
 
     def __init__(self, **kwargs):
-        super(workflow_inputs, self).__init__(**kwargs)
+        super(GWorkflows, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
-    def get(self, node_id=None):
+    def get(self, entrypoint=None):
         """
-        Returns all the possible inputs of a workflow as a schema
+        Returns all the possible inputs, outputs or outline of a workflow
         """
         from aiida.plugins import WorkflowFactory
-        from aiida_post.submit.distributor import Get_Namespace_Schema
-        from aiida_post.common.threaded import get_builder
+        from aiida.plugins.entry_point import get_entry_point_names
+        from aiida_post.common.formatter import pop_underscore
 
         # Unpack the URL
         path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
 
-        available_properties = self.extended['PROPERTY_MAPPING']
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
 
-        try:
-            entry = available_properties[node_id]
-        except:
-            raise ValueError('<{}> is not in the list of available properties.'.format(node_id))
-
-        WorkFlow = WorkflowFactory(entry)
-
-        # creating the namespaces for the workflow, from the
-
-        future = get_builder(WorkFlow)
-        builder = future.result()
-
-        schema = {}
-        Get_Namespace_Schema(builder._port_namespace, schema)
-
-        output = dict(workflow_input_schema=schema)
+        if not entrypoint:
+            # return a list of the available entry points for workflows
+            outdata = get_entry_point_names('aiida.workflows')
+            resource_type = 'List of all the available entrypoints for AiiDA workflows'
+        else:
+            schema = pathlist[-1]
+            resource_type = 'Information about the workflow {}'.format(schema)
+            workflow = WorkflowFactory(entrypoint)
+            # which part of the description do we want to print out?
+            description = workflow.get_description()
+            mydata = description['spec'][schema]
+            if schema != 'outline':
+                pop_underscore(mydata)
+            outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
         data = dict(
             method=request.method,
@@ -201,8 +245,8 @@ class workflow_inputs(BaseResource):
             path=path,
             id=None,
             query_string=request.query_string.decode('utf-8'),
-            resource_type='return workflow input schema',
-            data=output
+            resource_type=resource_type,
+            data=outdata
         )
 
         return self.utils.build_response(status=200, data=data)
@@ -211,13 +255,13 @@ class workflow_inputs(BaseResource):
 # Additional endpoints to implement if useful
 
 
-class existing(BaseResource):
+class GExisting(BaseResource):
     """
     Endpoint to query for existing resources types
     """
 
     def __init__(self, **kwargs):
-        super(existing, self).__init__(**kwargs)
+        super(GExisting, self).__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -232,7 +276,7 @@ class existing(BaseResource):
         raise ValueError('Endpoint not yet implemented')
 
 
-class duplicates(BaseResource):
+class GDuplicates(BaseResource):
     """
     Endpoint to query for existing queries of the same type
     Probably I need to save a POST query and look for dictionary databases of the same type.
@@ -246,7 +290,7 @@ class duplicates(BaseResource):
         raise ValueError('Endpoint not yet implemented')
 
 
-class app_nodes(BaseResource):
+class GAppNodes(BaseResource):
     """
     Endpoint to return all the already executed calculation of a specific kind
     Useful? To implement

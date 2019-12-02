@@ -18,3 +18,16 @@ def format_wf(workflow):
         ctime=workflow.ctime,
         attributes={key: workflow.attributes.get(key) for key in interesting_process_attributes}
     )
+
+
+def pop_underscore(dictionary):
+    """
+    Recursively remove keys of the dictionary that contains an underscore
+    """
+
+    list_keys = list(dictionary.keys())
+    for key in list_keys:
+        if isinstance(dictionary[key], dict):
+            pop_underscore(dictionary[key])
+        if key.startswith('_'):
+            del dictionary[key]

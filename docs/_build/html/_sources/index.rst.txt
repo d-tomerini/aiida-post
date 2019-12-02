@@ -25,7 +25,7 @@ User's guide
     workflow_howto
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     running
     endpoints

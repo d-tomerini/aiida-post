@@ -14,7 +14,7 @@ from aiida.common import exceptions
 from aiida_post.common.threaded import get_builder, submit_builder
 
 
-def Distribute(request, info):
+def Distribute(request, entrypoint):
     """
     After the retrieval of the structure, we proceed with the distribution of the task
     according to the requested data.
@@ -27,24 +27,7 @@ def Distribute(request, info):
     response = {}
     wfinfo = None
 
-    # this needs to be handled by schemas for future-proofness
-
-    required_keys = ['calculation', 'input']
-    for key in required_keys:
-        if key not in request:
-            raise ValueError('Not found compulsory key <{}> is json'.format(key))
-
-    prop = request['calculation']
-
-    # initial checks
-    # check my property list
-    available_properties = info['PROPERTY_MAPPING']
-
-    if prop not in available_properties:
-        raise ValueError('<{}> is not in the list of available properties.'.format(prop))
-
-    entry = available_properties[prop]
-    WorkFlow = WorkflowFactory(entry)
+    WorkFlow = WorkflowFactory(entrypoint)
 
     # creating the namespaces for the workflow, from the
     future = get_builder(WorkFlow)
@@ -54,7 +37,6 @@ def Distribute(request, info):
     #Assign_code(builder, req)
     # Assign ports to the workflow
     Process_NameSpaces(builder, request['input'])
-    print(('\n {} \n \n '.format(builder)))
 
     future = submit_builder(builder)
     workflow = future.result()
@@ -184,7 +166,7 @@ def To_AiiDA_Type(data, valid):
             output = node
         except:
             raise exceptions.InputValidationError(
-                'Error, expected {} of key {} to be a node instance, but I cannot load <{}> .'.format(data, key, node)
+                'Error, expected {} to be a node instance, but I cannot load <{}> .'.format(data, node)
             )
 
     return output

@@ -26,8 +26,8 @@ Again, beware! The examples required at the very minimum:
 I'm going to assume that the files are in ``examples/``.
 
 
-Searching a structure
-+++++++++++++++++++++
+Searching for a crystal structure
++++++++++++++++++++++++++++++++++
 
 I've written an extremely basic workflow to search for structures in the COD database.
 This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form.
@@ -259,7 +259,7 @@ Now we have a different log, with the succesful end of workflow (6 structures re
 
 
 Checking the outputs of a workflow
-+++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++
 
 We can now use one of the standard endpoints of the AiiDA rest api to have a list of the outputs of
 a process: ::
@@ -415,9 +415,4 @@ That returns
     }
 
 And gives us a list of the uuid of the structure data that we retrieved from the COD.
-
-
-
-
-
 

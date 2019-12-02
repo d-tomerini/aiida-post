@@ -1,6 +1,6 @@
 """
 Very basic workchain to calculate the bandgap
-from the result of a PwBandsWorkChain workflow
+as an overlay of a PwBandsWorkChain workflow
 """
 
 from __future__ import absolute_import
