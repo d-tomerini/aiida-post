@@ -47,7 +47,7 @@ class InterfaceApi(AiidaApi):
             GProperties,
             '/ginestra/properties/',
             '/ginestra/properties/<string:node_id>/',
-            '/ginestra/properties/<string:nodeS_id>/inputs/',
+            '/ginestra/properties/<string:node_id>/inputs/',
             '/ginestra/properties/<string:node_id>/outputs/',
             '/ginestra/properties/<string:node_id>/outline/',
             strict_slashes=False,
