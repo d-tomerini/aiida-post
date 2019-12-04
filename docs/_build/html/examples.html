@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="General Behaviour" href="endpoints.html" />
+    <link rel="prev" title="General Behavior" href="endpoints.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,13 +87,16 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running the app</a></li>
-<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behaviour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-endpoints">Available endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behavior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-intersect-endpoints">Available intersect endpoints</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#structures-in-the-aiida-database">Structures in the AiiDA database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#searching-for-a-crystal-structure">Searching for a crystal structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checking-the-status-of-the-search">Checking the status of the search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#submitting-a-search-with-no-strict-checks">Submitting a search with no strict checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#asking-information-about-the-available-properties-to-calculate">Asking information about the available properties to calculate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#asking-information-about-the-inputs-of-workflow">Asking information about the inputs of workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checking-the-outputs-of-a-workflow">Checking the outputs of a workflow</a></li>
 </ul>
 </li>
@@ -169,32 +172,88 @@
 <p>Again, beware! The examples required at the very minimum:</p>
 <ul class="simple">
 <li><p>A working installation of AiiDA, with the REST api working.</p></li>
-<li><p>AiiDA <strong>must</strong>  be active. All the basic calls to the database requires postgresql to be active;
-each workflow submission requires RabbitMQ to be active <strong>and</strong> the daemon to be running, to broadcast the information</p></li>
-<li><p>The app should be running. In the examples I’m going to assume no change to the basic setup, meaning that the app listen to requests
-at <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/intersect/v4/</span></code></p></li>
-<li><p>Examples using Quantum ESPRESSO requires the installation of the <cite>aiida-quantumespresso</cite> plugin, and at least of a pw.x
-executable.</p></li>
-<li><p>Examples with the <cite>aiida-defect</cite> workflows requires the installation of the aiida-defect plugin by Conrad Johnston.
-This plugin requires the aiida-quantum espresso, and installed ph.x and pp.x from Quantum ESPRESSO.</p></li>
-<li><p>Of course, in general when you add a workflow, you need to have installed the plugin and a code!
-The additional hurde for this is to add a dictionary of property-workflow mapping.</p></li>
-<li><p>It is probably worth to have an endpoint just by selecting a workflow and not a property, for generality…</p></li>
+<li><p>AiiDA <strong>must</strong>  be active. All the basic calls to the database requires postgresql to be active; each workflow submission requires RabbitMQ to be active <strong>and</strong> the daemon to be running, to broadcast the information</p></li>
+<li><p>The app should be running. In the examples I’m going to assume no change to the basic setup, meaning that the app listen to requests at <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/api/v4/</span></code></p></li>
+<li><p>Examples using Quantum ESPRESSO requires the installation of the <cite>aiida-quantumespresso</cite> plugin, and at least of a pw.x executable.</p></li>
+<li><p>Examples with the <cite>aiida-defect</cite> workflows requires the installation of the aiida-defect plugin by Conrad Johnston. This plugin requires the aiida-quantum espresso, and installed ph.x and pp.x from Quantum ESPRESSO.</p></li>
+<li><p>Of course, in general when you add a workflow, you need to have installed the plugin and a code! The additional hurdle for this is to add a dictionary of property-workflow mapping.</p></li>
 </ul>
 <p>I’m going to assume that the files are in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>.</p>
+</div>
+<div class="section" id="structures-in-the-aiida-database">
+<h2>Structures in the AiiDA database<a class="headerlink" href="#structures-in-the-aiida-database" title="Permalink to this headline">¶</a></h2>
+<p>Let’s say I want to run a calculation on SiO<sub>2</sub>.
+The first thing I might want to check is whether or nor such a structure node is available in my AiiDA database.
+To look for it, I can query the database as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula=&quot;O2Si&quot;&amp;chemical_formula_type=&quot;hill_compact&quot;
+</pre></div>
+</div>
+<p>Where the <code class="docutils literal notranslate"><span class="pre">chemical</span> <span class="pre">formula</span></code> is the string that we want to use as a comparison to the calculated value from the database, and the <code class="docutils literal notranslate"><span class="pre">chemical_formula_type</span></code> provides the grammar of how this formula is written.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">hill</span></code> formula counts all the atoms in the unit cell, and order the types alphabetically except for Oxygen; so, it differentiate between SiO<sub>2</sub>  and Si<sub>10</sub> O<sub>20</sub>.
+If we choose <code class="docutils literal notranslate"><span class="pre">hill_compact</span></code> we can consider formulas at the minimal terms between the atomic ratios.
+For now it is not possible to execute complex queries as <em>I want</em> SiO<sub>n</sub>, <em>with n &gt; 3</em>; this will be supported when the <code class="docutils literal notranslate"><span class="pre">optimade</span></code> specification are available.</p>
+<p>The database query will return a list of the nodes that satisfy the request. Due to the simple implementation, for now the <code class="docutils literal notranslate"><span class="pre">page</span></code> or <code class="docutils literal notranslate"><span class="pre">limit</span></code> specifications are ignored:</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span>    <span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 22 Nov 2019 15:39:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4023</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 22 Nov 2019 15:39:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;b2b7ec7e-0155-4a5e-b820-45a8ac8ffb0d&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 22 Nov 2019 15:39:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4024</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 22 Nov 2019 15:39:02 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;066cce6e-9678-4ca3-beb3-576850a5f349&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Mon, 02 Dec 2019 10:57:31 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.|&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6048</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Mon, 02 Dec 2019 10:57:31 GMT&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data.structure.StructureData.&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;15753414-601b-4fb1-b29a-245a8011a394&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/derived_data/structuredata&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;chemical_formula=HfO2&amp;chemical_formula_type=hill_compact&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;structuredata search&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula=HfO2&amp;    chemical_formula_type=hill_compact&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If no structure satisfy the request, there will be an empty list as <code class="docutils literal notranslate"><span class="pre">nodes</span></code> entry.</p>
 </div>
 <div class="section" id="searching-for-a-crystal-structure">
 <h2>Searching for a crystal structure<a class="headerlink" href="#searching-for-a-crystal-structure" title="Permalink to this headline">¶</a></h2>
 <p>I’ve written an extremely basic workflow to search for structures in the COD database.
 This is simply a wrapper around a 2-line command in AiiDA, but it is useful to have in some form.
 A structure query can be performed as</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2_strict</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2_strict</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-<p>If you inspect the <code class="docutils literal notranslate"><span class="pre">search_HfO2_strict.json</span></code> you see that the file contains some wrong keywords,
-as <code class="docutils literal notranslate"><span class="pre">schemical</span></code>, <code class="docutils literal notranslate"><span class="pre">somedata</span></code>, that are filtered out by the workflow.
-There is an input,  <code class="docutils literal notranslate"><span class="pre">&quot;strictcheck&quot;:</span> <span class="pre">true,</span></code> that does NOT allow for bad keywords, or even no keywords.
-No keywords means that <strong>the whole COD database</strong> will be downloaded! So this acts as a sanity check.</p>
+<p>If you inspect the <code class="docutils literal notranslate"><span class="pre">search_HfO2_strict.json</span></code> you see that the file contains some wrong keywords, as <code class="docutils literal notranslate"><span class="pre">schemical</span></code>, <code class="docutils literal notranslate"><span class="pre">somedata</span></code>, that are filtered out by the workflow.
+There is an input,  <code class="docutils literal notranslate"><span class="pre">&quot;strictcheck&quot;:</span> <span class="pre">true,</span></code> that does <em>NOT</em> allow for bad keywords, or even no keywords.</p>
+<p>No keywords means that <strong>the whole COD database</strong> will be downloaded! So this acts as a sanity check.</p>
 <p>A possible output of this command is:</p>
 <div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -217,7 +276,7 @@ No keywords means that <strong>the whole COD database</strong> will be downloade
 <span class="p">},</span>
 <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
 <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-<span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+<span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/submit&quot;</span><span class="p">,</span>
 <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -234,18 +293,17 @@ No keywords means that <strong>the whole COD database</strong> will be downloade
     <span class="nt">&quot;node&quot;</span><span class="p">:</span> <span class="s2">&quot;b3e4652d-5c04-40ee-9625-833ef2b49c6b&quot;</span>
 <span class="p">},</span>
 <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
-<span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+<span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/submit&quot;</span><span class="p">,</span>
 <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 </pre></div>
 </div>
-<p>In this response you should focus on the <code class="docutils literal notranslate"><span class="pre">workflow{uuid}</span></code> identifier, that is required for
-further inquiries about the calculation.</p>
+<p>In this response you should focus on the <code class="docutils literal notranslate"><span class="pre">workflow{uuid}</span></code> identifier, that is required for further inquiries about the calculation.</p>
 </div>
 <div class="section" id="checking-the-status-of-the-search">
 <h2>Checking the status of the search<a class="headerlink" href="#checking-the-status-of-the-search" title="Permalink to this headline">¶</a></h2>
 <p>Now that we know the <cite>uuid</cite>, that is the value <code class="docutils literal notranslate"><span class="pre">03d55d92-8589-4587-b2b0-2108f18f2856</span></code> above, we can
 check the status of the calculation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">status</span><span class="o">/</span><span class="mi">03</span><span class="n">d55d92</span><span class="o">-</span><span class="mi">8589</span><span class="o">-</span><span class="mi">4587</span><span class="o">-</span><span class="n">b2b0</span><span class="o">-</span><span class="mi">2108</span><span class="n">f18f2856</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">status</span><span class="o">/</span><span class="mi">03</span><span class="n">d55d92</span><span class="o">-</span><span class="mi">8589</span><span class="o">-</span><span class="mi">4587</span><span class="o">-</span><span class="n">b2b0</span><span class="o">-</span><span class="mi">2108</span><span class="n">f18f2856</span>
 </pre></div>
 </div>
 <p>That should give a negative response (your uuid should of course differ from mine!), since we
@@ -280,30 +338,25 @@ defined non-existing keywords. The http response will look like:</p>
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;03d55d92-8589-4587-b2b0-2108f18f2856&quot;</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/status/03d55d92-8589-4587-b2b0-2108f18f2856/&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">logs</span></code> are simple messages from the workflow, to document the status of the calculation, or some problem.
-In this case we just have one message. In general it will be a list of more (or no) messages. In this case the
-warning is about the non-existing keywords.</p>
+In this case we just have one message. In general it will be a list of more (or no) messages. In this case the warning is about the non-existing keywords.</p>
 <p>The logs also provide a simple way to keep track of the status of a calculation that is running correctly.</p>
-<p>The relevant info about the workflow are in the <code class="docutils literal notranslate"><span class="pre">workflow</span></code> dictionary, and here we see that the <code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is
-non zero, signalling some problem was encountered. The <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> provides the error encountered, if defined in the
-workflow by their authors.
-Generally, it might also be a (long) python error stack if the exit was not graceful.</p>
-<p>We also see that the process is <code class="docutils literal notranslate"><span class="pre">process_state</span></code> finished. Other options are <code class="docutils literal notranslate"><span class="pre">submitted</span></code> (we are waiting for it to run
-through a scheduler) or <code class="docutils literal notranslate"><span class="pre">running</span></code> (some calculation is going on, at same stage of the workflow).</p>
+<p>The relevant info about the workflow are in the <code class="docutils literal notranslate"><span class="pre">workflow</span></code> dictionary, and here we see that the <code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is non zero, signalling some problem was encountered. The <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> provides the error encountered, if defined in the workflow by their authors.</p>
+<p>Generally, there might also be a (long) python error stack if the exit was not graceful.</p>
+<p>We also see that the process is <code class="docutils literal notranslate"><span class="pre">process_state</span></code> finished. Other options are <code class="docutils literal notranslate"><span class="pre">submitted</span></code> (we are waiting for it to run through a scheduler) or <code class="docutils literal notranslate"><span class="pre">running</span></code> (some calculation is going on, at same stage of the workflow).</p>
 </div>
 <div class="section" id="submitting-a-search-with-no-strict-checks">
 <h2>Submitting a search with no strict checks<a class="headerlink" href="#submitting-a-search-with-no-strict-checks" title="Permalink to this headline">¶</a></h2>
-<p>If we submit another example where the strict check has been disabled,
-the search effectively goes through the accepted <code class="docutils literal notranslate"><span class="pre">formula</span></code> keyword and ignore all the rest:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span>  <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2</span><span class="o">.</span><span class="n">json</span>
+<p>If we submit another example where the strict check has been disabled, the search effectively goes through the accepted <code class="docutils literal notranslate"><span class="pre">formula</span></code> keyword and ignore all the rest:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span>  <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 <p>Returns</p>
@@ -328,7 +381,7 @@ the search effectively goes through the accepted <code class="docutils literal n
    <span class="p">},</span>
    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-   <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/submit&quot;</span><span class="p">,</span>
    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
    <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="p">{</span>
        <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -345,16 +398,16 @@ the search effectively goes through the accepted <code class="docutils literal n
        <span class="nt">&quot;node&quot;</span><span class="p">:</span> <span class="s2">&quot;f0edad7a-09b2-404e-a270-f4b696d21fcc&quot;</span>
    <span class="p">},</span>
    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
-   <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/submit&quot;</span><span class="p">,</span>
    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>And upon checking on the node <code class="docutils literal notranslate"><span class="pre">1e6d99e4-1966-45c7-b481-55513d3ed827</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">status</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">status</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span>
 </pre></div>
 </div>
-<p>yelds:</p>
+<p>yields:</p>
 <div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="nt">&quot;logs&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -385,22 +438,192 @@ the search effectively goes through the accepted <code class="docutils literal n
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;workflow status&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/status/1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Now we have a different log, with the succesful end of workflow (6 structures retrieved),
-<code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is  equal zero, e no <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> signal a correct execution of the workflow.</p>
+<p>Now we have a different log, with the succesful end of workflow (6 structures retrieved), <code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is  equal zero, e no <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> signal a correct execution of the workflow.</p>
+</div>
+<div class="section" id="asking-information-about-the-available-properties-to-calculate">
+<h2>Asking information about the available properties to calculate<a class="headerlink" href="#asking-information-about-the-available-properties-to-calculate" title="Permalink to this headline">¶</a></h2>
+<p>A simple request can be submitted to know all the supported properties</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">properties</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>That will return all the keywords that can be used as a property to calculate.
+This property are connected to a workflow to call.
+A possible answer is</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;band_gap.pw&quot;</span><span class="p">:</span> <span class="s2">&quot;post.BandGap&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;`band_structure`.pw&quot;</span><span class="p">:</span> <span class="s2">&quot;quantumespresso.pw.band_structure&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;formationenergy.qe&quot;</span><span class="p">:</span> <span class="s2">&quot;defects.formation_energy.qe&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;relax.pw&quot;</span><span class="p">:</span> <span class="s2">&quot;quantumespresso.pw.relax&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;structure.cod&quot;</span><span class="p">:</span> <span class="s2">&quot;post.CODImport&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/properties/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Information about the properties available for calculation&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/properties/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The keys of data (e.g. <code class="docutils literal notranslate"><span class="pre">band_structure</span></code>) can be used as value in the <code class="docutils literal notranslate"><span class="pre">calculation</span></code> entry in the submit json file.
+The other required field is <code class="docutils literal notranslate"><span class="pre">input</span></code>, that is a dictionary of the inputs of the related workflow.</p>
+</div>
+<div class="section" id="asking-information-about-the-inputs-of-workflow">
+<h2>Asking information about the inputs of workflow<a class="headerlink" href="#asking-information-about-the-inputs-of-workflow" title="Permalink to this headline">¶</a></h2>
+<p>The inputs to submit a workflow is a dictionary, whose fields we do not always know.
+To have information about this, there is a `` verdi plugin list aiida.workflows &lt;entry&gt; `` shell command that can be used to have basic information.
+The equivalent endpoint for us is</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">properties</span><span class="o">/&lt;</span><span class="n">entry</span><span class="o">&gt;/</span><span class="n">inputs</span>
+</pre></div>
+</div>
+<p>That provides a list of all the supported inputs of a workflow, their type, a help when available, and whether it is a required inputs or not.</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Extension to the PwBandStructureWorkChain to compute a band gap for a given structure\n    using Quantum    ESPRESSO pw.x&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;inputs&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.code.Code&#39;&gt;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;call_link_label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;The label to use for the `CALL` link if the process is called by another process.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;call_link_label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Description to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Label to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;store_provenance&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;If set to `False` provenance will not be stored in the database.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;store_provenance&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;bool&#39;&gt;&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;structure&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.structure.StructureData&#39;&gt;&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="s2">&quot;PwBandGapWorkChain&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/properties/band_gap.pw/inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Information about the workflow inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/properties/band_gap.pw/inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The request can be further filtered to obtain just a subset of the inputs with respect to the key of each input.
+For example we can filter just the required inputs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http 127.0.0.1:5000/api/v4/intersect/properties/band_gap.pw/inputs?required=True
+</pre></div>
+</div>
+<p>That returns</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Extension to the PwBandStructureWorkChain to compute a band gap for a given structure\n    using Quantum    ESPRESSO pw.x&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;inputs&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.code.Code&#39;&gt;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;call_link_label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;The label to use for the `CALL` link if the process is called by another process.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;call_link_label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Description to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Label to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;store_provenance&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;If set to `False` provenance will not be stored in the database.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;store_provenance&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;bool&#39;&gt;&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;structure&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.structure.StructureData&#39;&gt;&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="s2">&quot;PwBandGapWorkChain&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/properties/band_gap.pw/inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;required=True&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Information about the workflow inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/properties/band_gap.pw/inputs?required=True&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Multiple filters can be set at the same time, and if a field does not contain the keyword it is ignored.</p>
 </div>
 <div class="section" id="checking-the-outputs-of-a-workflow">
 <h2>Checking the outputs of a workflow<a class="headerlink" href="#checking-the-outputs-of-a-workflow" title="Permalink to this headline">¶</a></h2>
-<p>We can now use one of the standard endpoints of the AiiDA rest api to have a list of the outputs of
-a process:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span><span class="o">/</span><span class="n">links</span><span class="o">/</span><span class="n">outgoin</span>
+<p>We can now use one of the standard endpoints of the AiiDA rest api to have a list of the outputs of a process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span><span class="o">/</span><span class="n">links</span><span class="o">/</span><span class="n">outgoing</span>
 </pre></div>
 </div>
 <p>That returns a response that looks like:</p>
@@ -422,14 +645,14 @@ a process:</p>
             <span class="p">},</span>
             <span class="p">{</span>
                 <span class="nt">&quot;ctime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:32:59 GMT&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;full_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.|aiida_post.calculations.COD.cod_find_and_store&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6006</span><span class="p">,</span>
-                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;cod_find_and_store&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;link_label&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;link_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_calc&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;mtime&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri, 29 Nov 2019 17:33:02 GMT&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;node_type&quot;</span><span class="p">:</span> <span class="s2">&quot;process.calculation.calcfunction.CalcFunctionNode.&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida_post.calculations.COD.COD_find_and_store&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;process_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aiida_post.calculations.COD.cod_find_and_store&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                 <span class="nt">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;19ba2bdb-c631-4c80-90de-d0904af82f27&quot;</span>
             <span class="p">},</span>
@@ -450,22 +673,19 @@ a process:</p>
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/outgoing&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>This does not simply represent the output of a workflow, but all the outgoing links of a Node, that in this
-case happens to be a process.</p>
-<p>We can see what it is by the <code class="docutils literal notranslate"><span class="pre">link_type</span></code> key, that labels called calculations/workflows, i.e. the first two nodes,
-and a <code class="docutils literal notranslate"><span class="pre">return</span></code> link called <code class="docutils literal notranslate"><span class="pre">output</span></code>. Each of the calculations can be inspected in a similar way, to check their outputs and calls.</p>
-<p>In this case we have only one output, that is a <code class="docutils literal notranslate"><span class="pre">List</span></code>, and we have its <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">uuid</span></code>, that uniquely identify the object in the
-databases. <code class="docutils literal notranslate"><span class="pre">id</span></code> are shorter identifiers, but are not unique when copied in other databases.)</p>
+<p>This does not simply represent the output of a workflow, but all the outgoing links of a Node, that in this case happens to be a process.</p>
+<p>We can see what it is by the <code class="docutils literal notranslate"><span class="pre">link_type</span></code> key, that labels called calculations/workflows, i.e. the first two nodes, and a <code class="docutils literal notranslate"><span class="pre">return</span></code> link called <code class="docutils literal notranslate"><span class="pre">output</span></code>. Each of the calculations can be inspected in a similar way, to check their outputs and calls.</p>
+<p>In this case we have only one output, that is a <code class="docutils literal notranslate"><span class="pre">List</span></code>, and we have its <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">uuid</span></code>, that uniquely identify the object in the databases. <code class="docutils literal notranslate"><span class="pre">id</span></code> are shorter identifiers, but are not unique when copied in other databases.)</p>
 <p>There is a similar endpoint for inputs, instead that for outputs:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span><span class="o">/</span><span class="n">links</span><span class="o">/</span><span class="n">incoming</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mf">1e6</span><span class="n">d99e4</span><span class="o">-</span><span class="mi">1966</span><span class="o">-</span><span class="mi">45</span><span class="n">c7</span><span class="o">-</span><span class="n">b481</span><span class="o">-</span><span class="mi">55513</span><span class="n">d3ed827</span><span class="o">/</span><span class="n">links</span><span class="o">/</span><span class="n">incoming</span>
 </pre></div>
 </div>
 <p>That returns the inputs of a workflow (or for a node, all the nodes that points to it):</p>
@@ -502,18 +722,17 @@ databases. <code class="docutils literal notranslate"><span class="pre">id</span
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1e6d99e4-1966-45c7-b481-55513d3ed827&quot;</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/nodes/1e6d99e4-1966-45c7-b481-55513d3ed827/links/incoming&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>That returns what we know about the process: that it has two inputs, of the given class and name, but also returns how they
-are stored in the database.</p>
+<p>That returns what we know about the process: that it has two inputs, of the given class and name, but also returns how they are stored in the database.</p>
 <p>Coming back to the results, we can pirnt the content by querying for the attributes of a node:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mi">36</span><span class="n">b1abcd</span><span class="o">-</span><span class="n">d28c</span><span class="o">-</span><span class="mi">4362</span><span class="o">-</span><span class="mi">8147</span><span class="o">-</span><span class="mf">08e279</span><span class="n">e4ca5d</span><span class="o">/</span><span class="n">contents</span><span class="o">/</span><span class="n">attributes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span><span class="mi">36</span><span class="n">b1abcd</span><span class="o">-</span><span class="n">d28c</span><span class="o">-</span><span class="mi">4362</span><span class="o">-</span><span class="mi">8147</span><span class="o">-</span><span class="mf">08e279</span><span class="n">e4ca5d</span><span class="o">/</span><span class="n">contents</span><span class="o">/</span><span class="n">attributes</span>
 </pre></div>
 </div>
 <p>That returns</p>
@@ -532,15 +751,15 @@ are stored in the database.</p>
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;36b1abcd-d28c-4362-8147-08e279e4ca5d&quot;</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/nodes/36b1abcd-d28c-4362-8147-08e279e4ca5d/contents/attributes&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>And gives us a list of the uuid of the structure data that we retrieved from the COD.</p>
+<p>And returns a list of the <code class="docutils literal notranslate"><span class="pre">uuid</span></code> of the structure data that we retrieved from the COD.</p>
 </div>
 </div>
 
@@ -553,7 +772,7 @@ are stored in the database.</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
 
 
-        <a href="endpoints.html" class="btn btn-neutral float-left" title="General Behaviour" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="endpoints.html" class="btn btn-neutral float-left" title="General Behavior" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
 
     </div>
 

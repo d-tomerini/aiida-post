@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Daniele Tomerini
-Initial code march 2019
-
-This module contains the general resources to be called
-by the main api
+This module contains the general resources to be called by the main api
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 from flask import request
-from six.moves.urllib.parse import unquote  # pylint: disable=import-error
+from urllib.parse import unquote
 
 # aiida
 from aiida.restapi.resources import BaseResource, ProcessNode
@@ -24,7 +21,7 @@ class GSubmit(BaseResource):
     """
 
     def __init__(self, **kwargs):
-        super(GSubmit, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -43,15 +40,23 @@ class GSubmit(BaseResource):
         path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
-
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+        query_string = request.query_string.decode('utf-8')
 
         #reqdata = Request_To_Dictionary(request)
         content = request.get_json()
         node = Dict(dict=content).store()
 
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
         submission = pathlist[-1]
+
+        # all the query parsing that's needed from AiiDA REST
+        # I probably need much less than this!
+        (
+            limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
+            tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
+        ) = self.utils.parse_query_string(query_string)
+
         required_keys = ['calculation', 'input']
         for key in required_keys:
             if key not in content:
@@ -83,7 +88,7 @@ class GSubmit(BaseResource):
             url_root=url_root,
             path=request.path,
             id=None,
-            query_string=request.query_string.decode('utf-8'),
+            query_string=query_string,
             resource_type='submission of workflows',
             request_content=request_content,
             data=response
@@ -98,7 +103,7 @@ class GProperties(BaseResource):
     """
 
     def __init__(self, **kwargs):
-        super(GProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -114,7 +119,7 @@ class GProperties(BaseResource):
         link with the specific name, but a general attribute/node type/name
         """
         from aiida.plugins import WorkflowFactory
-        from aiida_post.common.formatter import pop_underscore
+        from aiida_post.common.formatter import delete_key
         # Unpack the URL
         path = unquote(request.path)
         url = unquote(request.url)
@@ -140,7 +145,7 @@ class GProperties(BaseResource):
             description = workflow.get_description()
             mydata = description['spec'][schema]
             if schema != 'outline':
-                pop_underscore(mydata)
+                delete_key(mydata, '_', startswith=True)
             outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
         data = dict(
@@ -202,7 +207,7 @@ class GWorkflows(BaseResource):
     """
 
     def __init__(self, **kwargs):
-        super(GWorkflows, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -214,7 +219,8 @@ class GWorkflows(BaseResource):
         """
         from aiida.plugins import WorkflowFactory
         from aiida.plugins.entry_point import get_entry_point_names
-        from aiida_post.common.formatter import pop_underscore
+        from aiida_post.common.formatter import delete_key
+        from aiida_post.common.formatter import delete_key_check_dict
 
         # Unpack the URL
         path = unquote(request.path)
@@ -222,6 +228,14 @@ class GWorkflows(BaseResource):
         url_root = unquote(request.url_root)
 
         pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+
+        query_string = request.query_string.decode('utf-8')
+        # all the query parsing that's needed from AiiDA REST
+        # I probably need much less than this!
+        (
+            limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
+            tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
+        ) = self.utils.parse_query_string(query_string)
 
         if not entrypoint:
             # return a list of the available entry points for workflows
@@ -235,7 +249,18 @@ class GWorkflows(BaseResource):
             description = workflow.get_description()
             mydata = description['spec'][schema]
             if schema != 'outline':
-                pop_underscore(mydata)
+                # remove keys that starts with '_'
+                delete_key(mydata, '_', startswith=True)
+
+            for key, value in filters.items():
+                # filters are {key:{operator:value}}. I want key and value
+                # value is a string to be compared
+
+                for k, v in value.items():
+                    delete_key_check_dict(mydata, key, str(v))
+
+                #check if I should remove keys for better view
+
             outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
         data = dict(
@@ -244,7 +269,7 @@ class GWorkflows(BaseResource):
             url_root=url_root,
             path=path,
             id=None,
-            query_string=request.query_string.decode('utf-8'),
+            query_string=query_string,
             resource_type=resource_type,
             data=outdata
         )
@@ -261,7 +286,7 @@ class GExisting(BaseResource):
     """
 
     def __init__(self, **kwargs):
-        super(GExisting, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
@@ -301,3 +326,122 @@ class GAppNodes(BaseResource):
         To check if useful
         """
         raise ValueError('Endpoint not yet implemented')
+
+
+class GData(BaseResource):
+    """
+    Endpoint to return all the structuredata in the database, and query with formula
+    """
+    from aiida.restapi.translator.nodes.node import NodeTranslator
+
+    _translator_class = NodeTranslator
+    _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
+
+    def get(self):
+        """
+        To check if useful
+        """
+        from aiida.orm import load_node
+
+        # initialize response
+        path = unquote(request.path)
+        url = unquote(request.url)
+        url_root = unquote(request.url_root)
+        query_string = request.query_string.decode('utf-8')
+
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+        # all the query parsing that's needed from AiiDA REST
+        # I probably need much less than this!
+        (
+            limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
+            tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
+        ) = self.utils.parse_query_string(query_string)
+
+        # This is a hack SPECIFICALLY for structuredata types, and to search for
+        # chemical formula
+        page = 1
+        chemical_formula = filters.pop('chemical_formula', None)
+        chemical_formula_type = filters.pop('chemical_formula_type', {'=': 'hill_compact'})
+
+        full_type = 'data.structure.StructureData.|'
+
+        self.trans.set_query(
+            query_type='default',
+            filters=filters,
+            orders=orderby,
+            download_format=download_format,
+            download=download,
+            filename=filename,
+            attributes=attributes,
+            attributes_filter=attributes_filter,
+            extras=extras,
+            extras_filter=extras_filter,
+            full_type=full_type
+        )
+
+        ## Count results
+        total_count = self.trans.get_total_count()
+
+        ## Pagination (if required)
+        if page is not None:
+            #(limit, offset, rel_pages) = self.utils.paginate(page, perpage, total_count)
+            #self.trans.set_limit_offset(limit=limit, offset=offset)
+            ## Retrieve results
+            results = self.trans.get_results()
+            #headers = self.utils.build_headers(rel_pages=rel_pages, url=request.url, total_count=total_count)
+        else:
+            #self.trans.set_limit_offset(limit=limit, offset=offset)
+            ## Retrieve results
+            results = self.trans.get_results()
+        if attributes_filter is not None and attributes:
+            for node in results['nodes']:
+                node['attributes'] = {}
+                if not isinstance(attributes_filter, list):
+                    attributes_filter = [attributes_filter]
+                for attr in attributes_filter:
+                    node['attributes'][str(attr)] = node['attributes.' + str(attr)]
+                    del node['attributes.' + str(attr)]
+        if extras_filter is not None and extras:
+            for node in results['nodes']:
+                node['extras'] = {}
+                if not isinstance(extras_filter, list):
+                    extras_filter = [extras_filter]
+                for extra in extras_filter:
+                    node['extras'][str(extra)] = node['extras.' + str(extra)]
+                    del node['extras.' + str(extra)]
+        ## Build response
+
+        if chemical_formula:
+            filtered_results = []
+            # how do I get the only value of a dict :(
+            for _, formula in chemical_formula.items():
+                pass
+            for _, formula_type in chemical_formula_type.items():
+                pass
+            for r in results['nodes']:
+                try:
+                    node_formula = load_node(r['uuid']).get_formula(mode=formula_type)
+                    print((node_formula, formula))
+                    if node_formula == formula:
+                        filtered_results.append(r)
+                except:
+                    pass
+        else:
+            filtered_results = results
+
+        data = dict(
+            method=request.method,
+            url=url,
+            url_root=url_root,
+            path=path,
+            id=None,
+            query_string=request.query_string.decode('utf-8'),
+            resource_type='structuredata search',
+            data=dict(nodes=filtered_results)
+        )
+        return self.utils.build_response(status=200, data=data)
+
+        # Now I should prepare a query for the database, in order to retrieve all the possible
+        # structuredata items in the database.
+        # Call of a function to calculate the formula might be long
+        # for this reason, I will select a slice according to limit, offset and perpage

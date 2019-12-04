@@ -15,7 +15,6 @@ def cod_check(cod_dict):
     :output cod_rec valid keywords
     :output cod_unrec not valid keywords
     """
-    import six
     from aiida.orm import Dict
     from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 
@@ -26,7 +25,7 @@ def cod_check(cod_dict):
     # keeps only one value if key is duplicated
     cod_recognized = {}
     cod_unrecognized = {}
-    for key, value in six.iteritems(cod_dict.get_dict()):
+    for key, value in cod_dict.get_dict().items():
         if key in supported:
             cod_recognized.update({key: value})
         else:
@@ -35,7 +34,7 @@ def cod_check(cod_dict):
 
 
 @calcfunction
-def COD_find_and_store(query):
+def cod_find_and_store(query):
     """
     performs a search of any CIF structure that is provided
     according to the data coming from the input JSON request

@@ -12,7 +12,7 @@ and retrieve ths results of an AiiDA workflow.
 The plugin is available at `this repository. <https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida>`_
 
 User's guide
-++++++++++++
+------------
 
 .. toctree::
     :maxdepth: 2

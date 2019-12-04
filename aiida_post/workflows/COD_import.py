@@ -15,7 +15,7 @@ class CODImportWorkChain(WorkChain):
 
     @classmethod
     def define(cls, spec):
-        super(CODImportWorkChain, cls).define(spec)
+        super().define(spec)
         spec.input(
             'codquery', valid_type=orm.Dict, required=True, help='A list of option to the query to the COD database'
         )
@@ -71,10 +71,10 @@ class CODImportWorkChain(WorkChain):
         """
         Retrieval of the structure from the COD database
         """
-        from aiida_post.calculations.COD import COD_find_and_store
+        from aiida_post.calculations.COD import cod_find_and_store
 
         # query the database for structures
-        self.ctx.structurelist = COD_find_and_store(self.ctx.kwords)
+        self.ctx.structurelist = cod_find_and_store(self.ctx.kwords)
 
         n_structures = len(self.ctx.structurelist)
         if n_structures == 0:

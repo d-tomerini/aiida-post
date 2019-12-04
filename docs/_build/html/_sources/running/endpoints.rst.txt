@@ -50,7 +50,7 @@ Other resources, like curl or chrome extensions can be used.
 properties
 ++++++++++
 
-The ``ginestra/properties`` endpoint lists all the available property that can be request for a calculation, and returned as a list.
+The ``intersect/properties`` endpoint lists all the available property that can be request for a calculation, and returned as a list.
 
 Example::
 
@@ -69,9 +69,9 @@ Expected response (http response 200)
         },
         "id": null,
         "method": "GET",
-        "path": "/intersect/v4/ginestra/properties",
+        "path": "/intersect/v4/intersect/properties",
         "query_string": "",
         "request_content": null,
         "resource_type": "Information about the properties available for calculation",
-        "url": "http://127.0.0.1:5000/intersect/v4/ginestra/properties",
+        "url": "http://127.0.0.1:5000/intersect/v4/intersect/properties",
         "url_root": "http://127.0.0.1:5000/"

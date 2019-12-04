@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>General Behaviour &mdash; aiida_post 0.2 documentation</title>
+  <title>General Behavior &mdash; aiida_post 0.2 documentation</title>
 
 
 
@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Running the app" href="running.html" />
 </head>
 
@@ -87,13 +88,20 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running the app</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">General Behaviour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#available-endpoints">Available endpoints</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#properties">properties</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#submit">submit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#workflow-inputs-property">workflow_inputs/&lt;property&gt;</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">General Behavior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#available-intersect-endpoints">Available intersect endpoints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derived-data-structuredata">derived_data/structuredata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#properties">properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#properties-string-inputs">properties/&lt;string&gt;/inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#properties-string-outputs">properties/&lt;string&gt;/outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#properties-string-outline">properties/&lt;string&gt;/outline</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#workflows">workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submit">submit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
 
@@ -139,7 +147,7 @@
 
       <li><a href="index.html">Docs</a> &raquo;</li>
 
-      <li>General Behaviour</li>
+      <li>General Behavior</li>
 
 
       <li class="wy-breadcrumbs-aside">
@@ -158,47 +166,64 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
 
-  <div class="section" id="general-behaviour">
-<h1>General Behaviour<a class="headerlink" href="#general-behaviour" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="general-behavior">
+<h1>General Behavior<a class="headerlink" href="#general-behavior" title="Permalink to this headline">¶</a></h1>
 <p>The API will generally return a list of available endpoints if the request refers to a non-supported URL, with a <code class="docutils literal notranslate"><span class="pre">200</span></code> code.</p>
-<p>The API is to generally return a <code class="docutils literal notranslate"><span class="pre">500</span></code> error in case there was an error in the handling of the code
-(for example, on validation of one of the input to provide to a workflow, or a non-supported property), along with a
-json message containing only a <code class="docutils literal notranslate"><span class="pre">message</span></code> key with the error encountered in Python.</p>
+<p>The API is to generally return a <code class="docutils literal notranslate"><span class="pre">500</span></code> error in case there was an error in the handling of the code (for example, on validation of one of the input to provide to a workflow, or a non-supported property), along with a json message containing only a <code class="docutils literal notranslate"><span class="pre">message</span></code> key with the error encountered in Python.</p>
 <p>On successful request, the app returns a <code class="docutils literal notranslate"><span class="pre">200</span></code> status and a general list of properties:</p>
 <ul class="simple">
 <li><p>a <code class="docutils literal notranslate"><span class="pre">data</span></code> key containing the retrieved data</p></li>
-<li><p>a general summary of the request: the url, url_root, and query string, the relative path of the endpoint, the method used to access the
-page (GET, POST), and the <code class="docutils literal notranslate"><span class="pre">ID</span></code> of the node database accessed if relevant</p></li>
+<li><p>a general summary of the request: the url, url_root, and query string, the relative path of the endpoint, the method used to access the page (GET, POST), and the <code class="docutils literal notranslate"><span class="pre">ID</span></code> of the node database accessed if relevant</p></li>
 </ul>
 </div>
-<div class="section" id="available-endpoints">
-<h1>Available endpoints<a class="headerlink" href="#available-endpoints" title="Permalink to this headline">¶</a></h1>
-<p>The app runs at the the address <code class="docutils literal notranslate"><span class="pre">HOSTNAME:PORT/PREFIX/ENDPOINT</span></code>, where <code class="docutils literal notranslate"><span class="pre">HOST</span></code> and <code class="docutils literal notranslate"><span class="pre">PORT</span></code> are property that can be set
-by the app options.</p>
-<p>The prefix has been modified from the rest api <code class="docutils literal notranslate"><span class="pre">/api/v4/</span></code> to  <code class="docutils literal notranslate"><span class="pre">/intersect/v4</span></code> to remind of where
-it comes from; this can be changed in the configuration options if necessary.</p>
-<p>In the following I’m going to assume a base URL as <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/intersect/v4</span></code>.</p>
-<p>Every URL build upon this base URL, if it does not correspond to a used endpoint should redirect
-to a list of the accepted endpoints. This is a list of the AiiDA REST plus the ones we have defined.</p>
+<div class="section" id="available-intersect-endpoints">
+<h1>Available intersect endpoints<a class="headerlink" href="#available-intersect-endpoints" title="Permalink to this headline">¶</a></h1>
+<p>The app runs at the the address <code class="docutils literal notranslate"><span class="pre">HOSTNAME:PORT/PREFIX/ENDPOINT</span></code>, where <code class="docutils literal notranslate"><span class="pre">HOST</span></code> and <code class="docutils literal notranslate"><span class="pre">PORT</span></code> are property that can be set by the app options.</p>
+<p>The prefix is the same of the aiida rest api, <code class="docutils literal notranslate"><span class="pre">/api/v4/</span></code>; this can be changed in the configuration options if necessary.
+All the new workflow related to the project have a prefix <code class="docutils literal notranslate"><span class="pre">/api/v4/intersect</span></code> in order to separate them from the existing AiiDA endpoints.</p>
+<p>In the following therefore I’m going to assume a base URL as <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/api/v4</span></code>.</p>
+<p>Every URL build upon this base URL, if it does not correspond to a used endpoint should redirect to a list of the accepted endpoints. This is a list of the AiiDA REST plus the ones we have defined.</p>
 <p>For an explanation of the AiiDA endpoint you can check the
 <a class="reference external" href="https://aiida.readthedocs.io/projects/aiida-core/en/latest/restapi/">AiiDA REST api page</a>.
 The additional ones are explained below.</p>
 <p>Any of this endpoints can be accessed via a browser for <code class="docutils literal notranslate"><span class="pre">GET</span></code> method, but will need an extension to deal with a POST request.
-In the peoceeding I assume a request to be done by terminal one unix with the <a class="reference external" href="https://httpie.org/">httpie utility</a>, i.e</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span>
+In the proceeding I assume a request to be executed by a unix terminal call with the <a class="reference external" href="https://httpie.org/">httpie utility</a>, i.e</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">nodes</span><span class="o">/</span>
 </pre></div>
 </div>
-<p>accesses the <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/intersect/v4/nodes/</span></code> with a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request, while</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="o">&lt;</span> <span class="n">filename</span>
+<p>accesses the <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/api/v4/nodes/</span></code> with a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request, while</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="o">&lt;</span> <span class="n">filename</span>
 </pre></div>
 </div>
 <p>forward the content of the  <code class="docutils literal notranslate"><span class="pre">filename</span></code> file as a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request.
-Other resources, like curl or chrome extensions can be used.</p>
+Other resources, like <code class="docutils literal notranslate"><span class="pre">curl</span></code> or browser extensions can be used.</p>
+<div class="section" id="derived-data-structuredata">
+<h2>derived_data/structuredata<a class="headerlink" href="#derived-data-structuredata" title="Permalink to this headline">¶</a></h2>
+<p>This endpoint is modelled on the idea to query for derived properties, that can be calculated with a function call, and not stored properties.</p>
+<p>This is implemented in the AiiDA rest api as a way to display information on a single node; chemical_formula is such an example.</p>
+<p>As a utility, I provide the <code class="docutils literal notranslate"><span class="pre">intersect/derived_data/</span></code> as a way to display derived data.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is a bad idea in principle; run a function on each database entry for very big database could be crippling slow.
+This is intended to be just a temporary solution to search a database for structures.</p>
+</div>
+<p>Without any query, the endpoint is equivalent to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://127.0.0.1:5000/api/v4/nodes?full_type=&quot;data.structure.StructureData.|&quot;
+</pre></div>
+</div>
+<p>i.e. to a node search with a query on <code class="docutils literal notranslate"><span class="pre">StructureData</span></code> objects.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">structuredata</span></code> endpoint allows for query on <code class="docutils literal notranslate"><span class="pre">chemical_formula</span></code> to provide a filter on this non-stored property, and a <code class="docutils literal notranslate"><span class="pre">chemical_formula_type</span></code> to search for types of chemical formulas that are allowed in the verdi shell command <code class="docutils literal notranslate"><span class="pre">node.get_formula()</span></code>.
+This is executed as with the normal <code class="docutils literal notranslate"><span class="pre">?</span></code> query symbol at the endof the endpoint, eventually followed by others with the <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> symbol.
+Additional keys for the database search can be used to further funnel the request. As it most simple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula=&quot;O2Si&quot;&amp;chemical_formula_type=&quot;hill_compact&quot;
+</pre></div>
+</div>
+</div>
 <div class="section" id="properties">
 <h2>properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">ginestra/properties</span></code> endpoint lists all the available property that can be request for a calculation, and returned as a list.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">intersect/properties</span></code> endpoint lists all the available property that can be request for a calculation, and returned as a list.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">properties</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">properties</span>
 </pre></div>
 </div>
 <p>Expected response (http response 200)</p>
@@ -211,61 +236,174 @@ Other resources, like curl or chrome extensions can be used.</p>
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/properties&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/properties&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Information about the properties available for calculation&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/properties&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/properties&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>Each key of the <code class="docutils literal notranslate"><span class="pre">data</span></code> section represents a property that can be used as an input. Note that it is not necessary to have
-a map 1:1 between properties and workflows, as a workflow can be used for more than one.</p>
-<p>Generally, I think it is useful to have a name followed
-by a code identifier, if we want to make immediately obvious that we want to calculate a property with a specific code/method.</p>
+<p>Each key of the <code class="docutils literal notranslate"><span class="pre">data</span></code> section represents a property that can be used as an input. Note that it is not necessary to have a map 1:1 between properties and workflows, as a workflow can be used for more than one.</p>
+<div class="section" id="properties-string-inputs">
+<h3>properties/&lt;string&gt;/inputs<a class="headerlink" href="#properties-string-inputs" title="Permalink to this headline">¶</a></h3>
+<p>By providing an identifier, it is possible to require a list of the inputs to run a workflow; this will be a list of all the possible keys that is possible to require as a dictionary.
+Each of the entry of this dictionary schema can be arbitrarily nested, to allow, for example, to provide inputs to sub-workflows called by the main workflow.</p>
+<p>Each of the keywords will return whether it is required (workflow will fail if not provided), valid types, and whether if it is going to be stored in the database.
+Additionally, a <code class="docutils literal notranslate"><span class="pre">help</span></code> string, if the workflow has it, to better specify the use of this key.
+The <code class="docutils literal notranslate"><span class="pre">dynamic</span></code> attribute is returned as <code class="docutils literal notranslate"><span class="pre">true</span></code> in case a value can be a list of valid types (for example, the number of pseudopotential files to be provided to a calculation may vary, and their precise number cannot be known in advance).</p>
+<p>Example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Workfunction to query the COD database\n    Check for data according to a dictionary query, Import nodes,   Clean them, Import them as needed&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;inputs&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;codquery&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;A list of option to the query to the COD database&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;codquery&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.dict.Dict&#39;&gt;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;call_link_label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;The label to use for the `CALL` link if the process is called by another process.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;call_link_label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Description to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Label to set on the process node.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;store_provenance&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;If set to `False` provenance will not be stored in the database.&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;store_provenance&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;bool&#39;&gt;&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;strictcheck&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid: f6028da2-0ef6-4e8b-a506-42086e92fdd8 (unstored) value: False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;help&quot;</span><span class="p">:</span> <span class="s2">&quot;Whether we should strictly check COD_query keywords&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;strictcheck&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;non_db&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.bool.Bool&#39;&gt;&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="s2">&quot;CODImportWorkChain&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/workflows/post.CODImport/inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Information about the workflow inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/workflows/post.CODImport/inputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="properties-string-outputs">
+<h3>properties/&lt;string&gt;/outputs<a class="headerlink" href="#properties-string-outputs" title="Permalink to this headline">¶</a></h3>
+<p>In this case, the information provided is only the output node, and eventually its attribute/s,  that contain the information required by the <code class="docutils literal notranslate"><span class="pre">property</span></code> workflow.
+This can be a list of nodes/property, in general.</p>
+<p>In this way, we can provide a more granular information about the value of interest, among all the outputs.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>THIS IS NOT YET IMPLEMENTED! THE REQUEST RETURNS ALL THE OUTPUTS</strong></p>
+</div>
+</div>
+<div class="section" id="properties-string-outline">
+<h3>properties/&lt;string&gt;/outline<a class="headerlink" href="#properties-string-outline" title="Permalink to this headline">¶</a></h3>
+<p>The information returned is the steps performed in the workflow.
+Note that this provides information about the status of the workflow, but not about the missing expected time!
+Different steps can in principle take vastly different time to run, and can be wrapped into <code class="docutils literal notranslate"><span class="pre">while</span></code> loops at deeper levels.</p>
+</div>
+</div>
+<div class="section" id="workflows">
+<h2>workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">intersect/workflows</span></code> endpoint lists  works in a similar way as <code class="docutils literal notranslate"><span class="pre">properties</span></code>, but returns information about the workflow entrypoint, rather than the property to be calculated.
+In this way, it is possible to run ad inspect a calculation even if the property mapping is not specified.</p>
+<p>The possibilities for a query are:</p>
+<ul class="simple">
+<li><p><strong>intersect/workflows</strong> returns the list of all the aiida workflows that are accessible</p></li>
+<li><p><strong>intersect/workflows/&lt;entrypoint&gt;/inputs</strong> returns all the port inputs accessible, with information about whether they are required, stored in the database, and their expected type.</p></li>
+<li><p><strong>intersect/workflows/&lt;entrypoint&gt;/outputs</strong> returns all the output of a successful calculation.</p></li>
+<li><p><strong>intersect/workflows/&lt;entrypoint&gt;/outline</strong> returns the steps that are going to be executed by the workflow.</p></li>
+</ul>
 </div>
 <div class="section" id="submit">
 <h2>submit<a class="headerlink" href="#submit" title="Permalink to this headline">¶</a></h2>
-<p>This is the endpoint related to the submission of a workflow. Since it requires an input to work, it is necessary to use
-a POST method to provide this information to AiiDA.</p>
-<p>A json file for now isjust a dictionary with two entries:
+<p>This is the endpoint related to the submission of a workflow.</p>
+<p>Since it requires an input to work, it is necessary to use a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to provide this information to AiiDA.</p>
+<p>A json file for now is just a dictionary with two entries:
 - <em>calculation</em>: the mapped keyword to identify the workflow to run through its property name;
 - <em>input</em>: the dictionary input for the workflow</p>
-<p>The inputs of a workflow represents dictionary classes, represented with the standard python class name, but with an uppercase
-initial, in order for the workflow to generate links between the stored properties in the database.</p>
-<p>To avoid having to specify for each key entry what kind of classes it is expected to be and to make it more easy to read,
-the app will try to guess the type from the type of the workflow input; so if an input expect a <code class="docutils literal notranslate"><span class="pre">code</span></code> instance, we can pass a <code class="docutils literal notranslate"><span class="pre">pk</span></code>, <code class="docutils literal notranslate"><span class="pre">uuid</span></code>
-or <code class="docutils literal notranslate"><span class="pre">label</span></code> to uniquely load it from the AiiDA database; if a node is of <code class="docutils literal notranslate"><span class="pre">Float</span></code> type it will convert the float provided to the equivalent database type.</p>
-<p>In order to have flexibility, if we want to pass a <code class="docutils literal notranslate"><span class="pre">Node</span></code> directly (instead of a value) we need to pass a dictionary where the key is
+<p>There are two possibilities: if nothing, or <code class="docutils literal notranslate"><span class="pre">intersect/submit/property</span></code> endpoint is selected, the expected value of the <em>calculation</em> key is the value of the property to be calculated, that will be converted to the corresponding workflow.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">intersect/submit/workflow</span></code> is used, the <em>calculation</em> line is the entrypoint relative to a workflow to calculate.
+In this way, any workflow can be submitted, and we are not limited by the mapping of the properties.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">input</span></code> key of the request is a dictionary with the input names of the workflow.</p>
+<p>Since we cannot pass some of them, specifically a <code class="docutils literal notranslate"><span class="pre">Node</span></code> class, the plugin will try to interpret the value passed and convert it.
+This is to avoid having to specify for each key entry what kind of classes it is expected to be and to make it more easy to read: if an input expect a <code class="docutils literal notranslate"><span class="pre">code</span></code> instance, we can pass a <code class="docutils literal notranslate"><span class="pre">pk</span></code>, <code class="docutils literal notranslate"><span class="pre">uuid</span></code> that will be loaded from the database;  if a node is of <code class="docutils literal notranslate"><span class="pre">Float</span></code> type it will convert the float provided to the equivalent database type, and so on.</p>
+<p>If we want to force the code to choose a <code class="docutils literal notranslate"><span class="pre">Node</span></code> instead of a value, we need to pass a dictionary where the key is
 called <code class="docutils literal notranslate"><span class="pre">LOADNODE</span></code>; the input will be generated by passing the content of the node ID provided.</p>
+<p>For a code, additionally, we can specify <code class="docutils literal notranslate"><span class="pre">CODELABEL</span></code> and provide the label string that identify the code.
+Note that label might not be univoque: an exception will be raised if there is ambiguity.</p>
 <p>For example, imagine the following case:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>    <span class="p">{</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;property.siesta&quot;</span><span class="p">,</span>
     <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="mi">2547</span><span class="p">,</span>
-      <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="mi">667</span><span class="p">,</span>
-      <span class="nt">&quot;string_entry&quot;</span><span class="p">:</span> <span class="s2">&quot;my string value&quot;</span>
+        <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="mi">2547</span><span class="p">,</span>
+        <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="mi">667</span><span class="p">,</span>
+        <span class="nt">&quot;string_entry&quot;</span><span class="p">:</span> <span class="s2">&quot;my string value&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">string_entry</span></code> value will be converted to <code class="docutils literal notranslate"><span class="pre">Str(str=&quot;my</span> <span class="pre">string</span> <span class="pre">value&quot;)</span></code> (the AiiDA database string node), while</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>    <span class="p">{</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;property.siesta&quot;</span><span class="p">,</span>
     <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="mi">2547</span><span class="p">,</span>
-      <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="mi">667</span><span class="p">,</span>
-      <span class="nt">&quot;string_entry&quot;</span><span class="p">:</span> <span class="p">{</span>
-         <span class="nt">&quot;LOADNODE&quot;</span><span class="p">:</span> <span class="mi">3546</span>
-      <span class="p">}</span>
+        <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="mi">2547</span><span class="p">,</span>
+        <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="mi">667</span><span class="p">,</span>
+        <span class="nt">&quot;string_entry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;LOADNODE&quot;</span><span class="p">:</span> <span class="mi">3546</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>will load the content of the node 3546 and use if as input.
-If it does not crrespond to a Str Node, an exception will be raised.</p>
+<p>will load the content of the node <code class="docutils literal notranslate"><span class="pre">3546</span></code> and use if as input, and the following will select the node by its label:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;property.siesta&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="mi">2547</span><span class="p">,</span>
+        <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="mi">667</span><span class="p">,</span>
+        <span class="nt">&quot;string_entry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;CODELABEL&quot;</span><span class="p">:</span> <span class="s2">&quot;siesta@localhost&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>The result of this call to the endpoint</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">aiida_post_dir</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">search_hfo2</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">examples</span><span class="o">/</span><span class="n">search_hfo2</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 <p>where the <code class="docutils literal notranslate"><span class="pre">search_hfo2.json</span></code> file is taken from the examples folder, should return the following response (html code 200)</p>
@@ -292,7 +430,7 @@ If it does not crrespond to a Str Node, an exception will be raised.</p>
     <span class="p">},</span>
     <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
     <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/submit/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/submit/&quot;</span><span class="p">,</span>
     <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="nt">&quot;data&quot;</span><span class="p">:{</span>
@@ -312,110 +450,15 @@ If it does not crrespond to a Str Node, an exception will be raised.</p>
 
     <span class="p">},</span>
     <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;submission of workflows&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/submit/&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/api/v4/intersect/submit/&quot;</span><span class="p">,</span>
     <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>where the <code class="docutils literal notranslate"><span class="pre">data</span></code> key contains the <code class="docutils literal notranslate"><span class="pre">uuid</span></code> entry that identify the workflow uuid that can be queried to the database, and
-other attributes of the created process.</p>
-<p>The process has at this point just been created: unless extremely quick its attributes will not be populated;
-teh exit_message and exit_code would provide a clue that something failed, while the other attributes provides hints
-regarding the python class and the version of AiiDA/plugin used for such calculation.
-The response also include a copy of the provided json file under the <code class="docutils literal notranslate"><span class="pre">request_content</span></code> key, and its node uuid in case this
-information is needed for future queries.</p>
-<p>In case of failure during the creation of the workflow the response will simply be be an error message with some more indication of the
-problem, but no <code class="docutils literal notranslate"><span class="pre">data</span></code> key or other attributes.</p>
-</div>
-<div class="section" id="workflow-inputs-property">
-<h2>workflow_inputs/&lt;property&gt;<a class="headerlink" href="#workflow-inputs-property" title="Permalink to this headline">¶</a></h2>
-<p>The required input for a workflow can be obtained either by exploring the relevant AiiDA class , or through
-the <code class="docutils literal notranslate"><span class="pre">verdi</span> <span class="pre">plugin</span> <span class="pre">aiida.workflow</span> <span class="pre">&lt;wf&gt;</span></code> command, that will provide a list of inputs, outputs and error code for
-the workflow &lt;wf&gt;.</p>
-<p>This has been ported to the endpoint workflow_inputs.
-The idea is that we can query the database for a specific property in the MAPPING_PROPERTY list to obtain a list of the
-input ports of the workflow, their type, if their required, and if they have a default. A helper string provides a descritpion
-of what the input is for, if who wrote the workflow provided it.</p>
-<p>One important thing to remember is that every workflow comes with optional inputs called <code class="docutils literal notranslate"><span class="pre">metadata</span></code> that are not stored in the database,
-and therefore are simple python classes. Another impotant point is that a nested workflow might need inputs for the workflow it calls as
-well, and those are listed and can be filled as sub-dictionaries of the main input dictionary.</p>
-<p>For example,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">intersect</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">ginestra</span><span class="o">/</span><span class="n">workflow_inputs</span><span class="o">/</span><span class="n">band_structure</span><span class="o">.</span><span class="n">pw</span>
-</pre></div>
-</div>
-<p>should result in the response (<strong>note that you need to have the aiida-quantum espresso plugin installed</strong>)</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;workflow_input_schema&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;The `pw.x` code to use for the `PwCalculations`.&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.code.Code&#39;&gt;&quot;</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;call_link_label&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                    <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;The label to use for the `CALL` link if the process is called by another process.&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;Description to set on the process node.&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;Label to set on the process node.&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;(&lt;class &#39;str&#39;&gt;,)&quot;</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;store_provenance&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                    <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;If set to `False` provenance will not be stored in the database.&quot;</span><span class="p">,</span>
-                    <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                    <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;bool&#39;&gt;&quot;</span>
-                <span class="p">}</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional `options` to use for the `PwCalculations`.&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.dict.Dict&#39;&gt;&quot;</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid: 467aa69c-646c-448f-aa4b-84cc3c5defdb (unstored)&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;The protocol to use for the workchain.&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.dict.Dict&#39;&gt;&quot;</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;structure&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;has_default&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nt">&quot;help_string&quot;</span><span class="p">:</span> <span class="s2">&quot;The input structure.&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;is_required&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                <span class="nt">&quot;valid_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;aiida.orm.nodes.data.structure.StructureData&#39;&gt;&quot;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/intersect/v4/ginestra/workflow_inputs/band_structure.pw&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;return workflow input schema&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/intersect/v4/ginestra/workflow_inputs/band_structure.pw&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:5000/&quot;</span>
-</pre></div>
-</div>
+<p>where the <code class="docutils literal notranslate"><span class="pre">data</span></code> key contains the <code class="docutils literal notranslate"><span class="pre">uuid</span></code> entry that identify the workflow <code class="docutils literal notranslate"><span class="pre">uuid</span></code> that can be queried to the database, and other attributes of the created process.</p>
+<p>The process has at this point just been created: unless extremely quick its attributes will not be populated; the <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> and <code class="docutils literal notranslate"><span class="pre">exit_code</span></code> would provide a clue that something failed, while the other attributes provides hints regarding the python class and the version of AiiDA/plugin used for such calculation.</p>
+<p>The response also include a copy of the provided json file under the <code class="docutils literal notranslate"><span class="pre">request_content</span></code> key, and its node <code class="docutils literal notranslate"><span class="pre">uuid</span></code> in case this information is needed for future queries.</p>
+<p>In case of failure during the creation of the workflow the response will simply be be an error message with some more indication of the problem, but no <code class="docutils literal notranslate"><span class="pre">data</span></code> key or other attributes.</p>
 </div>
 </div>
 
@@ -426,6 +469,8 @@ well, and those are listed and can be filled as sub-dictionaries of the main inp
           <footer>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
 
 
         <a href="running.html" class="btn btn-neutral float-left" title="Running the app" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

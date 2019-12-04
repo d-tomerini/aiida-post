@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="General Behaviour" href="endpoints.html" />
+    <link rel="next" title="General Behavior" href="endpoints.html" />
     <link rel="prev" title="Adding new workflows" href="workflow_howto.html" />
 </head>
 
@@ -91,8 +91,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#configuration-options">Configuration options</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behaviour</a></li>
-<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-endpoints">Available endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behavior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-intersect-endpoints">Available intersect endpoints</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
@@ -175,11 +175,11 @@ database is accessible; to run a calculation, the RabbitMQ service should be act
 </div>
 <p>The main executable is the file app.py, a click executable that launch an extension of the AiiDA REST api.
 The executable can be either run as <code class="docutils literal notranslate"><span class="pre">verdi</span> <span class="pre">run</span> <span class="pre">app.py</span></code> or by copying the wrapper
-<cite>aiida_ginestra_interface</cite> file is a wrapper to the bin folder and given adequate permission to be executed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chmod</span> <span class="mi">775</span> <span class="n">aiida_ginestra_interface</span>
+<cite>aiida_intersect_interface</cite> file is a wrapper to the bin folder and given adequate permission to be executed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chmod</span> <span class="mi">775</span> <span class="n">aiida_intersect_interface</span>
 </pre></div>
 </div>
-<p>The click command has option, that are accessible by typing <code class="docutils literal notranslate"><span class="pre">aiida_ginestra_interface</span> <span class="pre">--help</span></code>. These are the equivalent options to the AiiDA rest api:</p>
+<p>The click command has option, that are accessible by typing <code class="docutils literal notranslate"><span class="pre">aiida_intersect_interface</span> <span class="pre">--help</span></code>. These are the equivalent options to the AiiDA rest api:</p>
 <ul class="simple">
 <li><p><em>Hostname</em>: Where the app is executed</p></li>
 <li><p><em>Port</em>: port number</p></li>
@@ -208,7 +208,7 @@ of property with their own entry point string, directly connected to the workflo
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
 
-        <a href="endpoints.html" class="btn btn-neutral float-right" title="General Behaviour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="endpoints.html" class="btn btn-neutral float-right" title="General Behavior" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
 
 
         <a href="workflow_howto.html" class="btn btn-neutral float-left" title="Adding new workflows" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

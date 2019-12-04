@@ -6,7 +6,8 @@ and defines the additional endpoints
 
 from __future__ import absolute_import
 from aiida.restapi.api import AiidaApi
-from aiida_post.resources import GSubmit, GExisting, GStatus, GDuplicates, GProperties, GWorkflows
+from aiida_post.resources import GSubmit, GExisting, GStatus, \
+     GDuplicates, GProperties, GWorkflows, GData
 
 
 class InterfaceApi(AiidaApi):
@@ -19,46 +20,55 @@ class InterfaceApi(AiidaApi):
         This init serves to add new endpoints to the basic AiiDA Api
         """
 
-        super(InterfaceApi, self).__init__(app=app, prefix=kwargs['PREFIX'], catch_all_404s=True, **kwargs)
+        super().__init__(app=app, prefix=kwargs['PREFIX'], catch_all_404s=True, **kwargs)
 
         # all AiiDA's endpoint, plus the following
 
         self.add_resource(
             GSubmit,
             # assume it is a property
-            '/ginestra/submit/',
+            '/intersect/submit/',
             # unless specified
-            '/ginestra/submit/property',
-            '/ginestra/submit/workflow',
+            '/intersect/submit/property',
+            '/intersect/submit/workflow',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
-        self.add_resource(existing, '/ginestra/existing', strict_slashes=False, resource_class_kwargs=kwargs)
+
+        self.add_resource(GExisting, '/intersect/existing', strict_slashes=False, resource_class_kwargs=kwargs)
+
         self.add_resource(
             GDuplicates,
-            '/ginestra/duplicates/<string:prop>/check/',
+            '/intersect/duplicates/<string:prop>/check/',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
+
         self.add_resource(
-            GStatus, '/ginestra/status/<string:node_id>', strict_slashes=False, resource_class_kwargs=kwargs
+            GStatus, '/intersect/status/<string:node_id>', strict_slashes=False, resource_class_kwargs=kwargs
         )
+
         self.add_resource(
             GProperties,
-            '/ginestra/properties/',
-            '/ginestra/properties/<string:node_id>/',
-            '/ginestra/properties/<string:node_id>/inputs/',
-            '/ginestra/properties/<string:node_id>/outputs/',
-            '/ginestra/properties/<string:node_id>/outline/',
+            '/intersect/properties/',
+            '/intersect/properties/<string:node_id>/',
+            '/intersect/properties/<string:node_id>/inputs/',
+            '/intersect/properties/<string:node_id>/outputs/',
+            '/intersect/properties/<string:node_id>/outline/',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
+
         self.add_resource(
             GWorkflows,
-            '/ginestra/workflows/',
-            '/ginestra/workflows/<string:entrypoint>/inputs/',
-            '/ginestra/workflows/<string:entrypoint>/outputs/',
-            '/ginestra/workflows/<string:entrypoint>/outline/',
+            '/intersect/workflows/',
+            '/intersect/workflows/<string:entrypoint>/inputs/',
+            '/intersect/workflows/<string:entrypoint>/outputs/',
+            '/intersect/workflows/<string:entrypoint>/outline/',
             strict_slashes=False,
             resource_class_kwargs=kwargs
+        )
+
+        self.add_resource(
+            GData, '/intersect/derived_data/structuredata', strict_slashes=False, resource_class_kwargs=kwargs
         )

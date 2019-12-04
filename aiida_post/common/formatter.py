@@ -20,14 +20,30 @@ def format_wf(workflow):
     )
 
 
-def pop_underscore(dictionary):
+def delete_key(dictionary, mykey, startswith=False):
     """
-    Recursively remove keys of the dictionary that contains an underscore
+    Recursively remove keys of the dictionary that contains or start with a given string
     """
 
     list_keys = list(dictionary.keys())
     for key in list_keys:
         if isinstance(dictionary[key], dict):
-            pop_underscore(dictionary[key])
-        if key.startswith('_'):
+            delete_key(dictionary[key], mykey, startswith)
+        if (startswith and key.startswith(mykey) or mykey == key):
             del dictionary[key]
+
+
+def delete_key_check_dict(dictionary, mykey, myvalue):
+    """
+    Check recursively if a mykey:myvalue pair is in a dictionary
+    If it is, it and the value is not myvalue, remove each key of the dictionary
+    """
+
+    list_keys = list(dictionary.keys())
+    for key in list_keys:
+        if isinstance(dictionary[key], dict):
+            if mykey in dictionary[key]:
+                if myvalue != dictionary[key][mykey]:
+                    del dictionary[key]
+            else:
+                delete_key_check_dict(dictionary[key], mykey, myvalue)
