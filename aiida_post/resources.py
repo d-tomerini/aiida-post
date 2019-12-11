@@ -5,14 +5,11 @@ This module contains the general resources to be called by the main api
 
 from __future__ import absolute_import
 from __future__ import print_function
-from flask import request
 from urllib.parse import unquote
+from flask import request
 
-# aiida
 from aiida.restapi.resources import BaseResource, ProcessNode
-
-# local imports
-from aiida_post.submit.distributor import Distribute
+from aiida_post.submit.distributor import distribute
 
 
 class GSubmit(BaseResource):
@@ -24,7 +21,7 @@ class GSubmit(BaseResource):
         super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def post(self):
@@ -33,7 +30,7 @@ class GSubmit(BaseResource):
         Access is through a JSON file passed to the server containing the input required for calculation
         Data is handled and responded accordingly
         """
-        from aiida.orm import Dict
+        from aiida_post.common.formatter import format_wf
         #from aiida_post.tools.convert import Request_To_Dictionary
 
         # initialize response
@@ -44,13 +41,12 @@ class GSubmit(BaseResource):
 
         #reqdata = Request_To_Dictionary(request)
         content = request.get_json()
-        node = Dict(dict=content).store()
 
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
         pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
         submission = pathlist[-1]
 
-        # all the query parsing that's needed from AiiDA REST
+        # all the query parsing that's needed from AiiDA restapi
         # I probably need much less than this!
         (
             limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
@@ -74,12 +70,9 @@ class GSubmit(BaseResource):
                 raise ValueError('<{}> is not in the list of available properties.'.format(prop))
             entrypoint = available_properties[prop]
 
-        # This takes some additional info from the flask query, and store it into a node
-        # not sure yet if it makes sense to store it.
-        # but at least it can be returned after the request
-        #HttpData = DataFactory('post.HttpData')
+        workflow, node = distribute(content, entrypoint)
 
-        response = Distribute(content, entrypoint)
+        response = format_wf(workflow)
 
         request_content = dict(content, node=node.uuid)
         data = dict(
@@ -106,10 +99,10 @@ class GProperties(BaseResource):
         super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
-    def get(self, node_id=None):
+    def get(self, entrypoint=None):
         """
         Returns a list of the properties that are available for calculation
         This is related to the entry points on aiida_post.workflow, that relate
@@ -119,31 +112,44 @@ class GProperties(BaseResource):
         link with the specific name, but a general attribute/node type/name
         """
         from aiida.plugins import WorkflowFactory
+        from aiida.orm import QueryBuilder
         from aiida_post.common.formatter import delete_key
         # Unpack the URL
         path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
 
+        query_string = request.query_string.decode('utf-8')
         pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+        schema = pathlist[-1]
+        (
+            limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
+            tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
+        ) = self.utils.parse_query_string(query_string)
 
-        if pathlist[-1] == 'properties':
+        available_properties = self.extended['PROPERTY_MAPPING']
+        if schema == 'properties':
             # just a request for the available properties connected to a workflow
-            outdata = self.extended['PROPERTY_MAPPING']
+            outdata = available_properties
             resource_type = 'Information about the properties available for calculation'
+        elif schema == 'list':
+            prop = available_properties[entrypoint]
+            resource_type = 'List of nodes from the required entrypoint'
+            workflowtype = WorkflowFactory(prop)
+            qb = QueryBuilder().append(workflowtype, filters=filters, project=['uuid', 'attributes'])
+            outdata = [dict(uuid=uuid, attributes=attr) for [uuid, attr] in qb.all()]
         else:
-            available_properties = self.extended['PROPERTY_MAPPING']
             try:
-                entry = available_properties[node_id]
+                entry = available_properties[entrypoint]
             except:
-                raise ValueError('<{}> is not in the list of available properties.'.format(node_id))
+                raise ValueError('<{}> is not in the list of available properties.'.format(entrypoint))
 
             workflow = WorkflowFactory(entry)
-            schema = pathlist[-1]
             resource_type = 'Information about the workflow {}'.format(schema)
             # which part of the description do we want to print out?
             description = workflow.get_description()
             mydata = description['spec'][schema]
+            # list of all calculations of this type
             if schema != 'outline':
                 delete_key(mydata, '_', startswith=True)
             outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
@@ -210,7 +216,7 @@ class GWorkflows(BaseResource):
         super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def get(self, entrypoint=None):
@@ -289,7 +295,7 @@ class GExisting(BaseResource):
         super().__init__(**kwargs)
         # Add the configuration file for my app
         # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING')
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def get(self):
@@ -357,12 +363,15 @@ class GData(BaseResource):
             tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
         ) = self.utils.parse_query_string(query_string)
 
+        if not limit:
+            limit = self.limit_default
+        if not offset:
+            offset = 0
         # This is a hack SPECIFICALLY for structuredata types, and to search for
         # chemical formula
-        page = 1
-        chemical_formula = filters.pop('chemical_formula', None)
-        chemical_formula_type = filters.pop('chemical_formula_type', {'=': 'hill_compact'})
 
+        chemical_formula = filters.pop('chemical_formula', None)
+        chemical_formula_type = filters.pop('chemical_formula_type', {'==': 'hill_compact'})
         full_type = 'data.structure.StructureData.|'
 
         self.trans.set_query(
@@ -381,18 +390,8 @@ class GData(BaseResource):
 
         ## Count results
         total_count = self.trans.get_total_count()
-
-        ## Pagination (if required)
-        if page is not None:
-            #(limit, offset, rel_pages) = self.utils.paginate(page, perpage, total_count)
-            #self.trans.set_limit_offset(limit=limit, offset=offset)
-            ## Retrieve results
-            results = self.trans.get_results()
-            #headers = self.utils.build_headers(rel_pages=rel_pages, url=request.url, total_count=total_count)
-        else:
-            #self.trans.set_limit_offset(limit=limit, offset=offset)
-            ## Retrieve results
-            results = self.trans.get_results()
+        self.trans.set_limit_offset(limit=limit, offset=offset)
+        results = self.trans.get_results()
         if attributes_filter is not None and attributes:
             for node in results['nodes']:
                 node['attributes'] = {}
@@ -401,33 +400,27 @@ class GData(BaseResource):
                 for attr in attributes_filter:
                     node['attributes'][str(attr)] = node['attributes.' + str(attr)]
                     del node['attributes.' + str(attr)]
-        if extras_filter is not None and extras:
-            for node in results['nodes']:
-                node['extras'] = {}
-                if not isinstance(extras_filter, list):
-                    extras_filter = [extras_filter]
-                for extra in extras_filter:
-                    node['extras'][str(extra)] = node['extras.' + str(extra)]
-                    del node['extras.' + str(extra)]
         ## Build response
-
-        if chemical_formula:
+        if chemical_formula is not None:
             filtered_results = []
+
             # how do I get the only value of a dict :(
-            for _, formula in chemical_formula.items():
-                pass
-            for _, formula_type in chemical_formula_type.items():
-                pass
+            formula = chemical_formula['==']
+            formula_type = chemical_formula_type['==']
+            found = 0
             for r in results['nodes']:
                 try:
                     node_formula = load_node(r['uuid']).get_formula(mode=formula_type)
-                    print((node_formula, formula))
+                    print((r['uuid']))
                     if node_formula == formula:
                         filtered_results.append(r)
+                        found += 1
+                        if found > limit:
+                            break
                 except:
                     pass
         else:
-            filtered_results = results
+            filtered_results = results['nodes']
 
         data = dict(
             method=request.method,
@@ -437,7 +430,7 @@ class GData(BaseResource):
             id=None,
             query_string=request.query_string.decode('utf-8'),
             resource_type='structuredata search',
-            data=dict(nodes=filtered_results)
+            data=dict(total_number_of_structures=total_count, nodes=filtered_results)
         )
         return self.utils.build_response(status=200, data=data)
 

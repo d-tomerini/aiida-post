@@ -13,6 +13,7 @@ def format_wf(workflow):
         'process_label', 'process_class', 'process_state', 'version', 'exit_status', 'exit_message',
         'stepper_state_info'
     ]
+
     return dict(
         uuid=workflow.uuid,
         ctime=workflow.ctime,

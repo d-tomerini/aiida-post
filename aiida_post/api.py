@@ -51,10 +51,10 @@ class InterfaceApi(AiidaApi):
         self.add_resource(
             GProperties,
             '/intersect/properties/',
-            '/intersect/properties/<string:node_id>/',
-            '/intersect/properties/<string:node_id>/inputs/',
-            '/intersect/properties/<string:node_id>/outputs/',
-            '/intersect/properties/<string:node_id>/outline/',
+            '/intersect/properties/<string:entrypoint>/inputs/',
+            '/intersect/properties/<string:entrypoint>/outputs/',
+            '/intersect/properties/<string:entrypoint>/outline/',
+            '/intersect/properties/<string:entrypoint>/list/',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )

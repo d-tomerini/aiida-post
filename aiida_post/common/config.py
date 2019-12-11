@@ -1,27 +1,3 @@
-"""
-General variables used by the app
-"""
-
-# supported workchain. Will be changed to check the available endpoint in the definitions
-
-# also will be superseded by something better, i.e. how to get
-
-# list of the supported codes to use in the database
-# for now, list is given by the nodes that are loaded in the database
-# in the future it will probably be given as a list of "suggested to use"
-# also, upf co not belong here
-AVAILABLE_CODES = {'qe': 667, 'siesta': 668, 'upf': 'efficiency'}
-
-# map of properties to single workchain
-# it should be interesting (necessary?) to also map WHERE to
-# find this value / object (output name/location)
-PROPERTY_MAPPING = {
-    'structure.cod': 'post.CODImport',
-    'relax.pw': 'quantumespresso.pw.relax',
-    'band_structure.pw': 'quantumespresso.pw.band_structure',
-    'band_gap.pw': 'post.BandGap',
-    'formationenergy.qe': 'defects.formation_energy.qe'
-}
 #####################################################################
 ##BELOW COPIED AND SLIGHTLY MODIFIED FROM AIIDA REST API CONFIG FILE
 #####################################################################

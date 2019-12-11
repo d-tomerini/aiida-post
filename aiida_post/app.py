@@ -18,7 +18,9 @@ from aiida.cmdline.params.options import HOSTNAME, PORT
 # import aiida.restapi --> we can get the CONFIG file from there
 
 import aiida_post
-CONFIG_DIR = str(aiida_post.__path__[0]) + '/common/'
+import aiida
+CONFIG_DIR = str(aiida.__path__[0]) + '/restapi/common/'
+PROPERTY_DIR = str(aiida_post.__path__[0]) + '/common/'
 
 
 @click.command()
@@ -31,6 +33,14 @@ CONFIG_DIR = str(aiida_post.__path__[0]) + '/common/'
     type=click.Path(exists=True),
     default=CONFIG_DIR,
     help='The path of the configuration directory'
+)
+@click.option(
+    '-c',
+    '--property-dir',
+    'prop',
+    type=click.Path(exists=True),
+    default=PROPERTY_DIR,
+    help='The path of the entrypoint properties'
 )
 @click.option(
     '--wsgi-profile',

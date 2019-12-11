@@ -24,7 +24,7 @@ def threaded(func, executor=None):
 
 
 @threaded
-def submit_job(workflow, inputs):
+def submit_job(workflow, **inputs):
     """
     Simple wrapper to submit asyncronously a job to the scheduler
     : param wf: workchain to be submitted
@@ -33,17 +33,6 @@ def submit_job(workflow, inputs):
     from aiida.engine import submit
 
     node = submit(workflow, **inputs)
-    return node
-
-
-@threaded
-def run_calculation(workflow, *args, **kwargs):
-    """
-    Submit asyncronously a calculation to the scheduler
-    returns the the node responding to the request
-    """
-
-    node = workflow(*args, **kwargs)
     return node
 
 

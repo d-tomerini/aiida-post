@@ -2,19 +2,15 @@
 """
 This module deals with the submission process.
 This needs to be handled from a process in a separate thread from
-Flask, and it is handled by the threaded fucnction, that spawn a new thread
+Flask, and it is handled by the threaded function, that spawn a new thread
 and submit it from there. Since the submission job itself is a minimally
-intensive process, it should not be a problem to have cuncurrent threads
+intensive process, it should not be a problem to have concurrent threads
 """
 
 from __future__ import absolute_import
-from __future__ import print_function
-from aiida.plugins import WorkflowFactory
-from aiida.common import exceptions
-from aiida_post.common.threaded import get_builder, submit_builder
 
 
-def Distribute(request, entrypoint):
+def distribute(request, entrypoint):
     """
     After the retrieval of the structure, we proceed with the distribution of the task
     according to the requested data.
@@ -22,10 +18,12 @@ def Distribute(request, entrypoint):
     : input info: a dictionary of CONFIG values that can be useful
     : return response: a dictionary with the workflow info, error message and additional info
     """
-    from aiida_post.common.formatter import format_wf
-    # prepare to return data containing eventual error messages and workchain properties
-    response = {}
-    wfinfo = None
+    from aiida import orm
+    from aiida.plugins import WorkflowFactory
+
+    #from aiida.common.links import LinkType
+    from aiida_post.common.threaded import get_builder, submit_builder
+    from aiida_post.workflows.DistributeInputs import ConnectRequestToWorkFlow
 
     WorkFlow = WorkflowFactory(entrypoint)
 
@@ -40,11 +38,45 @@ def Distribute(request, entrypoint):
 
     future = submit_builder(builder)
     workflow = future.result()
-    wfinfo = format_wf(workflow)
+    # create a fake workfunction to connect the request and workflows
+    # through a workchain node, in order to connect the pieces
 
-    response.update(workflow=wfinfo)
+    Request = orm.Dict(dict=request).store()
+    Entrypoint = orm.Str(entrypoint).store()
 
-    return response
+    future = get_builder(ConnectRequestToWorkFlow)
+    builder = future.result()
+
+    builder.entrypoint = Entrypoint
+    builder.dictionary_inputs = Request
+    builder.workflow = workflow
+
+    future = submit_builder(builder)
+
+    # Direct writing of the database links, if ever needed...
+    # I achieve this through a workflow now to be consistent
+
+    #    creator = orm.WorkFunctionNode()
+    #    creator.add_incoming(
+    #                source=Request,
+    #                link_type=LinkType.INPUT_WORK,
+    #                link_label='request')
+    #    creator.add_incoming(
+    #                source=Entrypoint,
+    #                link_type=LinkType.INPUT_WORK,
+    #                link_label='entrypoint')
+    #
+    #    linktriples = workflow.get_incoming().all()
+    #    creator.store()
+    #
+    #    for triple in linktriples:
+    #        if triple.link_type == LinkType.INPUT_WORK:
+    #            triple.node.add_incoming(
+    #                source=creator,
+    #                link_type=LinkType.RETURN,
+    #                link_label=triple.link_label)
+
+    return workflow, Request
 
 
 def Process_NameSpaces(builder, dictionary):
@@ -59,6 +91,7 @@ def Process_NameSpaces(builder, dictionary):
     The subroutine runs recursively (for nested namespaces) in order to create the correct input
     """
     from aiida.engine.processes.ports import PortNamespace
+    from aiida.common import exceptions
 
     namespace = builder._port_namespace
     # If we decide Codes can be default, I need something here to assign things
@@ -73,23 +106,24 @@ def Process_NameSpaces(builder, dictionary):
                 # for now I ignore the possibility
                 if isinstance(value, list):
                     # convert elements in list, if it was indeed a list
-                    builder[key] = [To_AiiDA_Type(item, valid) for item in iter(value)]
+                    builder[key] = [input_to_aiida_type(item, valid) for item in iter(value)]
                 elif isinstance(value, dict):
                     # it it was not iterable, it was probably a single value
-                    builder[key] = {k: To_AiiDA_Type(v, valid) for k, v in value.items()}
+                    builder[key] = {k: input_to_aiida_type(v, valid) for k, v in value.items()}
                 else:
                     raise exceptions.ValidationError('Dynamic namespace {} should be iterable'.format(key))
             else:
-                # recursevily look for deeper namespaces
+                # recursively look for deeper namespaces
                 Process_NameSpaces(builder[key], value)
         else:
-            builder[key] = To_AiiDA_Type(value, valid)
+            builder[key] = input_to_aiida_type(value, valid)
 
 
 def Get_Namespace_Schema(namespace, schema):
     """
     Recursively process the namespace of a workflow in order to extract information about the
     input namespace, their type, if and what is  the defaul values if they're requested, and a help if it is available
+    This is not redundant, since I can use the get_description method
     """
     from aiida.engine.processes.ports import PortNamespace
 
@@ -126,7 +160,7 @@ def Get_Namespace_Schema(namespace, schema):
             )
 
 
-def To_AiiDA_Type(data, valid):
+def input_to_aiida_type(data, valid):
     """
     Function to take the value of a dictionary, and convert it to the expected type
     for the input namespace. It can be just converting the type, or trying to load a
@@ -162,12 +196,7 @@ def To_AiiDA_Type(data, valid):
     else:
         # now trying to assign data that I expect is going to be a Node...
         node = orm.load_node(data)
-        try:
-            output = node
-        except:
-            raise exceptions.InputValidationError(
-                'Error, expected {} to be a node instance, but I cannot load <{}> .'.format(data, node)
-            )
+        output = node
 
     return output
 

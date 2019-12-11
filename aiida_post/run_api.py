@@ -57,10 +57,12 @@ def run_api(flask_app, flask_api, **kwargs):
     debug = kwargs['debug']
     wsgi_profile = kwargs['wsgi_profile']
     hookup = kwargs['hookup']
+    prop = kwargs['prop']
 
     # Import the right configuration file
     confs = imp.load_source(os.path.join(config, 'config'), os.path.join(config, 'config.py'))
-
+    # The properties of the app
+    propconfs = imp.load_source(os.path.join(prop, 'prop'), os.path.join(prop, 'propertymapping.py'))
     # Instantiate an app
     app_kwargs = dict(catch_internal_server=catch_internal_server)
     app = flask_app(__name__, **app_kwargs)
@@ -98,12 +100,17 @@ def run_api(flask_app, flask_api, **kwargs):
         PREFIX=confs.PREFIX,
         PERPAGE_DEFAULT=confs.PERPAGE_DEFAULT,
         LIMIT_DEFAULT=confs.LIMIT_DEFAULT,
-        AVAILABLE_CODES=confs.AVAILABLE_CODES
     )
 
     # properties related to the app, not rest
 
-    api_kwargs.update(dict(PROPERTY_MAPPING=confs.PROPERTY_MAPPING))
+    api_kwargs.update(
+        dict(
+            PROPERTY_MAPPING=propconfs.PROPERTY_MAPPING,
+            PROPERTY_OUTPUTS=propconfs.PROPERTY_OUTPUTS,
+            AVAILABLE_CODES=propconfs.AVAILABLE_CODES,
+        )
+    )
 
     api = flask_api(app, **api_kwargs)
 
