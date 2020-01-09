@@ -34,7 +34,7 @@ class GSubmit(BaseResource):
         #from aiida_post.tools.convert import Request_To_Dictionary
 
         # initialize response
-        path = unquote(request.path)
+        # path = unquote(request.path)
         url = unquote(request.url)
         url_root = unquote(request.url_root)
         query_string = request.query_string.decode('utf-8')
@@ -43,7 +43,7 @@ class GSubmit(BaseResource):
         content = request.get_json()
 
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+        # pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
 
         duplicates = request.args.get('search_duplicates')
         submission = request.args.get('submission_from', default='property')
@@ -51,7 +51,7 @@ class GSubmit(BaseResource):
         required_keys = ['calculation', 'input']
         for key in required_keys:
             if key not in content:
-                raise ValueError('Not found compulsory key <{}> in json'.format(key))
+                raise ValueError('Not found compulsory key <{}> in json input'.format(key))
         prop = content['calculation']
         # simply assume the workflow is loaded from the property from the entrypoint
 
@@ -307,6 +307,7 @@ class GExisting(BaseResource):
         """
         raise ValueError('Endpoint not yet implemented')
 
+
 class GAppNodes(BaseResource):
     """
     Endpoint to return all the already executed calculation of a specific kind
@@ -324,7 +325,7 @@ class GData(BaseResource):
     """
     Endpoint to return all the structuredata in the database, and query with formula
     """
-    from  aiida.restapi.translator.nodes.node import NodeTranslator
+    from aiida.restapi.translator.nodes.node import NodeTranslator
 
     _translator_class = NodeTranslator
     _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
@@ -337,7 +338,6 @@ class GData(BaseResource):
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
-
 
     def get(self):
         """
@@ -401,10 +401,7 @@ class GData(BaseResource):
         chemical_formula = request.args.get('chemical_formula')
 
         if chemical_formula is not None:
-            formula_type = request.args.get(
-                'chemical_formula_type',
-                default='hill_compact'
-            )
+            formula_type = request.args.get('chemical_formula_type', default='hill_compact')
             filtered_results = []
             # found = 0
             for res in results['nodes']:

@@ -13,11 +13,7 @@ will have to contain where to look for properties, in order
 # in the future it will probably be given as a list of "suggested to use"
 # also, upf co not belong here
 
-AVAILABLE_CODES = {
-    'qe': 667,
-    'siesta': 668,
-    'upf': 'efficiency'
-}
+AVAILABLE_CODES = {'qe': 667, 'siesta': 668, 'upf': 'efficiency'}
 
 # map of properties to single workchain
 # it should be interesting (necessary?) to also map WHERE to

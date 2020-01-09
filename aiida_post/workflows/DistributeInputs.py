@@ -28,7 +28,7 @@ class ConnectRequestToWorkFlow(WorkChain):
 
     def connect(self):
         """
-        This is a dummy workflow. 
+        This is a dummy workflow.
         It detects the inputs of a workflow (not restored) and links them to the dictionary request
         that created it. This will allow the search for the dictionary that generated the workflow inputs.
         """

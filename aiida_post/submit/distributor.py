@@ -27,9 +27,9 @@ def distribute(request, entrypoint):
 
     WorkFlow = WorkflowFactory(entrypoint)
 
-    # All of these future statements are a bit annoying, as I'm just waiting for a 
-    # concurrent thread to finish. That is due to the process building and launching 
-    # cannot happen on the main thread of Flask. 
+    # All of these future statements are a bit annoying, as I'm just waiting for a
+    # concurrent thread to finish. That is due to the process building and launching
+    # cannot happen on the main thread of Flask.
     # Direct running is not allowed, also, even on a subthread
 
     future = get_builder(WorkFlow)
