@@ -7,7 +7,7 @@ and defines the additional endpoints
 from __future__ import absolute_import
 from aiida.restapi.api import AiidaApi
 from aiida_post.resources import GSubmit, GExisting, GStatus, \
-     GDuplicates, GProperties, GWorkflows, GData
+     GProperties, GWorkflows, GData
 
 
 class InterfaceApi(AiidaApi):
@@ -28,21 +28,15 @@ class InterfaceApi(AiidaApi):
             GSubmit,
             # assume it is a property
             '/intersect/submit/',
-            # unless specified
-            '/intersect/submit/property',
-            '/intersect/submit/workflow',
+            # the next two could be there, but it is better handled by queries
+            # like ?submission_from=property
+            #'/intersect/submit/property',
+            #'/intersect/submit/workflow',
             strict_slashes=False,
             resource_class_kwargs=kwargs
         )
 
         self.add_resource(GExisting, '/intersect/existing', strict_slashes=False, resource_class_kwargs=kwargs)
-
-        self.add_resource(
-            GDuplicates,
-            '/intersect/duplicates/<string:prop>/check/',
-            strict_slashes=False,
-            resource_class_kwargs=kwargs
-        )
 
         self.add_resource(
             GStatus, '/intersect/status/<string:node_id>', strict_slashes=False, resource_class_kwargs=kwargs

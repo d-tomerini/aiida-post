@@ -44,31 +44,32 @@ class GSubmit(BaseResource):
 
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
         pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
-        submission = pathlist[-1]
 
-        # all the query parsing that's needed from AiiDA restapi
-        # I probably need much less than this!
-        (
-            limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
-            tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
-        ) = self.utils.parse_query_string(query_string)
+        duplicates = request.args.get('search_duplicates')
+        submission = request.args.get('submission_from', default='property')
 
         required_keys = ['calculation', 'input']
         for key in required_keys:
             if key not in content:
-                raise ValueError('Not found compulsory key <{}> is json'.format(key))
+                raise ValueError('Not found compulsory key <{}> in json'.format(key))
         prop = content['calculation']
         # simply assume the workflow is loaded from the property from the entrypoint
 
-        if submission == 'workflow':
-            # load the entrypoint directly
-            entrypoint = prop
-        else:
+        if submission == 'property':
             # get the workflow associated with the property
             available_properties = self.extended['PROPERTY_MAPPING']
             if prop not in available_properties:
                 raise ValueError('<{}> is not in the list of available properties.'.format(prop))
             entrypoint = available_properties[prop]
+        elif submission == 'workflow':
+            # load the entrypoint directly
+            entrypoint = prop
+        else:
+            raise ValueError('Workflow submission type not recognized: <{}>.'.format(submission))
+
+        if duplicates:
+            # check for nodes with the same `input` subdictionary, and return a list
+            pass
 
         workflow, node = distribute(content, entrypoint)
 
@@ -306,21 +307,6 @@ class GExisting(BaseResource):
         """
         raise ValueError('Endpoint not yet implemented')
 
-
-class GDuplicates(BaseResource):
-    """
-    Endpoint to query for existing queries of the same type
-    Probably I need to save a POST query and look for dictionary databases of the same type.
-    Useful?
-    """
-
-    def get(self):
-        """
-        To implement
-        """
-        raise ValueError('Endpoint not yet implemented')
-
-
 class GAppNodes(BaseResource):
     """
     Endpoint to return all the already executed calculation of a specific kind
@@ -338,10 +324,20 @@ class GData(BaseResource):
     """
     Endpoint to return all the structuredata in the database, and query with formula
     """
-    from aiida.restapi.translator.nodes.node import NodeTranslator
+    from  aiida.restapi.translator.nodes.node import NodeTranslator
 
     _translator_class = NodeTranslator
     _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
+
+    def __init__(self, **kwargs):
+        from aiida.restapi.common.utils import Utils
+
+        super().__init__(**kwargs)
+        # Add the configuration file for my app
+        # Taken almost verbatim from the configuration handling of BaseResource
+        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
+        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
+
 
     def get(self):
         """
@@ -364,14 +360,14 @@ class GData(BaseResource):
         ) = self.utils.parse_query_string(query_string)
 
         if not limit:
-            limit = self.limit_default
+            limit = self.utils.limit_default
         if not offset:
             offset = 0
         # This is a hack SPECIFICALLY for structuredata types, and to search for
         # chemical formula
 
-        chemical_formula = filters.pop('chemical_formula', None)
-        chemical_formula_type = filters.pop('chemical_formula_type', {'==': 'hill_compact'})
+        filters.pop('chemical_formula', None)
+        filters.pop('chemical_formula_type', None)
         full_type = 'data.structure.StructureData.|'
 
         self.trans.set_query(
@@ -400,23 +396,26 @@ class GData(BaseResource):
                 for attr in attributes_filter:
                     node['attributes'][str(attr)] = node['attributes.' + str(attr)]
                     del node['attributes.' + str(attr)]
-        ## Build response
-        if chemical_formula is not None:
-            filtered_results = []
+        ## filter response
 
-            # how do I get the only value of a dict :(
-            formula = chemical_formula['==']
-            formula_type = chemical_formula_type['==']
-            found = 0
-            for r in results['nodes']:
+        chemical_formula = request.args.get('chemical_formula')
+
+        if chemical_formula is not None:
+            formula_type = request.args.get(
+                'chemical_formula_type',
+                default='hill_compact'
+            )
+            filtered_results = []
+            # found = 0
+            for res in results['nodes']:
                 try:
-                    node_formula = load_node(r['uuid']).get_formula(mode=formula_type)
-                    print((r['uuid']))
+                    node = load_node(res)
+                    node_formula = node.get_formula(mode=formula_type)
                     if node_formula == formula:
-                        filtered_results.append(r)
-                        found += 1
-                        if found > limit:
-                            break
+                        filtered_results.append(res)
+                        # found += 1
+                        # if found > limit:
+                        #     break
                 except:
                     pass
         else:

@@ -13,7 +13,11 @@ will have to contain where to look for properties, in order
 # in the future it will probably be given as a list of "suggested to use"
 # also, upf co not belong here
 
-AVAILABLE_CODES = {'qe': 667, 'siesta': 668, 'upf': 'efficiency'}
+AVAILABLE_CODES = {
+    'qe': 667,
+    'siesta': 668,
+    'upf': 'efficiency'
+}
 
 # map of properties to single workchain
 # it should be interesting (necessary?) to also map WHERE to
@@ -23,7 +27,7 @@ PROPERTY_MAPPING = {
     'relax.pw': 'quantumespresso.pw.relax',
     'band_structure.pw': 'quantumespresso.pw.band_structure',
     'band_gap.pw': 'post.BandGap',
-    'formationenergy.qe': 'defects.formation_energy.qe'
+    'formation_energy.qe': 'defects.formation_energy.qe'
 }
 
 # for each of the properties, this tells us where to find the output

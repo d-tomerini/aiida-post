@@ -27,12 +27,17 @@ def distribute(request, entrypoint):
 
     WorkFlow = WorkflowFactory(entrypoint)
 
-    # creating the namespaces for the workflow, from the
+    # All of these future statements are a bit annoying, as I'm just waiting for a 
+    # concurrent thread to finish. That is due to the process building and launching 
+    # cannot happen on the main thread of Flask. 
+    # Direct running is not allowed, also, even on a subthread
+
     future = get_builder(WorkFlow)
     builder = future.result()
 
-    # standard code needs thinking
-    #Assign_code(builder, req)
+    # TODO: standard codes when none is selected. Needs thinking for correct implementation
+    # TODO: I might prefer some code for fast actions, but more "powerful ones" for slower parallel duties
+    # Assign_code(builder, req)
     # Assign ports to the workflow
     Process_NameSpaces(builder, request['input'])
 
@@ -41,7 +46,9 @@ def distribute(request, entrypoint):
     # create a fake workfunction to connect the request and workflows
     # through a workchain node, in order to connect the pieces
 
-    Request = orm.Dict(dict=request).store()
+    # request, for query, is just the dictionary input
+    # It should not matter how I found the entrypoint
+    Request = orm.Dict(dict=request['input']).store()
     Entrypoint = orm.Str(entrypoint).store()
 
     future = get_builder(ConnectRequestToWorkFlow)

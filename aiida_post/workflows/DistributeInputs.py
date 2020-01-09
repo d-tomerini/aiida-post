@@ -28,7 +28,9 @@ class ConnectRequestToWorkFlow(WorkChain):
 
     def connect(self):
         """
-        Wrapper
+        This is a dummy workflow. 
+        It detects the inputs of a workflow (not restored) and links them to the dictionary request
+        that created it. This will allow the search for the dictionary that generated the workflow inputs.
         """
         from aiida.common.links import LinkType
 
