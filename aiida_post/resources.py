@@ -135,14 +135,20 @@ class GProperties(GResource):
             outdata = available_properties
             resource_type = 'Information about the properties available for calculation'
         elif schema == 'list':
+            if entrypoint not in available_properties:
+                raise ValueError('<{}> is not in the list of the supported properties'.format(entrypoint))
             prop = available_properties[entrypoint]
             resource_type = 'List of nodes from the required entrypoint'
             workflowtype = WorkflowFactory(prop)
             qb = QueryBuilder().append(workflowtype, filters=filters, project=['uuid', 'attributes'])
             outdata = [dict(uuid=uuid, attributes=attr) for [uuid, attr] in qb.all()]
         elif schema == 'outputs':
+            if entrypoint not in property_outputs:
+                raise ValueError('<{}> does not have defined outputs in property outputs config file'.format(entrypoint))
             outputs = property_outputs[entrypoint]
             prop = available_properties[entrypoint]
+            if prop not in available_properties:
+                raise ValueError('<{}> is not in the list of the supported properties'.format(prop))
             workflow = WorkflowFactory(prop)
             resource_type = 'Property name, and its position with respect to the workflow outputs'
             outdata = dict(

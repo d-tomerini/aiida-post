@@ -36,8 +36,8 @@ PROPERTY_MAPPING = {
 
 PropMap = collections.namedtuple('PropMap', 'name, is_node, edge, project')
 PROPERTY_OUTPUTS = {
-    'structure.cod': PropMap('list', False, 'output', 'attributes'),
+    'structure.cod': PropMap('list_of_structures', False, 'output', 'attributes'),
     'relax.pw': PropMap('relaxed_structure', True, 'output_structure', 'uuid'),
-    'relaxed_energy.pw': PropMap('final_energy', False, 'output_parameters', 'attributes.energy'),
+    'relaxed_energy.pw': PropMap('final_relaxed_energy', False, 'output_parameters', 'attributes.energy'),
     'band_gap.pw': PropMap('band_gap', False, 'output_parameters', 'attributes.band_gap')
 }
