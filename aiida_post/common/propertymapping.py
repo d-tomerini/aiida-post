@@ -1,8 +1,10 @@
 """
-unused for now
 map of the single property to an entry point name of a workflow
 will have to contain where to look for properties, in order
 """
+
+from __future__ import absolute_import
+import collections
 
 # supported workchain. Will be changed to check the available endpoint in the definitions
 
@@ -21,6 +23,7 @@ AVAILABLE_CODES = {'qe': 667, 'siesta': 668, 'upf': 'efficiency'}
 PROPERTY_MAPPING = {
     'structure.cod': 'post.CODImport',
     'relax.pw': 'quantumespresso.pw.relax',
+    'relaxed_energy.pw': 'quantumespresso.pw.relax',
     'band_structure.pw': 'quantumespresso.pw.band_structure',
     'band_gap.pw': 'post.BandGap',
     'formation_energy.qe': 'defects.formation_energy.qe'
@@ -30,12 +33,11 @@ PROPERTY_MAPPING = {
 # a dictionary of properties; each entry is a list of lists
 # first is an edge filter (name of the output)
 # second is the desired attribute
+
+PropMap = collections.namedtuple('PropMap', 'name, is_node, edge, project')
 PROPERTY_OUTPUTS = {
-    'structure.cod': {
-        'list': ['output', 'attributes']
-    },
-    'relax.pw': {
-        'output_structure': ['output_structure', 'uuid'],
-        'final_energy': ['output_parameters', 'attributes.energy']
-    }
+    'structure.cod': PropMap('list', False, 'output', 'attributes'),
+    'relax.pw': PropMap('relaxed_structure', True, 'output_structure', 'uuid'),
+    'relaxed_energy.pw': PropMap('final_energy', False, 'output_parameters', 'attributes.energy'),
+    'band_gap.pw': PropMap('band_gap', False, 'output_parameters', 'attributes.band_gap')
 }

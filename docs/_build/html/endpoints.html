@@ -179,7 +179,7 @@
 <div class="section" id="available-intersect-endpoints">
 <h1>Available intersect endpoints<a class="headerlink" href="#available-intersect-endpoints" title="Permalink to this headline">¶</a></h1>
 <p>The app runs at the the address <code class="docutils literal notranslate"><span class="pre">HOSTNAME:PORT/PREFIX/ENDPOINT</span></code>, where <code class="docutils literal notranslate"><span class="pre">HOST</span></code> and <code class="docutils literal notranslate"><span class="pre">PORT</span></code> are property that can be set by the app options.</p>
-<p>The prefix is the same of the aiida rest api, <code class="docutils literal notranslate"><span class="pre">/api/v4/</span></code>; this can be changed in the configuration options if necessary.
+<p>The prefix is the same of the AiiDA REST API, <code class="docutils literal notranslate"><span class="pre">/api/v4/</span></code>; this can be changed in the configuration options if necessary.
 All the new workflow related to the project have a prefix <code class="docutils literal notranslate"><span class="pre">/api/v4/intersect</span></code> in order to separate them from the existing AiiDA endpoints.</p>
 <p>In the following therefore I’m going to assume a base URL as <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/api/v4</span></code>.</p>
 <p>Every URL build upon this base URL, if it does not correspond to a used endpoint should redirect to a list of the accepted endpoints. This is a list of the AiiDA REST plus the ones we have defined.</p>
@@ -199,8 +199,8 @@ In the proceeding I assume a request to be executed by a unix terminal call with
 Other resources, like <code class="docutils literal notranslate"><span class="pre">curl</span></code> or browser extensions can be used.</p>
 <div class="section" id="derived-data-structuredata">
 <h2>derived_data/structuredata<a class="headerlink" href="#derived-data-structuredata" title="Permalink to this headline">¶</a></h2>
-<p>This endpoint is modelled on the idea to query for derived properties, that can be calculated with a function call, and not stored properties.</p>
-<p>This is implemented in the AiiDA rest api as a way to display information on a single node; chemical_formula is such an example.</p>
+<p>This endpoint is modeled on the idea to query for derived properties, that can be calculated with a function call, and not stored properties.</p>
+<p>This is implemented in the AiiDA REST API as a way to display information on a single node; chemical_formula is such an example.</p>
 <p>As a utility, I provide the <code class="docutils literal notranslate"><span class="pre">intersect/derived_data/</span></code> as a way to display derived data.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -208,16 +208,17 @@ Other resources, like <code class="docutils literal notranslate"><span class="pr
 This is intended to be just a temporary solution to search a database for structures.</p>
 </div>
 <p>Without any query, the endpoint is equivalent to</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://127.0.0.1:5000/api/v4/nodes?full_type=&quot;data.structure.StructureData.|&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http 127.0.0.1:5000/api/v4/nodes?full_type=&quot;data.structure.StructureData.|&quot;
 </pre></div>
 </div>
 <p>i.e. to a node search with a query on <code class="docutils literal notranslate"><span class="pre">StructureData</span></code> objects.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">structuredata</span></code> endpoint allows for query on <code class="docutils literal notranslate"><span class="pre">chemical_formula</span></code> to provide a filter on this non-stored property, and a <code class="docutils literal notranslate"><span class="pre">chemical_formula_type</span></code> to search for types of chemical formulas that are allowed in the verdi shell command <code class="docutils literal notranslate"><span class="pre">node.get_formula()</span></code>.
 This is executed as with the normal <code class="docutils literal notranslate"><span class="pre">?</span></code> query symbol at the endof the endpoint, eventually followed by others with the <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> symbol.
 Additional keys for the database search can be used to further funnel the request. As it most simple:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula=&quot;O2Si&quot;&amp;chemical_formula_type=&quot;hill_compact&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http 127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula=&quot;O2Si&quot;&amp;chemical_formula_type=&quot;hill_compact&quot;
 </pre></div>
 </div>
+<p>Furthermore, what is returned is a list of at most <code class="docutils literal notranslate"><span class="pre">limit</span></code> structure (400, but can be changed in the config files) with a certain <code class="docutils literal notranslate"><span class="pre">offset</span></code> number of structures from the database search. These are filtered, so the returned number will be limited. A wise use of limit and offset permits to explore all the structures in the database without running in walltime limitations.</p>
 </div>
 <div class="section" id="properties">
 <h2>properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h2>
@@ -324,9 +325,25 @@ The <code class="docutils literal notranslate"><span class="pre">dynamic</span><
 <p>In this case, the information provided is only the output node, and eventually its attribute/s,  that contain the information required by the <code class="docutils literal notranslate"><span class="pre">property</span></code> workflow.
 This can be a list of nodes/property, in general.</p>
 <p>In this way, we can provide a more granular information about the value of interest, among all the outputs.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><strong>THIS IS NOT YET IMPLEMENTED! THE REQUEST RETURNS ALL THE OUTPUTS</strong></p>
+<p>http localhost:5000/api/v4/intersect/properties/band_gap.pw/outputs</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;is_node&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">&quot;output_name&quot;</span><span class="p">:</span> <span class="s2">&quot;output_parameters&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;property_location&quot;</span><span class="p">:</span> <span class="s2">&quot;attributes.band_gap&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;property_name&quot;</span><span class="p">:</span> <span class="s2">&quot;band_gap&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;workflow&quot;</span><span class="p">:</span> <span class="s2">&quot;PwBandGapWorkChain&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/v4/intersect/properties/band_gap.pw/outputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;query_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;request_content&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nt">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Property name, and its position on the workflow output&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:5000/api/v4/intersect/properties/band_gap.pw/outputs&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;url_root&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:5000/&quot;</span>
+<span class="p">}</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="properties-string-outline">
@@ -355,14 +372,13 @@ In this way, it is possible to run ad inspect a calculation even if the property
 <p>A json file for now is just a dictionary with two entries:
 - <em>calculation</em>: the mapped keyword to identify the workflow to run through its property name;
 - <em>input</em>: the dictionary input for the workflow</p>
-<p>There are two possibilities: if nothing, or <code class="docutils literal notranslate"><span class="pre">intersect/submit/property</span></code> endpoint is selected, the expected value of the <em>calculation</em> key is the value of the property to be calculated, that will be converted to the corresponding workflow.</p>
-<p>If the <code class="docutils literal notranslate"><span class="pre">intersect/submit/workflow</span></code> is used, the <em>calculation</em> line is the entrypoint relative to a workflow to calculate.
+<p>There are two possibilities: if no query is given, the <em>calculation</em> key is supposed to be the property to be calculated , that will be converted to the corresponding workflow, that will be submitted to the daemon according to the inputs in <em>input</em>.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">?submission_from=workflow</span></code> query is given, the <em>calculation</em> line is the entrypoint relative to a workflow to calculate.
 In this way, any workflow can be submitted, and we are not limited by the mapping of the properties.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">input</span></code> key of the request is a dictionary with the input names of the workflow.</p>
-<p>Since we cannot pass some of them, specifically a <code class="docutils literal notranslate"><span class="pre">Node</span></code> class, the plugin will try to interpret the value passed and convert it.
+<p>For inputs of the standard python classes, as recognized from the workflow specifications, the plugin will try to interpret the value passed and convert it to the corresponding AiiDA class.
 This is to avoid having to specify for each key entry what kind of classes it is expected to be and to make it more easy to read: if an input expect a <code class="docutils literal notranslate"><span class="pre">code</span></code> instance, we can pass a <code class="docutils literal notranslate"><span class="pre">pk</span></code>, <code class="docutils literal notranslate"><span class="pre">uuid</span></code> that will be loaded from the database;  if a node is of <code class="docutils literal notranslate"><span class="pre">Float</span></code> type it will convert the float provided to the equivalent database type, and so on.</p>
-<p>If we want to force the code to choose a <code class="docutils literal notranslate"><span class="pre">Node</span></code> instead of a value, we need to pass a dictionary where the key is
-called <code class="docutils literal notranslate"><span class="pre">LOADNODE</span></code>; the input will be generated by passing the content of the node ID provided.</p>
+<p>If we want to force the code to choose a <code class="docutils literal notranslate"><span class="pre">Node</span></code> instead of a value, we need to pass a dictionary where the key is called <code class="docutils literal notranslate"><span class="pre">LOADNODE</span></code>; the input will be generated by passing the content of the node ID provided.</p>
 <p>For a code, additionally, we can specify <code class="docutils literal notranslate"><span class="pre">CODELABEL</span></code> and provide the label string that identify the code.
 Note that label might not be univoque: an exception will be raised if there is ambiguity.</p>
 <p>For example, imagine the following case:</p>

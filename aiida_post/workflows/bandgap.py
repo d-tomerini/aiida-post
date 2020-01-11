@@ -4,10 +4,24 @@ Very basic workchain to calculate the bandgap as an overlay of a PwBandsWorkChai
 
 from __future__ import absolute_import
 from aiida import orm
-from aiida.engine import WorkChain, ToContext
+from aiida.engine import WorkChain, calcfunction, ToContext
 from aiida.plugins import WorkflowFactory
 
 PwBandStructureWorkChain = WorkflowFactory('quantumespresso.pw.band_structure')
+
+
+@calcfunction
+def get_bandgap(band):
+    """
+    Takes a band object, and extract the bandgap and is_insulator boolean
+    """
+    from aiida.orm.nodes.data.array.bands import find_bandgap
+
+    is_insulator, bandgap = find_bandgap(band)
+    output = {}
+    output['band_gap'] = bandgap
+    output['is_insulator'] = is_insulator
+    return orm.Dict(dict=output)
 
 
 class PwBandGapWorkChain(WorkChain):
@@ -43,13 +57,9 @@ class PwBandGapWorkChain(WorkChain):
         From the band object obtained by the band structure
         calculation, run a simple script to obtain the band gap
         """
-        from aiida.orm.nodes.data.array.bands import find_bandgap
 
-        bands = self.ctx.workchain_bands.outputs.band_structure
-        is_insulator, bandgap = find_bandgap(bands)
-        output = {}
-        output['band_gap'] = bandgap
-        output['is_insulator'] = is_insulator
-        self.out('output_parameters', orm.Dict(dict=output))
+        output_node = get_bandgap(self.ctx.workchain_bands.outputs.band_structure)
+
+        self.out('output_parameters', output_node)
         self.report('Calculation completed')
         return

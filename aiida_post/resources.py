@@ -8,13 +8,14 @@ from __future__ import print_function
 from urllib.parse import unquote
 from flask import request
 
-from aiida.restapi.resources import BaseResource, ProcessNode
+from aiida.restapi.resources import BaseResource
 from aiida_post.submit.distributor import distribute
 
 
-class GSubmit(BaseResource):
+class GResource(BaseResource):
     """
-    Endpoint to submit AiiDA workflows
+    Generic resource class that loads also the local variables needed by the extended
+    REST api. Variables are stored in the extended property of the class
     """
 
     def __init__(self, **kwargs):
@@ -23,6 +24,12 @@ class GSubmit(BaseResource):
         # Taken almost verbatim from the configuration handling of BaseResource
         conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
         self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
+
+
+class GSubmit(GResource):
+    """
+    Endpoint to submit AiiDA workflows
+    """
 
     def post(self):
         """
@@ -45,7 +52,7 @@ class GSubmit(BaseResource):
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
         # pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
 
-        duplicates = request.args.get('search_duplicates')
+        duplicates = request.args.get('search_duplicates', default=False)
         submission = request.args.get('submission_from', default='property')
 
         required_keys = ['calculation', 'input']
@@ -91,19 +98,12 @@ class GSubmit(BaseResource):
         return self.utils.build_response(status=200, data=data)
 
 
-class GProperties(BaseResource):
+class GProperties(GResource):
     """
     Endpoint to return a list of supported calculation properties
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Add the configuration file for my app
-        # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
-        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
-
-    def get(self, entrypoint=None):
+    def get(self, entrypoint=None, node_id=None):
         """
         Returns a list of the properties that are available for calculation
         This is related to the entry points on aiida_post.workflow, that relate
@@ -129,6 +129,7 @@ class GProperties(BaseResource):
         ) = self.utils.parse_query_string(query_string)
 
         available_properties = self.extended['PROPERTY_MAPPING']
+        property_outputs = self.extended['PROPERTY_OUTPUTS']
         if schema == 'properties':
             # just a request for the available properties connected to a workflow
             outdata = available_properties
@@ -139,6 +140,18 @@ class GProperties(BaseResource):
             workflowtype = WorkflowFactory(prop)
             qb = QueryBuilder().append(workflowtype, filters=filters, project=['uuid', 'attributes'])
             outdata = [dict(uuid=uuid, attributes=attr) for [uuid, attr] in qb.all()]
+        elif schema == 'outputs':
+            outputs = property_outputs[entrypoint]
+            prop = available_properties[entrypoint]
+            workflow = WorkflowFactory(prop)
+            resource_type = 'Property name, and its position with respect to the workflow outputs'
+            outdata = dict(
+                property_name=outputs.name,
+                is_node=outputs.is_node,
+                output_node_name=outputs.edge,
+                property_location=outputs.project,
+                workflow=workflow.get_name()
+            )
         else:
             try:
                 entry = available_properties[entrypoint]
@@ -170,7 +183,7 @@ class GProperties(BaseResource):
         return self.utils.build_response(status=200, data=data)
 
 
-class GStatus(ProcessNode):
+class GStatus(GResource):
     """
     endpoint to check the status of a workflow, together with its log messages
     """
@@ -206,19 +219,12 @@ class GStatus(ProcessNode):
         return self.utils.build_response(status=200, data=data)
 
 
-class GWorkflows(BaseResource):
+class GWorkflows(GResource):
     """
     Endpoint to return the workflow input specification.
     This takes into account the workflow entry point, and not the property, as to be more general.
     It is a generalization of the endpoint properties
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Add the configuration file for my app
-        # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
-        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def get(self, entrypoint=None):
         """
@@ -287,28 +293,87 @@ class GWorkflows(BaseResource):
 # Additional endpoints to implement if useful
 
 
-class GExisting(BaseResource):
+class GExisting(GResource):
     """
     Endpoint to query for existing resources types
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Add the configuration file for my app
-        # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
-        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
+    from aiida.restapi.translator.nodes.node import NodeTranslator
 
-    def get(self):
+    _translator_class = NodeTranslator
+    _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
+
+    def get(self, prop=None, node_id=None):
         """
         check if there is any instance in the database
-        related to the calculation required for a material
         Needs thinking on how to query for properties -- probably schema is best
         """
-        raise ValueError('Endpoint not yet implemented')
+        from aiida.plugins import WorkflowFactory
+        from aiida.orm import QueryBuilder, Node
+
+        # initialize response
+        path = unquote(request.path)
+        url = unquote(request.url)
+        url_root = unquote(request.url_root)
+        query_string = request.query_string.decode('utf-8')
+
+        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+
+        if not prop:
+            raise ValueError('Property not selected')
+        if not node_id:
+            raise ValueError('node not selected')
+        available_properties = self.extended['PROPERTY_MAPPING']
+        output_mapping = self.extended['PROPERTY_OUTPUTS']
+
+        if prop not in available_properties:
+            raise ValueError('<{}> is not in the list of available properties.'.format(prop))
+        entry = available_properties[prop]
+        workflow = WorkflowFactory(entry)
+        mapping = output_mapping[prop]
+
+        node = self._load_and_verify(node_id)
+
+        # looks exactly for the required property with the query, as defined by PROPERTY_OUTPUTS
+        qb = QueryBuilder().append(node.__class__, filters={
+            'uuid': node.uuid
+        }, tag='input').append(workflow, with_incoming='input', tag='wf', project='uuid').append(
+            Node, with_incoming='wf', edge_filters={'label': mapping.edge}, project=mapping.project
+        )
+        properties = []
+        for item in qb.all():
+            properties.append(
+                dict(property_name=mapping.name, property_value=item[1], workflow=item[0], is_node=mapping.is_node)
+            )
+
+        # look for all processes of the same class, to check if some are ongoing/excepted
+        wfs = QueryBuilder().append(node.__class__, filters={
+            'uuid': node.uuid
+        }, tag='input').append(
+            workflow,
+            with_incoming='input',
+            tag='wf',
+            project=['uuid', 'attributes.process_state', 'attributes.exit_status']
+        )
+        workfunctions = []
+        for item in wfs.all():
+            workfunctions.append(dict(uuid=item[0], process_state=item[1], exit_status=item[2]))
+
+        data = dict(
+            method=request.method,
+            url=url,
+            url_root=url_root,
+            path=path,
+            id=None,
+            query_string=request.query_string.decode('utf-8'),
+            resource_type='properties connected with the node input',
+            data=dict(workfunctions=workfunctions, properties=properties)
+        )
+
+        return self.utils.build_response(status=200, data=data)
 
 
-class GAppNodes(BaseResource):
+class GAppNodes(GResource):
     """
     Endpoint to return all the already executed calculation of a specific kind
     Useful? To implement
@@ -321,7 +386,7 @@ class GAppNodes(BaseResource):
         raise ValueError('Endpoint not yet implemented')
 
 
-class GData(BaseResource):
+class GData(GResource):
     """
     Endpoint to return all the structuredata in the database, and query with formula
     """
@@ -329,15 +394,6 @@ class GData(BaseResource):
 
     _translator_class = NodeTranslator
     _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
-
-    def __init__(self, **kwargs):
-        from aiida.restapi.common.utils import Utils
-
-        super().__init__(**kwargs)
-        # Add the configuration file for my app
-        # Taken almost verbatim from the configuration handling of BaseResource
-        conf_keys = ('AVAILABLE_CODES', 'PROPERTY_MAPPING', 'PROPERTY_OUTPUTS')
-        self.extended = {k: kwargs[k] for k in conf_keys if k in kwargs}
 
     def get(self):
         """

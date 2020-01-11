@@ -36,8 +36,6 @@ class InterfaceApi(AiidaApi):
             resource_class_kwargs=kwargs
         )
 
-        self.add_resource(GExisting, '/intersect/existing', strict_slashes=False, resource_class_kwargs=kwargs)
-
         self.add_resource(
             GStatus, '/intersect/status/<string:node_id>', strict_slashes=False, resource_class_kwargs=kwargs
         )
@@ -65,4 +63,11 @@ class InterfaceApi(AiidaApi):
 
         self.add_resource(
             GData, '/intersect/derived_data/structuredata', strict_slashes=False, resource_class_kwargs=kwargs
+        )
+
+        self.add_resource(
+            GExisting,
+            '/intersect/existing/properties/<string:prop>/<string:node_id>',
+            strict_slashes=False,
+            resource_class_kwargs=kwargs
         )

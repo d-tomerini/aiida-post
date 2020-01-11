@@ -17,7 +17,7 @@ Available intersect endpoints
 
 The app runs at the the address ``HOSTNAME:PORT/PREFIX/ENDPOINT``, where ``HOST`` and ``PORT`` are property that can be set by the app options.
 
-The prefix is the same of the aiida rest api, ``/api/v4/``; this can be changed in the configuration options if necessary.
+The prefix is the same of the AiiDA REST API, ``/api/v4/``; this can be changed in the configuration options if necessary.
 All the new workflow related to the project have a prefix ``/api/v4/intersect`` in order to separate them from the existing AiiDA endpoints.
 
 In the following therefore I'm going to assume a base URL as ``127.0.0.1:5000/api/v4``.
@@ -44,9 +44,9 @@ Other resources, like ``curl`` or browser extensions can be used.
 derived_data/structuredata
 --------------------------
 
-This endpoint is modelled on the idea to query for derived properties, that can be calculated with a function call, and not stored properties.
+This endpoint is modeled on the idea to query for derived properties, that can be calculated with a function call, and not stored properties.
 
-This is implemented in the AiiDA rest api as a way to display information on a single node; chemical_formula is such an example.
+This is implemented in the AiiDA REST API as a way to display information on a single node; chemical_formula is such an example.
 
 As a utility, I provide the ``intersect/derived_data/`` as a way to display derived data.
 
@@ -56,7 +56,7 @@ As a utility, I provide the ``intersect/derived_data/`` as a way to display deri
 
 Without any query, the endpoint is equivalent to ::
 
-    http://127.0.0.1:5000/api/v4/nodes?full_type="data.structure.StructureData.|"
+    http 127.0.0.1:5000/api/v4/nodes?full_type="data.structure.StructureData.|"
 
 i.e. to a node search with a query on ``StructureData`` objects.
 
@@ -64,7 +64,9 @@ The ``structuredata`` endpoint allows for query on ``chemical_formula`` to provi
 This is executed as with the normal ``?`` query symbol at the endof the endpoint, eventually followed by others with the ``&`` symbol.
 Additional keys for the database search can be used to further funnel the request. As it most simple::
 
-    http://127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula="O2Si"&chemical_formula_type="hill_compact"
+    http 127.0.0.1:5000/api/v4/intersect/derived_data/structuredata?chemical_formula="O2Si"&chemical_formula_type="hill_compact"
+
+Furthermore, what is returned is a list of at most ``limit`` structure (400, but can be changed in the config files) with a certain ``offset`` number of structures from the database search. These are filtered, so the returned number will be limited. A wise use of limit and offset permits to explore all the structures in the database without running in walltime limitations.
 
 
 properties
@@ -187,8 +189,28 @@ This can be a list of nodes/property, in general.
 
 In this way, we can provide a more granular information about the value of interest, among all the outputs.
 
-.. warning::
-    **THIS IS NOT YET IMPLEMENTED! THE REQUEST RETURNS ALL THE OUTPUTS**
+http localhost:5000/api/v4/intersect/properties/band_gap.pw/outputs
+
+
+.. code-block:: json
+
+    {
+        "data": {
+            "is_node": false,
+            "output_name": "output_parameters",
+            "property_location": "attributes.band_gap",
+            "property_name": "band_gap",
+            "workflow": "PwBandGapWorkChain"
+        },
+        "id": null,
+        "method": "GET",
+        "path": "/api/v4/intersect/properties/band_gap.pw/outputs",
+        "query_string": "",
+        "request_content": null,
+        "resource_type": "Property name, and its position on the workflow output",
+        "url": "http://localhost:5000/api/v4/intersect/properties/band_gap.pw/outputs",
+        "url_root": "http://localhost:5000/"
+    }
 
 
 properties/<string>/outline
@@ -214,8 +236,6 @@ The possibilities for a query are:
 
 
 
-
-
 submit
 ------
 
@@ -227,18 +247,17 @@ A json file for now is just a dictionary with two entries:
 - *calculation*: the mapped keyword to identify the workflow to run through its property name;
 - *input*: the dictionary input for the workflow
 
-There are two possibilities: if nothing, or ``intersect/submit/property`` endpoint is selected, the expected value of the *calculation* key is the value of the property to be calculated, that will be converted to the corresponding workflow.
+There are two possibilities: if no query is given, the *calculation* key is supposed to be the property to be calculated , that will be converted to the corresponding workflow, that will be submitted to the daemon according to the inputs in *input*.
 
-If the ``intersect/submit/workflow`` is used, the *calculation* line is the entrypoint relative to a workflow to calculate.
+If the ``?submission_from=workflow`` query is given, the *calculation* line is the entrypoint relative to a workflow to calculate.
 In this way, any workflow can be submitted, and we are not limited by the mapping of the properties.
 
 The ``input`` key of the request is a dictionary with the input names of the workflow.
 
-Since we cannot pass some of them, specifically a ``Node`` class, the plugin will try to interpret the value passed and convert it.
+For inputs of the standard python classes, as recognized from the workflow specifications, the plugin will try to interpret the value passed and convert it to the corresponding AiiDA class.
 This is to avoid having to specify for each key entry what kind of classes it is expected to be and to make it more easy to read: if an input expect a ``code`` instance, we can pass a ``pk``, ``uuid`` that will be loaded from the database;  if a node is of ``Float`` type it will convert the float provided to the equivalent database type, and so on.
 
-If we want to force the code to choose a ``Node`` instead of a value, we need to pass a dictionary where the key is
-called ``LOADNODE``; the input will be generated by passing the content of the node ID provided.
+If we want to force the code to choose a ``Node`` instead of a value, we need to pass a dictionary where the key is called ``LOADNODE``; the input will be generated by passing the content of the node ID provided.
 
 For a code, additionally, we can specify ``CODELABEL`` and provide the label string that identify the code.
 Note that label might not be univoque: an exception will be raised if there is ambiguity.

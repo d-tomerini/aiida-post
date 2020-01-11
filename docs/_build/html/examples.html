@@ -98,6 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#asking-information-about-the-available-properties-to-calculate">Asking information about the available properties to calculate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#asking-information-about-the-inputs-of-workflow">Asking information about the inputs of workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checking-the-outputs-of-a-workflow">Checking the outputs of a workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#looking-for-a-specific-property-from-a-workflow">Looking for a specific property from a workflow</a></li>
 </ul>
 </li>
 </ul>
@@ -169,16 +170,16 @@
 <p>Here I will try to detail the possible uses of the app, by using the <em>json</em> examples provided in the examples folder.</p>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>Again, beware! The examples required at the very minimum:</p>
+<p>Again, beware! The examples required at the very minimum that you have:</p>
 <ul class="simple">
 <li><p>A working installation of AiiDA, with the REST api working.</p></li>
-<li><p>AiiDA <strong>must</strong>  be active. All the basic calls to the database requires postgresql to be active; each workflow submission requires RabbitMQ to be active <strong>and</strong> the daemon to be running, to broadcast the information</p></li>
+<li><p>AiiDA <strong>must</strong>  be active. All the basic calls to the database requires <em>postgresql</em> to be active; each workflow submission requires RabbitMQ to be active <strong>and</strong> the daemon to be running, to broadcast the information</p></li>
 <li><p>The app should be running. In the examples I’m going to assume no change to the basic setup, meaning that the app listen to requests at <code class="docutils literal notranslate"><span class="pre">127.0.0.1:5000/api/v4/</span></code></p></li>
-<li><p>Examples using Quantum ESPRESSO requires the installation of the <cite>aiida-quantumespresso</cite> plugin, and at least of a pw.x executable.</p></li>
-<li><p>Examples with the <cite>aiida-defect</cite> workflows requires the installation of the aiida-defect plugin by Conrad Johnston. This plugin requires the aiida-quantum espresso, and installed ph.x and pp.x from Quantum ESPRESSO.</p></li>
-<li><p>Of course, in general when you add a workflow, you need to have installed the plugin and a code! The additional hurdle for this is to add a dictionary of property-workflow mapping.</p></li>
+<li><p>Examples using Quantum ESPRESSO requires the installation of the <cite>aiida-quantumespresso</cite> plugin, and at least of a <em>pw.x</em> executable configured.</p></li>
+<li><p>Examples with the <cite>aiida-defect</cite> workflows requires the installation of the aiida-defect plugin by Conrad Johnston. This plugin requires the aiida-quantumespresso, and installed <code class="docutils literal notranslate"><span class="pre">ph.x</span></code> and <code class="docutils literal notranslate"><span class="pre">pp.x</span></code> from Quantum ESPRESSO.</p></li>
+<li><p>Of course, in general when you add a workflow, you need to have installed the plugin and a code! The additional hurdle for this is to add a dictionary of property-workflow mapping in the mapping file in the config directory, if <em>properties</em> endpoints are used.</p></li>
 </ul>
-<p>I’m going to assume that the files are in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>.</p>
+<p>I’m going to assume that the files are in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> folder. Adapt the calls to your actual directory!</p>
 </div>
 <div class="section" id="structures-in-the-aiida-database">
 <h2>Structures in the AiiDA database<a class="headerlink" href="#structures-in-the-aiida-database" title="Permalink to this headline">¶</a></h2>
@@ -251,7 +252,7 @@ A structure query can be performed as</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">submit</span> <span class="o">&lt;</span> <span class="n">examples</span><span class="o">/</span><span class="n">search_HfO2_strict</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-<p>If you inspect the <code class="docutils literal notranslate"><span class="pre">search_HfO2_strict.json</span></code> you see that the file contains some wrong keywords, as <code class="docutils literal notranslate"><span class="pre">schemical</span></code>, <code class="docutils literal notranslate"><span class="pre">somedata</span></code>, that are filtered out by the workflow.
+<p>If you inspect the <code class="docutils literal notranslate"><span class="pre">search_HfO2_strict.json</span></code> you see that the file contains a misspelled keyword, as <code class="docutils literal notranslate"><span class="pre">schemical</span></code>, and a totally new one, <code class="docutils literal notranslate"><span class="pre">somedata</span></code>, that are filtered out by the workflow.
 There is an input,  <code class="docutils literal notranslate"><span class="pre">&quot;strictcheck&quot;:</span> <span class="pre">true,</span></code> that does <em>NOT</em> allow for bad keywords, or even no keywords.</p>
 <p>No keywords means that <strong>the whole COD database</strong> will be downloaded! So this acts as a sanity check.</p>
 <p>A possible output of this command is:</p>
@@ -447,6 +448,9 @@ In this case we just have one message. In general it will be a list of more (or 
 </pre></div>
 </div>
 <p>Now we have a different log, with the succesful end of workflow (6 structures retrieved), <code class="docutils literal notranslate"><span class="pre">exit_status</span></code> is  equal zero, e no <code class="docutils literal notranslate"><span class="pre">exit_message</span></code> signal a correct execution of the workflow.</p>
+<p>Note that it is possible to submit requests that, as in the corresponding COD search in <em>verdi</em>, allows for queries asking for multiple values. For example,</p>
+<p>“chemical_name”:[“caffeine”, “adenine”]</p>
+<p>will look in the COD database for structure that have <em>either</em> chemical name. The example is in the <em>search_multiple.json</em> file.</p>
 </div>
 <div class="section" id="asking-information-about-the-available-properties-to-calculate">
 <h2>Asking information about the available properties to calculate<a class="headerlink" href="#asking-information-about-the-available-properties-to-calculate" title="Permalink to this headline">¶</a></h2>
@@ -760,6 +764,11 @@ For example we can filter just the required inputs:</p>
 </pre></div>
 </div>
 <p>And returns a list of the <code class="docutils literal notranslate"><span class="pre">uuid</span></code> of the structure data that we retrieved from the COD.</p>
+</div>
+<div class="section" id="looking-for-a-specific-property-from-a-workflow">
+<h2>Looking for a specific property from a workflow<a class="headerlink" href="#looking-for-a-specific-property-from-a-workflow" title="Permalink to this headline">¶</a></h2>
+<p>The idea of this app is to automatically calculate materials properties based on their names.</p>
+<p>The <em>existing/properties/&lt;prop&gt;/&lt;node&gt;</em> endpoint check if the node <em>&lt;node&gt;</em> is an output of a workflow that result in the value relative to the property <em>&lt;prop&gt;</em>. It will list all of the calculated properties (i.e. duplicates, but also calculaction that might have different parameters while being generated by the same input <em>&lt;node&gt;</em>). A list of the workflows executed with this node and the corresponding workflow type will be returned, in order to know whether there are excepted or running workflows; this information is useful to know if there is another calculation on the way, or to double check what was the reason of the failures in the excepted one (to correct the inputs in advance rather than spending valuable computational time).</p>
 </div>
 </div>
 
