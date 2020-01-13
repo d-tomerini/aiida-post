@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Adding new workflows &mdash; aiida_post 0.2 documentation</title>
+
+
+
+
+
+
+
+
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+
+
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running the app" href="running.html" />
+    <link rel="prev" title="Installation" href="install.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="index.html" class="icon icon-home"> aiida_post
+
+
+
+          </a>
+
+
+
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Adding new workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-aiida-entrypoint-list">The AiiDA entrypoint list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#importing-workflows">Importing workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#writing-a-workflow">Writing a  workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running the app</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">General Behavior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html#available-intersect-endpoints">Available intersect endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">aiida_post</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="index.html">Docs</a> &raquo;</li>
+
+      <li>Adding new workflows</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+
+            <a href="_sources/workflow_howto.rst.txt" rel="nofollow"> View page source</a>
+
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="adding-new-workflows">
+<h1>Adding new workflows<a class="headerlink" href="#adding-new-workflows" title="Permalink to this headline">¶</a></h1>
+<p>There is no general limitation on what AiiDA workflow can be used to run a calculation: as long as a workflow is accessible by AiiDA is accessible by the app itself by the way of its entrypoint.</p>
+<p>The property mapping is provided in order to guarantee that a user has a direct understanding of what property they will end up calculating, and an easier way to retrieve the data, i.e. what key of which output to query to obtain the desired value.</p>
+<div class="section" id="the-aiida-entrypoint-list">
+<h2>The AiiDA entrypoint list<a class="headerlink" href="#the-aiida-entrypoint-list" title="Permalink to this headline">¶</a></h2>
+<p>The AiiDA plugin system provides access to classes generated by other packages (plugins) with the entry point system; this is a way to advertise classes from one package to another and provide an easy way to access them.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">verdi</span> <span class="pre">plugin</span> <span class="pre">list</span></code> command is a way to list all the entry point available to AiiDA: among those, for example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Info</span><span class="p">:</span> <span class="n">Available</span> <span class="n">entry</span> <span class="n">point</span> <span class="n">groups</span><span class="p">:</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">cmdline</span><span class="o">.</span><span class="n">data</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">calculations</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">data</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">node</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">parsers</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">schedulers</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">dbexporters</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">dbimporters</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">transports</span>
+<span class="o">*</span> <span class="n">aiida</span><span class="o">.</span><span class="n">workflows</span>
+</pre></div>
+</div>
+<p>We will deal only with the workflows (you can find more information on the relevant
+<a class="reference external" href="https://aiida-core.readthedocs.io/en/latest/developer_guide/plugins/entry_points.html">AiiDA webpage</a></p>
+<p>Package entry points can be found in the <code class="docutils literal notranslate"><span class="pre">setup.json</span></code> in a package, or can be added with the <em>reentry</em> package.</p>
+</div>
+<div class="section" id="importing-workflows">
+<h2>Importing workflows<a class="headerlink" href="#importing-workflows" title="Permalink to this headline">¶</a></h2>
+<p>The easiest way to import new workflow is to install an AiiDA plugin that defines a workflow itself.
+<a class="reference external" href="https://aiidateam.github.io/aiida-registry/">This page</a> provides an up-to-date list of the public plugins available (more private ones exist – like this one).</p>
+<p>After installing a plugin that contains a workflow definition and running the <code class="docutils literal notranslate"><span class="pre">reentry</span> <span class="pre">scan</span></code> command, the <code class="docutils literal notranslate"><span class="pre">verdi</span> <span class="pre">plugin</span> <span class="pre">list</span> <span class="pre">aiida.workflow</span></code> should contain new plugins. For example, after we install a first plugin, e.g. the <code class="docutils literal notranslate"><span class="pre">aiida-codtools</span></code> plugin, running the command should return</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install aiida-codtools
+... installation ...
+$ reentry scan
+$ verdi plugin list aiida.workflows
+Registered entry points for aiida.workflows:
+* codtools.cif_clean
+</pre></div>
+</div>
+<p>Where the <code class="docutils literal notranslate"><span class="pre">codtools.cif_clean</span></code> is a workflow we can use, once we install the code necessary to run it. Note that this workflow is NOT available to the app until we difine a MAPPING_PROPERTIES entry in the configuration file, but can be run through AiiDA directly!</p>
+</div>
+<div class="section" id="writing-a-workflow">
+<h2>Writing a  workflow<a class="headerlink" href="#writing-a-workflow" title="Permalink to this headline">¶</a></h2>
+<p>Of course, it is possible to write a workflow (see
+<a class="reference external" href="https://aiida.readthedocs.io/projects/aiida-core/en/latest/concepts/workflows.html">here to start</a>),
+but it is necessary to advertise its position.
+A possible way to do so is to add a worrkflow file to the <code class="docutils literal notranslate"><span class="pre">aiida-post/workflows</span></code> directory and modify the <code class="docutils literal notranslate"><span class="pre">setup.json</span></code> file in the aiida-post directory, to include it.</p>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>Let’s say you add the file <code class="docutils literal notranslate"><span class="pre">myworkflow.py</span></code> in the workflow directory, and write a workflow that begins with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">WorkChain</span><span class="p">,</span> <span class="n">ToContext</span>
+
+<span class="k">class</span> <span class="nc">MyWorkChain</span><span class="p">(</span><span class="n">WorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    My workflow to calculate my property called MYPROPERTY</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="c1">#inputs</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">orm</span><span class="o">.</span><span class="n">Code</span><span class="p">)</span>
+        <span class="c1"># continues workflow definition</span>
+</pre></div>
+</div>
+<p>After writing it, we need to make it available to AiiDA; we can add one last line to setup.json file in the definitions of the aiida workflows:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;aiida.workflows&quot;</span><span class="p">:[</span>
+        <span class="s2">&quot;post.CODImport = aiida_post.workflows.COD_import:CODImportWorkChain&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;post.MYPROPERTY = aiida_post.workflows.myworkflow:MyWorkChain&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The added last line provide a string name to refer to the new endpoint, that is recognised by its position; look inside the aiida_post package, into the directory (separated by a .) and finally to the file and the class (separated by :). That’s it.</p>
+<p>Now, inside the <code class="docutils literal notranslate"><span class="pre">common/config.py</span></code> file you need to advertise that the property <code class="docutils literal notranslate"><span class="pre">MYPROPERTY</span></code> is associated with the endpoint <code class="docutils literal notranslate"><span class="pre">post.MYPROPERTY</span></code> by filling the PROPERTY_MAPPING dictionary.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+
+          </div>
+          <footer>
+
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+
+        <a href="running.html" class="btn btn-neutral float-right" title="Running the app" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+
+
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+
+    </div>
+
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, daniele tomerini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>

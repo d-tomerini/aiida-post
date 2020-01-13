@@ -2,31 +2,45 @@
     "name": "aiida_post",
     "author": "Daniele Tomerini",
     "author_email": "daniele.tomerini@epfl.ch",
-    "description": "Flask app to interact with AiiDA through a REST interface",
+    "description": "Extension of the AiiDA REST API to deal with AiiDA job submissions, checking and retrieval",
     "url": "",
-    "license": "",
+    "license": "MIT",
     "classifiers": [
         "Programming Language :: Python"
     ],
-    "version": "0.1.",
+    "version": "0.2.",
     "entry_points": {
         "aiida.calculations": [
-            "post.request = aiida_post.calculations.request:importJSON"
         ],
         "aiida.parsers": [
-            "post.ParseInputs = aiida_post.parsers.parse_json:ProcessJSON"
         ],
         "aiida.data": [
-            "post.HttpData = aiida_post.data.httpdata:HttpData"
         ],
         "aiida.workflows":[
-            "post.ProcessInputs = aiida_post.workflows.input_wf:ProcessInputs",
+            "post.CODImport = aiida_post.workflows.COD_import:CODImportWorkChain",
             "post.BandGap = aiida_post.workflows.bandgap:PwBandGapWorkChain"
         ],
         "aiida.cmdline.data": []
     },
     "setup_requires": ["reentry"],
+    "extras_require": {
+          "dev": [
+              "pre-commit==1.17.0",
+              "prospector==1.1.7",
+              "pylint==2.3.1; python_version>='3.0'",
+              "pgtest==1.2.0",
+              "pytest==3.6.3",
+              "pytest-regressions==1.0.6",
+              "yapf==0.28.0"
+          ],
+          "docs": [
+              "Sphinx",
+              "docutils",
+              "sphinx_rtd_theme"
+          ]
+    },
     "reentry_register": true,
     "install_requires": [
+        "aiida_core[atomic_tools,rest]>= 1.0.0"
     ]
 }

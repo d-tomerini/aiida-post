@@ -1,11 +1,7 @@
 {
-    "calculation": "band_structure", 
-    "structure": {
-      "location": "from_database",
-      "database":"COD",
-      "query": {
-          "formula":"Si",
-          "spacegroup":"F d -3 m"
-      }
-    } 
+    "calculation": "band_gap.pw",
+    "input": {
+      "structure": 7755,
+      "code": 376
+    }
 }

@@ -1,0 +1,9 @@
+{
+    "calculation": "structure.cod",
+    "input": {
+      "codquery": {
+          "chemical_name":["caffeine", "adenine"]
+      },
+      "strictcheck": false
+    }
+}

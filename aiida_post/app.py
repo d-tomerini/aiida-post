@@ -1,172 +1,79 @@
+#!/usr/bin/env runaiida
+
 # -*- coding: utf-8 -*-
 """
-Daniele Tomerini
-Initial code march 2019
+Daniele Tomerini for the INTERSECT project
 
-Initial proposal for an interface between Ext and Aiida
-FLASK python app.
-Based on JSON interchange between a server accepting requests
-and returning values and updates on the calculation
-Endpoints  changes on property, with GET and POST requests
-handling various tasks
-
-Keywords for now are stored within a settings.json file.
-Basic checks to help ensure consistency
+General click command to run the extended AiiDA REST API
+This file heavily borrows from aiida.restapi.run_api
 """
-# general imports
+
 from __future__ import absolute_import
-from __future__ import print_function
-import json
-from flask import Flask, request
-from flask_restful import Resource, Api, reqparse
+import click
 
-# aiida
-from aiida import load_profile
-from aiida.orm import load_node, Float
-from aiida.orm import Dict, Str
-from aiida.engine import launch, submit, run
-from aiida.plugins import DataFactory, CalculationFactory, WorkflowFactory
+import aiida
+from aiida.cmdline.utils import decorators
+from aiida.cmdline.params.options import HOSTNAME, PORT
 
-# local imports
-from aiida_post.submit.distributor import Distribute
-from aiida_post.calculations.request import importJSON
+import aiida_post
 
-APP = Flask(__name__)
-api = Api(APP)
+# configuration of the REST API and additional variables to set
+# import aiida.restapi --> we can get the CONFIG file from there
+
+CONFIG_DIR = str(aiida.__path__[0]) + '/restapi/common/'
+PROPERTY_DIR = str(aiida_post.__path__[0]) + '/common/'
 
 
-class app_submit(Resource):
+@click.command()
+@HOSTNAME(default='127.0.0.1')
+@PORT(default=5000)
+@click.option(
+    '-c',
+    '--config-dir',
+    'config',
+    type=click.Path(exists=True),
+    default=CONFIG_DIR,
+    help='The path of the configuration directory'
+)
+@click.option(
+    '-c',
+    '--property-dir',
+    'prop',
+    type=click.Path(exists=True),
+    default=PROPERTY_DIR,
+    help='The path of the entrypoint properties'
+)
+@click.option(
+    '--wsgi-profile',
+    'wsgi_profile',
+    is_flag=True,
+    default=False,
+    help='Flag to use WSGI profiler middleware for finding bottlenecks in web application'
+)
+@click.option('--hookup/--no-hookup', 'hookup', is_flag=True, default=True, help='to hookup app')
+@click.option('--debug', 'debug', is_flag=True, default=False, help='run app in debug mode')
+@decorators.with_dbenv()
+def extendedrest(**kwargs):
+    """
+    Command line script to run an extended REST api of AiiDA
+    """
+    from aiida.restapi.api import App
+    from aiida_post.api import InterfaceApi
+    from aiida_post.run_api import run_api
 
-    def post(self, prop):
-        """
-        Route to manage the requests from ext
-        Access is through a JSON file passed to the serveri
-        containing the input required for calculation
-        Data is handled and responded accordingly
+    # Extend the passed parameter dictionary
+    # Program name is just eye candy
+    # catch_internal_server allows for printing the available endpoints
+    # when the requested endpoint does not exist
+    myargs = dict(
+        prog_name='Interface-restapi',
+        catch_internal_server=True,
+    )
+    kwargs.update(myargs)
 
-        :input prop: is the quantity we required for calculation, passed as the endpoint
-        """
+    # Run the flask app; invoke the runner
+    run_api(App, InterfaceApi, **kwargs)
 
-        from aiida_post.tools.convert import request_to_dict
-        HttpData = DataFactory('post.HttpData')
-        reqdata = request_to_dict(request)
-        print(('cao', reqdata))
-        importJSON(Dict(dict=reqdata))
-        #wf = submit(
-        #    xx,
-        #    request=Dict(dict=request.get_json()),
-        #    predefined=Dict(dict=CALCULATION_OPTIONS),
-        #    property=Str(prop),
-        #)
-        print('bao')
-        if not wf.is_finished_ok:
-            msg = 'Structure retrieval error. See node uuid={} for more specific report'.format(wf.uuid)
-            return {
-                'error': wf.exit_message,
-                'message': msg,
-                'stored_request': wf.inputs.request.get_dict(),
-            }
-        else:
-            exwf = Distribute(wf, prop)
-            msg = ' Successful retrieval of structure, {}, workflow at uuid {}'.format(
-                exwf.inputs.structure.pk, exwf.pk
-            )
-            return {
-                'error': wf.exit_message,
-                'message': msg,
-                'stored_request': wf.inputs.request.get_dict(),
-            }
-            # get to the actual calculation of the workflow
-
-
-class app_check_existing(Resource):
-
-    def get(self, prop):
-        """
-        check if there is any instance in the database
-        related to the calculation required for a material
-        returns any items that need to be checked
-        : prop endpoint to the calculation prop
-        : get queries define a projection for the property in the database
-        """
-        from .other.group_initialize import check_db
-
-        parser = reqparse.RequestParser()
-        # This does not do what I want. Check it better
-        parser.add_argument('id', type=int)
-        args = parser.parse_args()
-        Ext_Group = Create_group(groupname='ext')
-
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'Property {} not in supported properties: {}'.format(
-                    prop, ' ,'.join(CALCULATION_OPTIONS['calculation']), **args
-                )
-            }
-        else:
-            prop_group = Create_group(groupname=prop)
-            print(('options', args))  # debug
-
-            structs = check_db('ext', **args)
-            back = {}
-            for i in structs:
-                for i2 in i:
-                    back.update({
-                        str(i2.id): {
-                            'class': i2.class_node_type,
-                            'id': i2.id,
-                            'uuid': i2.uuid,
-                            'formula': i2.get_formula(),
-                        }
-                    })
-            return back
-
-
-class app_input(Resource):
-
-    def get(self, prop):
-        """
-        search of an input by ID that is known by the program
-        returns property and/or status of the calculation
-        """
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'property {} not supported. Recognised properties: {}'.format(
-                    prop, ', '.join(CALCULATION_OPTIONS['calculation'])
-                )
-            }
-        return {'message': 'work in progress here!'}
-
-
-class app_nodes(Resource):
-
-    def get(self, prop):
-        """
-        return a subset of nodes from the group ext
-        additionally, it filters the request
-        according to the data in the get method
-        """
-        if prop not in CALCULATION_OPTIONS['calculation']:
-            return {
-                'message':
-                'property {} not supported. Recognised properties: {}'.format(
-                    prop, ', '.join(CALCULATION_OPTIONS['calculation'])
-                )
-            }
-        return {'message': 'work in progress here!'}
-
-
-api.add_resource(app_submit, '/ext/calculation/<string:prop>/submit/')
-
-api.add_resource(app_check_existing, '/ext/calculation/<string:prop>/existing')
-
-api.add_resource(app_input, '/ext/calculation/<string:prop>/check/')
 
 if __name__ == '__main__':
-    # aiida initialization
-    load_profile()
-    with open('config.json') as f:
-        CALCULATION_OPTIONS = json.load(f)
-    APP.run(host='127.0.0.1', port='2345', debug=True)
+    extendedrest()

@@ -1,0 +1,52 @@
+.. _install:
+
+************
+Installation
+************
+
+Prerequisites
+===============
+
+The aiida_post extension requires an installation of AiiDA > 1.0.0, and of its REST API extension.
+To download it and installed it, preferentially inside a virtual environment, follow the instructtion you can find at this
+`page <https://aiida-core.readthedocs.io/en/latest/install/installation.html>`_.
+
+Please set up a virtual environmente with Python 3! AiiDA will maintain compatibility with Python 2.7.x only till January 2020, but this extension
+depends on asyncronous features available on Python > 3.4 only.
+
+Quick installation from the github repository (useful for developers, if you want to keep up to date with the most recent development)
+can be done with the commands below: ::
+
+     $ mkdir <your_directory>
+     $ cd <your_directory>
+     $ git clone https://github.com/aiidateam/aiida-core[atomic_tools,docs,advanced_plotting,rest]
+     $ pip install
+
+To simply install the most recent stable version of AiiDA from PyPi it suffices to just type in a terminal
+``pip install aiida-core[atomic_tools,docs,advanced_plotting,rest]``.
+
+The options in square bracket are a list of useful AiiDA extensions. The REST extension is required for this plugin to work, as it works as an extension.
+
+Python package
+==============
+
+The python package can be obtained from the `Intersect gitlab repository <https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida>`_.
+The repository can be cloned locally: ::
+
+    $ mkdir <your_directory>
+    $ cd <your_directory>
+    $ git clone https://gitlab.cc-asp.fraunhofer.de/intersect/ext_to_aiida
+    (aiida) $ pip install -e aiida-post
+
+The ``-e`` option instructs to find the package specifically on the provided path.
+
+Updating the entry points
+-------------------------
+
+AiiDA (and its extensions) uses the ``reentry`` package to cache the entry points.
+This provides access to the classes and workflows available to AiiDA.
+After installing or updating a package is necessary to update the reentry cache by typing ::
+
+    reentry scan
+
+

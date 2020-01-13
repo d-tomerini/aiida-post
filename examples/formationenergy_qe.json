@@ -1,0 +1,113 @@
+{
+    "calculation": "formationenergy.qe",
+    "input": {
+        "host_structure": 5760,
+        "defect_structure": 5761,
+        "host_unitcell" : 5762,
+        "defect_charge" : -2.0,
+        "defect_site" : [0.0, 0.0, 0.0],
+        "fermi_level" : 0.0,
+        "chemical_potential" : 250.709,
+        "correction_scheme" : "gaussian",
+        "qe" : {
+            "dft": {
+                "supercell" : {
+                    "code" : 667,
+                    "kpoints": {
+                        "LOADNODE": "5771"
+                    },
+                    "pseudopotentials": {
+                        "C": {
+                            "LOADNODE": 597
+                        }
+                    },
+                    "parameters" : {
+                        "CONTROL": {
+                            "calculation": "scf",
+                            "restart_mode": "from_scratch",
+                            "wf_collect": true
+                        },
+                        "SYSTEM": {
+                            "ecutwfc": 45,
+                            "ecutrho": 360.0
+                        },
+                        "ELECTRONS": {
+                            "conv_thr": 1.0e-7
+                        }
+                    },
+                    "scheduler_options" : {
+                        "description": "Diamond test",
+                        "options": {
+                            "max_wallclock_seconds": 1800,
+                            "resources": {
+                                "num_machines": 1
+                            }
+                        },
+                        "label": "Diamond test"
+                    }
+                },
+                "unitcell" : {
+                    "code" : 667,
+                    "kpoints": 5771,
+                    "pseudopotentials": {
+                        "C": 597
+                    },
+                    "parameters" : {
+                        "CONTROL": {
+                            "calculation": "scf",
+                            "restart_mode": "from_scratch",
+                            "wf_collect": true
+                        },
+                        "SYSTEM": {
+                           "ecutwfc": 45,
+                           "ecutrho": 360.0
+                        },
+                        "ELECTRONS": {
+                            "conv_thr": 1.0e-7
+                        }
+                    },
+                    "scheduler_options" : {
+                         "description": "Diamond test",
+                         "options": {
+                             "max_wallclock_seconds": 1800,
+                             "resources": {
+                                 "num_machines": 1
+                             }
+                         },
+                         "label": "Diamond test"
+                     }
+                }
+            },
+            "dfpt" : {
+                "code" : {
+                    "CODELABEL": "ph-6.4.1@localhost"
+                },
+                "scheduler_options" : {
+                    "description": "Diamond test",
+                    "options": {
+                        "max_wallclock_seconds": 180000,
+                        "resources": {
+                            "num_machines": 1
+                        }
+                    },
+                    "label": "Diamond test"
+                }
+            },
+            "pp" : {
+                "code" : {
+                    "CODELABEL":"pp-6.4.1@localhost"
+                },
+                "scheduler_options" : {
+                    "description": "Diamond test",
+                    "options": {
+                        "max_wallclock_seconds": 1800,
+                        "resources": {
+                            "num_machines": 1
+                        }
+                    },
+                    "label": "Diamond test"
+                }
+            }
+        }
+    }
+}

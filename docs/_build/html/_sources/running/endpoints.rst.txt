@@ -1,0 +1,77 @@
+.. endpoints:
+
+General Behaviour
+=================
+
+The API will generally return a list of available endpoints if the request refers to a non-supported URL, with a ``200`` code.
+
+The API is to generally return a ``500`` error in case there was an error in the handling of the code
+(for example, on validation of one of the input to provide to a workflow, or a non-supported property), along with a
+json message containing only a ``message`` key with the error encountered in Python.
+
+On successful request, the app returns a ``200`` status and a general list of properties:
+
+- a ``data`` key containing the retrieved data
+- a general summary of the request: the url, url_root, and query string, the relative path of the endpoint, the method used to access the
+  page (GET, POST), and the ``ID`` of the node database accessed if relevant
+
+Available endpoints
+=====================
+
+The app runs at the the address ``HOSTNAME:PORT/PREFIX/ENDPOINT``, where ``HOST`` and ``PORT`` are property that can be set
+by the app options.
+
+The prefix has been modified from the rest api ``/api/v4/`` to  ``/intersect/v4`` to remind of where
+it comes from; this can be changed in the configuration options if necessary.
+
+In the following I'm going to assume a base URL as ``127.0.0.1:5000/intersect/v4``.
+
+Every URL build upon this base URL, if it does not correspond to a used endpoint should redirect
+to a list of the accepted endpoints. This is a list of the AiiDA REST plus the ones we have defined.
+
+For an explanation of the AiiDA endpoint you can check the
+`AiiDA REST api page <https://aiida.readthedocs.io/projects/aiida-core/en/latest/restapi/>`_.
+The additional ones are explained below.
+
+Any of this endpoints can be accessed via a browser for ``GET`` method, but will need an extension to deal with a POST request.
+In the peoceeding I assume a request to be done by terminal one unix with the `httpie utility <https://httpie.org/>`_, i.e ::
+
+    http 127.0.0.1:5000/intersect/v4/nodes/
+
+accesses the ``127.0.0.1:5000/intersect/v4/nodes/`` with a ``GET`` request, while ::
+
+    http 127.0.0.1:5000/intersect/v4/submit/ < filename
+
+forward the content of the  ``filename`` file as a ``POST`` request.
+Other resources, like curl or chrome extensions can be used.
+
+
+
+properties
+++++++++++
+
+The ``intersect/properties`` endpoint lists all the available property that can be request for a calculation, and returned as a list.
+
+Example::
+
+    http 127.0.0.1:5000/intersect/v4/properties
+
+Expected response (http response 200)
+
+.. code-block:: json
+
+    {
+        "data": {
+            "band_gap.pw": "post.BandGap",
+            "band_structure.pw": "quantumespresso.pw.band_structure",
+            "relax.pw": "quantumespresso.pw.relax",
+            "structure.cod": "post.CODImport"
+        },
+        "id": null,
+        "method": "GET",
+        "path": "/intersect/v4/intersect/properties",
+        "query_string": "",
+        "request_content": null,
+        "resource_type": "Information about the properties available for calculation",
+        "url": "http://127.0.0.1:5000/intersect/v4/intersect/properties",
+        "url_root": "http://127.0.0.1:5000/"
