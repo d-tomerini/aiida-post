@@ -5,17 +5,36 @@ This module contains the general resources to be called by the main api
 
 from __future__ import absolute_import
 from __future__ import print_function
-from urllib.parse import unquote
 from flask import request
-
 from aiida.restapi.resources import BaseResource
 from aiida_post.submit.distributor import distribute
 
 
+def build_response(req, resource_type, data):
+    """
+    Create a standard response for the request, uniform for all the endpoints.
+    :param req: Flask object containing the incoming request
+    :param resource_type: string to describe the endpoint
+    :data: dictionary of data to return
+    :return: output dictionary of the request
+    """
+    from urllib.parse import unquote
+
+    return dict(
+        method=req.method,
+        url=unquote(req.url),
+        url_root=unquote(req.url_root),
+        path=req.path,
+        query_string=req.query_string.decode('utf-8'),
+        resource_type=resource_type,
+        data=data
+    )
+
+
 class GResource(BaseResource):
     """
-    Generic resource class that loads also the local variables needed by the extended
-    REST api. Variables are stored in the extended property of the class
+    Generic resource class that loads also the local variables needed by the extended REST API.
+    Variables are stored in the extended property of the class
     """
 
     def __init__(self, **kwargs):
@@ -38,15 +57,7 @@ class GSubmit(GResource):
         Data is handled and responded accordingly
         """
         from aiida_post.common.formatter import format_wf
-        #from aiida_post.tools.convert import Request_To_Dictionary
 
-        # initialize response
-        # path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
-        query_string = request.query_string.decode('utf-8')
-
-        #reqdata = Request_To_Dictionary(request)
         content = request.get_json()
 
         # whether I want to submit a workflow from the desired property, or from a known workflow entrypoint
@@ -62,6 +73,13 @@ class GSubmit(GResource):
         prop = content['calculation']
         # simply assume the workflow is loaded from the property from the entrypoint
 
+        # allowed keys for the submission type
+        from_submission = ['property', 'workflow']
+        if submission not in from_submission:
+            raise ValueError(
+                'Submission type <{}> not recognized: accepted: {}.'.format(submission, ', '.join(from_submission))
+            )
+
         if submission == 'property':
             # get the workflow associated with the property
             available_properties = self.extended['PROPERTY_MAPPING']
@@ -71,29 +89,16 @@ class GSubmit(GResource):
         elif submission == 'workflow':
             # load the entrypoint directly
             entrypoint = prop
-        else:
-            raise ValueError('Workflow submission type not recognized: <{}>.'.format(submission))
 
         if duplicates:
             # check for nodes with the same `input` subdictionary, and return a list
+            # decide how to implement
             pass
 
         workflow, node = distribute(content, entrypoint)
 
-        response = format_wf(workflow)
-
-        request_content = dict(content, node=node.uuid)
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=request.path,
-            id=None,
-            query_string=query_string,
-            resource_type='submission of workflows',
-            request_content=request_content,
-            data=response
-        )
+        data = build_response(request, resource_type='submission of workflows', data=format_wf(workflow))
+        data['request_content'] = dict(content, node=node.uuid)
 
         return self.utils.build_response(status=200, data=data)
 
@@ -103,7 +108,7 @@ class GProperties(GResource):
     Endpoint to return a list of supported calculation properties
     """
 
-    def get(self, entrypoint=None, node_id=None):
+    def get(self, entrypoint=None):
         """
         Returns a list of the properties that are available for calculation
         This is related to the entry points on aiida_post.workflow, that relate
@@ -115,24 +120,21 @@ class GProperties(GResource):
         from aiida.plugins import WorkflowFactory
         from aiida.orm import QueryBuilder
         from aiida_post.common.formatter import delete_key
-        # Unpack the URL
-        path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
+        from urllib.parse import unquote
 
-        query_string = request.query_string.decode('utf-8')
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
+        available_properties = self.extended['PROPERTY_MAPPING']
+        property_outputs = self.extended['PROPERTY_OUTPUTS']
+
+        pathlist = self.utils.split_path(unquote(request.path))
         schema = pathlist[-1]
         (
             limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
             tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
-        ) = self.utils.parse_query_string(query_string)
+        ) = self.utils.parse_query_string(request.query_string.decode('utf-8'))
 
-        available_properties = self.extended['PROPERTY_MAPPING']
-        property_outputs = self.extended['PROPERTY_OUTPUTS']
         if schema == 'properties':
             # just a request for the available properties connected to a workflow
-            outdata = available_properties
+            out = available_properties
             resource_type = 'Information about the properties available for calculation'
         elif schema == 'list':
             if entrypoint not in available_properties:
@@ -140,18 +142,20 @@ class GProperties(GResource):
             prop = available_properties[entrypoint]
             resource_type = 'List of nodes from the required entrypoint'
             workflowtype = WorkflowFactory(prop)
-            qb = QueryBuilder().append(workflowtype, filters=filters, project=['uuid', 'attributes'])
-            outdata = [dict(uuid=uuid, attributes=attr) for [uuid, attr] in qb.all()]
+            query = QueryBuilder().append(workflowtype, filters=filters, project=['uuid', 'attributes'])
+            out = [dict(uuid=uuid, attributes=attr) for [uuid, attr] in query.all()]
         elif schema == 'outputs':
             if entrypoint not in property_outputs:
-                raise ValueError('<{}> does not have defined outputs in property outputs config file'.format(entrypoint))
+                raise ValueError(
+                    '<{}> does not have defined outputs in property outputs config file'.format(entrypoint)
+                )
             outputs = property_outputs[entrypoint]
             prop = available_properties[entrypoint]
             if entrypoint not in available_properties:
                 raise ValueError('<{}> is not in the list of the supported properties'.format(prop))
             workflow = WorkflowFactory(prop)
             resource_type = 'Property name, and its position with respect to the workflow outputs'
-            outdata = dict(
+            out = dict(
                 property_name=outputs.name,
                 is_node=outputs.is_node,
                 output_node_name=outputs.edge,
@@ -162,7 +166,11 @@ class GProperties(GResource):
             try:
                 entry = available_properties[entrypoint]
             except:
-                raise ValueError('<{}> is not in the list of available properties.'.format(entrypoint))
+                raise ValueError(
+                    '<{}> is not in the list of available properties: {}.'.format(
+                        entrypoint, ' ,'.join(list(available_properties.keys()))
+                    )
+                )
 
             workflow = WorkflowFactory(entry)
             resource_type = 'Information about the workflow {}'.format(schema)
@@ -172,19 +180,9 @@ class GProperties(GResource):
             # list of all calculations of this type
             if schema != 'outline':
                 delete_key(mydata, '_', startswith=True)
-            outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
+            out = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=request.path,
-            id=None,
-            query_string=request.query_string.decode('utf-8'),
-            resource_type=resource_type,
-            request_content=None,
-            data=outdata
-        )
+        data = build_response(request, resource_type=resource_type, data=out)
 
         return self.utils.build_response(status=200, data=data)
 
@@ -201,26 +199,12 @@ class GStatus(GResource):
         """
         from aiida_post.common.formatter import format_wf
 
-        # Unpack the URL
-        path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
-
         node = self._load_and_verify(node_id)
 
-        data = self.trans.get_report(node)
-        data.update(workflow=format_wf(node))
+        out = self.trans.get_report(node)
+        out.update(workflow=format_wf(node))
 
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=path,
-            id=node_id,
-            query_string=request.query_string.decode('utf-8'),
-            resource_type='workflow status',
-            data=data
-        )
+        data = build_response(request, resource_type='workflow status', data=out)
 
         return self.utils.build_response(status=200, data=data)
 
@@ -236,31 +220,24 @@ class GWorkflows(GResource):
         """
         Returns all the possible inputs, outputs or outline of a workflow
         """
+        from urllib.parse import unquote
         from aiida.plugins import WorkflowFactory
         from aiida.plugins.entry_point import get_entry_point_names
-        from aiida_post.common.formatter import delete_key
-        from aiida_post.common.formatter import delete_key_check_dict
+        from aiida_post.common.formatter import delete_key, delete_key_check_dict
 
-        # Unpack the URL
-        path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
-
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
-
-        query_string = request.query_string.decode('utf-8')
         # all the query parsing that's needed from AiiDA REST
         # I probably need much less than this!
         (
             limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
             tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
-        ) = self.utils.parse_query_string(query_string)
+        ) = self.utils.parse_query_string(request.query_string.decode('utf-8'))
 
         if not entrypoint:
             # return a list of the available entry points for workflows
-            outdata = get_entry_point_names('aiida.workflows')
+            out = get_entry_point_names('aiida.workflows')
             resource_type = 'List of all the available entrypoints for AiiDA workflows'
         else:
+            pathlist = self.utils.split_path(unquote(request.path))
             schema = pathlist[-1]
             resource_type = 'Information about the workflow {}'.format(schema)
             workflow = WorkflowFactory(entrypoint)
@@ -275,28 +252,20 @@ class GWorkflows(GResource):
                 # filters are {key:{operator:value}}. I want key and value
                 # value is a string to be compared
 
-                for k, v in value.items():
-                    delete_key_check_dict(mydata, key, str(v))
+                for innervalue in value.values():
+                    delete_key_check_dict(mydata, key, str(innervalue))
 
                 #check if I should remove keys for better view
 
-            outdata = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
+            out = {
+                'workflow': workflow.get_name(),
+                'description': description['description'],
+                str(schema): mydata
+            }
 
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=path,
-            id=None,
-            query_string=query_string,
-            resource_type=resource_type,
-            data=outdata
-        )
+        data = build_response(request, resource_type=resource_type, data=out)
 
         return self.utils.build_response(status=200, data=data)
-
-
-# Additional endpoints to implement if useful
 
 
 class GExisting(GResource):
@@ -316,14 +285,6 @@ class GExisting(GResource):
         """
         from aiida.plugins import WorkflowFactory
         from aiida.orm import QueryBuilder, Node
-
-        # initialize response
-        path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
-        query_string = request.query_string.decode('utf-8')
-
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
 
         if not prop:
             raise ValueError('Property not selected')
@@ -365,31 +326,13 @@ class GExisting(GResource):
         for item in wfs.all():
             workfunctions.append(dict(uuid=item[0], process_state=item[1], exit_status=item[2]))
 
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=path,
-            id=None,
-            query_string=request.query_string.decode('utf-8'),
+        data = build_response(
+            request,
             resource_type='properties connected with the node input',
             data=dict(workfunctions=workfunctions, properties=properties)
         )
 
         return self.utils.build_response(status=200, data=data)
-
-
-class GAppNodes(GResource):
-    """
-    Endpoint to return all the already executed calculation of a specific kind
-    Useful? To implement
-    """
-
-    def get(self):
-        """
-        To check if useful
-        """
-        raise ValueError('Endpoint not yet implemented')
 
 
 class GData(GResource):
@@ -407,19 +350,12 @@ class GData(GResource):
         """
         from aiida.orm import load_node
 
-        # initialize response
-        path = unquote(request.path)
-        url = unquote(request.url)
-        url_root = unquote(request.url_root)
-        query_string = request.query_string.decode('utf-8')
-
-        pathlist = self.utils.split_path(self.utils.strip_api_prefix(path))
         # all the query parsing that's needed from AiiDA REST
         # I probably need much less than this!
         (
             limit, offset, perpage, orderby, filters, download_format, download, filename, tree_in_limit,
             tree_out_limit, attributes, attributes_filter, extras, extras_filter, full_type
-        ) = self.utils.parse_query_string(query_string)
+        ) = self.utils.parse_query_string(request.query_string.decode('utf-8'))
 
         if not limit:
             limit = self.utils.limit_default
@@ -461,43 +397,41 @@ class GData(GResource):
         ## filter response
 
         chemical_formula = request.args.get('chemical_formula')
-        print (chemical_formula)
 
         if chemical_formula is not None:
             formula_type = request.args.get('chemical_formula_type', default='hill_compact')
-            print (formula_type)
             filtered_results = []
-            # found = 0
             for res in results['nodes']:
                 try:
                     node = load_node(res['uuid'])
-                    print(node.uuid, res)
                     node_formula = node.get_formula(mode=formula_type)
-                    print (node_formula, chemical_formula)
                     if node_formula == chemical_formula:
                         filtered_results.append(res)
-                        # found += 1
-                        # if found > limit:
-                        #     break
                 except:
-                    print('error')
                     pass
         else:
             filtered_results = results['nodes']
 
-        data = dict(
-            method=request.method,
-            url=url,
-            url_root=url_root,
-            path=path,
-            id=None,
-            query_string=request.query_string.decode('utf-8'),
+        data = build_response(
+            request,
             resource_type='structuredata search',
             data=dict(total_number_of_structures=total_count, nodes=filtered_results)
         )
+
         return self.utils.build_response(status=200, data=data)
 
-        # Now I should prepare a query for the database, in order to retrieve all the possible
-        # structuredata items in the database.
-        # Call of a function to calculate the formula might be long
-        # for this reason, I will select a slice according to limit, offset and perpage
+
+# Additional endpoints to implement if useful
+
+
+class GAppNodes(GResource):
+    """
+    Endpoint to return all the already executed calculation of a specific kind
+    Useful? To implement
+    """
+
+    def get(self):
+        """
+        To check if useful
+        """
+        raise ValueError('Endpoint not yet implemented')

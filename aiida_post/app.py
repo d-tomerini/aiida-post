@@ -11,14 +11,15 @@ This file heavily borrows from aiida.restapi.run_api
 from __future__ import absolute_import
 import click
 
+import aiida
 from aiida.cmdline.utils import decorators
 from aiida.cmdline.params.options import HOSTNAME, PORT
+
+import aiida_post
 
 # configuration of the REST API and additional variables to set
 # import aiida.restapi --> we can get the CONFIG file from there
 
-import aiida_post
-import aiida
 CONFIG_DIR = str(aiida.__path__[0]) + '/restapi/common/'
 PROPERTY_DIR = str(aiida_post.__path__[0]) + '/common/'
 

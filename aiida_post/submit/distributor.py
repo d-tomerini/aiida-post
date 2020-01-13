@@ -129,14 +129,14 @@ def Process_NameSpaces(builder, dictionary):
 def Get_Namespace_Schema(namespace, schema):
     """
     Recursively process the namespace of a workflow in order to extract information about the
-    input namespace, their type, if and what is  the defaul values if they're requested, and a help if it is available
-    This is not redundant, since I can use the get_description method
+    input namespace, their type, if and what is  the default values if they're requested, and a help if it is available
+    This is now redundant, since I can use the get_description method
     """
     from aiida.engine.processes.ports import PortNamespace
 
     for key, value in namespace.items():
         if isinstance(value, PortNamespace):
-            # recursevily look for deeper namespaces
+            # recursively look for deeper namespaces
             schema[key] = {}
             # if dynamic namespace, I just print that is dynamic, and fill it
             # problematic if a dynamic namespace contains other namespaces
