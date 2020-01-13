@@ -147,7 +147,7 @@ class GProperties(GResource):
                 raise ValueError('<{}> does not have defined outputs in property outputs config file'.format(entrypoint))
             outputs = property_outputs[entrypoint]
             prop = available_properties[entrypoint]
-            if prop not in available_properties:
+            if entrypoint not in available_properties:
                 raise ValueError('<{}> is not in the list of the supported properties'.format(prop))
             workflow = WorkflowFactory(prop)
             resource_type = 'Property name, and its position with respect to the workflow outputs'
@@ -461,21 +461,26 @@ class GData(GResource):
         ## filter response
 
         chemical_formula = request.args.get('chemical_formula')
+        print (chemical_formula)
 
         if chemical_formula is not None:
             formula_type = request.args.get('chemical_formula_type', default='hill_compact')
+            print (formula_type)
             filtered_results = []
             # found = 0
             for res in results['nodes']:
                 try:
-                    node = load_node(res)
+                    node = load_node(res['uuid'])
+                    print(node.uuid, res)
                     node_formula = node.get_formula(mode=formula_type)
-                    if node_formula == formula:
+                    print (node_formula, chemical_formula)
+                    if node_formula == chemical_formula:
                         filtered_results.append(res)
                         # found += 1
                         # if found > limit:
                         #     break
                 except:
+                    print('error')
                     pass
         else:
             filtered_results = results['nodes']

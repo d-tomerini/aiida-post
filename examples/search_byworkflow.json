@@ -1,0 +1,9 @@
+{
+    "calculation": "post.CODImport",
+    "input": {
+      "codquery": {
+          "chemical_name":["caffeine", "adenine"]
+      },
+      "strictcheck": false
+    }
+}
