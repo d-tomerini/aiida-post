@@ -193,6 +193,9 @@ class GStatus(GResource):
     """
     _parse_pk_uuid = 'uuid'  # Parse a uuid pattern in the URL path (not a pk)
 
+    from aiida.restapi.translator.nodes.process.process import ProcessTranslator
+    _translator_class = ProcessTranslator
+
     def get(self, node_id=None):
         """
         Returns the log file and the status of the workflow in progress
@@ -202,6 +205,7 @@ class GStatus(GResource):
         node = self._load_and_verify(node_id)
 
         out = self.trans.get_report(node)
+
         out.update(workflow=format_wf(node))
 
         data = build_response(request, resource_type='workflow status', data=out)
@@ -257,11 +261,7 @@ class GWorkflows(GResource):
 
                 #check if I should remove keys for better view
 
-            out = {
-                'workflow': workflow.get_name(),
-                'description': description['description'],
-                str(schema): mydata
-            }
+            out = {'workflow': workflow.get_name(), 'description': description['description'], str(schema): mydata}
 
         data = build_response(request, resource_type=resource_type, data=out)
 
