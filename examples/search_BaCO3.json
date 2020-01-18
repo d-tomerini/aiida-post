@@ -1,0 +1,9 @@
+{
+    "calculation": "structure.cod",
+    "input": {
+      "codquery": {
+          "formula":"Ba C O3"
+      },
+      "strictcheck": true
+    }
+}

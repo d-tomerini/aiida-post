@@ -25,16 +25,20 @@ class CODImportWorkChain(WorkChain):
             default=orm.Bool(False),
             help='Whether we should strictly check COD_query keywords'
         )
-        # spec.output('message', valid_type=Str)
-        spec.output('output', valid_type=orm.List, help='Structure list from the query')
-
+        spec.output(
+            'output',
+            valid_type=orm.Dict,
+            help='Dictionary containing a list of aiida structure and a list of COD ids that did not work'
+        )
         spec.outline(
             cls.validate_COD_query,
             if_(cls.should_check_query)(cls.check_keywords), cls.find_structures_and_return
         )
 
         spec.exit_code(201, 'WRONG_COD_QUERY', message='The query contains invalid keywords')
-        spec.exit_code(202, 'INVALID_COD_QUERY', message='After parsing for valid keywords, the query list is empty')
+        spec.exit_code(
+            202, 'INVALID_COD_QUERY', message='After parsing for valid keywords, the query contains no valid keywords'
+        )
         spec.exit_code(210, 'ERROR_NO_STRUCTURE', message='The query was unable to return a structure')
 
     def validate_COD_query(self):
@@ -74,9 +78,11 @@ class CODImportWorkChain(WorkChain):
         from aiida_post.calculations.COD import cod_find_and_store
 
         # query the database for structures
-        self.ctx.structurelist = cod_find_and_store(self.ctx.kwords)
-
-        n_structures = len(self.ctx.structurelist)
+        structurelist = cod_find_and_store(self.ctx.kwords)
+        converted = structurelist.attributes['aiida_structures']
+        failed = structurelist.attributes['excepted_cifs']
+        self.report('{} cif files could not be converted to AiiDA objects'.format(len(failed)))
+        n_structures = len(converted)
         if n_structures == 0:
             self.report('No structure retrieved')
             return self.exit_codes.ERROR_NO_STRUCTURE
@@ -85,4 +91,4 @@ class CODImportWorkChain(WorkChain):
         else:
             self.report('{} structures satisfies the query'.format(n_structures))
 
-        self.out('output', self.ctx.structurelist)
+        self.out('output', structurelist)

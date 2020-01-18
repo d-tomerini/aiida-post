@@ -1,0 +1,9 @@
+{
+    "calculation": "structure.cod",
+    "input": {
+      "codquery": {
+          "formula":"Al"
+      },
+      "strictcheck": false
+    }
+}

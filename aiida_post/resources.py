@@ -162,6 +162,14 @@ class GProperties(GResource):
                 property_location=outputs.project,
                 workflow=workflow.get_name()
             )
+        elif schema == 'exit_statuses':
+            prop = available_properties[entrypoint]
+            if entrypoint not in available_properties:
+                raise ValueError('<{}> is not in the list of the supported properties'.format(prop))
+            workflow = WorkflowFactory(prop)
+            resource_type = 'Exit status codes and messages'
+            errors = workflow.exit_codes
+            out = {value.status: value.message for value in workflow.exit_codes.values()}
         else:
             try:
                 entry = available_properties[entrypoint]

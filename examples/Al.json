@@ -1,7 +1,7 @@
 {
     "calculation": "band_structure.pw",
     "input": {
-      "structure": 3856,
-      "code": 376
+      "structure": 135,
+      "code": 97
     }
 }

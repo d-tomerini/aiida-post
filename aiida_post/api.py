@@ -45,6 +45,7 @@ class InterfaceApi(AiidaApi):
             '/intersect/properties/',
             '/intersect/properties/<string:entrypoint>/inputs/',
             '/intersect/properties/<string:entrypoint>/outputs/',
+            '/intersect/properties/<string:entrypoint>/exit_statuses/',
             '/intersect/properties/<string:entrypoint>/outline/',
             '/intersect/properties/<string:entrypoint>/list/',
             strict_slashes=False,

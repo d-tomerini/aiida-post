@@ -40,20 +40,21 @@ def cod_find_and_store(query):
     according to the data coming from the input JSON request
     returns a dictionary of the of DataStructure UUID
     """
-    from aiida.orm import List
+    from aiida.orm import List, Dict
     from aiida.tools.dbimporters.plugins.cod import CodDbImporter
 
     kwargs = query.dict.valid
     importer = CodDbImporter()
     allcifs = importer.query(**kwargs).fetch_all()
     allstructures = []
+    wrongcifs = {}
     for structure in allcifs:
+        cod_id = structure.source['id']
         try:
             node = structure.get_aiida_structure()
-        except:
-            pass
-        node.source = structure.source
-        node.store()
-        allstructures.append(node.uuid)
-
-    return List(list=allstructures)
+            node.source = structure.source
+            node.store()
+            allstructures.append(node.uuid)
+        except Exception as e:
+            wrongcifs[str(cod_id)] = 'returned exception: {}'.format(e)
+    return Dict(dict=dict(aiida_structures=allstructures, excepted_cifs=wrongcifs))
