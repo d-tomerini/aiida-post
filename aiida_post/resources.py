@@ -317,9 +317,15 @@ class GExisting(GResource):
         )
         properties = []
         for item in qb.all():
-            properties.append(
-                dict(property_name=mapping.name, property_value=item[1], workflow=item[0], is_node=mapping.is_node)
-            )
+            properties.append({
+                'property': {
+                    'name': mapping.name,
+                    'value': item[1],
+                    'value_type': str(item[1].__class__),
+                },
+                'workflow': item[0],
+                'is_node': mapping.is_node
+            })
 
         # look for all processes of the same class, to check if some are ongoing/excepted
         wfs = QueryBuilder().append(node.__class__, filters={
