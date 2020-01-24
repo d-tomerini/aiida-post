@@ -31,7 +31,7 @@ PROPERTY_MAPPING = {
 
 # for each of the properties, this tells us where to find the output
 # a dictionary of properties; each entry is a list of lists
-# first is an edge filter (name of the output)
+# first is an edge filter (name of the output of the workflow)
 # second is the desired attribute
 
 PropMap = collections.namedtuple('PropMap', 'name, is_node, edge, project')
@@ -39,5 +39,7 @@ PROPERTY_OUTPUTS = {
     'structure.cod': PropMap('list_of_structures', False, 'output', 'attributes'),
     'relax.pw': PropMap('relaxed_structure', True, 'output_structure', 'uuid'),
     'relaxed_energy.pw': PropMap('final_relaxed_energy', False, 'output_parameters', 'attributes.energy'),
-    'band_gap.pw': PropMap('band_gap', False, 'output_parameters', 'attributes.band_gap')
+    'band_structure.pw': PropMap('bands', True, 'band_structure', 'uuid'),
+    'band_gap.pw': PropMap('band_gap', False, 'output_parameters', 'attributes.band_gap'),
+    'formation_energy.qe': PropMap('formation_energy', False, 'formation_energy_corrected', 'attributes')
 }

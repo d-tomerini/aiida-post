@@ -303,8 +303,13 @@ class GExisting(GResource):
 
         if prop not in available_properties:
             raise ValueError('<{}> is not in the list of available properties.'.format(prop))
+
         entry = available_properties[prop]
         workflow = WorkflowFactory(entry)
+        if prop not in output_mapping:
+            raise ValueError(
+                '<{}> is not contained in the mapped properties available for workflow {}.'.format(prop, entry)
+            )
         mapping = output_mapping[prop]
 
         node = self._load_and_verify(node_id)
